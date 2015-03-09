@@ -76,6 +76,6 @@ add_executable(CG2015 ${SRC_FILES})
 target_link_libraries(CG2015
 	${OPENGL_LIBRARY}
 	glfw ${GLFW_LIBRARIES}
-    tinyobj
-    jsoncpp_lib
+    tinyobjloader
+    jsoncpp
 )
