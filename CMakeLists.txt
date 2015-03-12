@@ -13,12 +13,6 @@ option(GLFW_BUILD_EXAMPLES OFF)
 option(GLFW_BUILD_TESTS OFF)
 option(GLFW_INSTALL OFF)
 
-# JsonCpp options
-option(JSONCPP_WITH_TESTS OFF)
-option(JSONCPP_WITH_POST_BUILD_UNITTEST OFF)
-option(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF)
-option(JSONCPP_WITH_WARNING_AS_ERROR OFF)
-
 # Add glfw
 add_subdirectory(external/glfw)
 include_directories(external/glfw/include)
@@ -26,6 +20,12 @@ include_directories(external/glfw/include)
 # Add tinyobj
 add_subdirectory(external/tinyobj)
 include_directories(external/tinyobj)
+
+# JsonCpp options
+option(JSONCPP_WITH_TESTS OFF)
+option(JSONCPP_WITH_POST_BUILD_UNITTEST OFF)
+option(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF)
+option(JSONCPP_WITH_WARNING_AS_ERROR OFF)
 
 # Add jsoncpp
 add_subdirectory(external/jsoncpp)
@@ -43,11 +43,6 @@ include_directories(external/lodepng)
 file(GLOB FLEXTGL_SOURCES ${CMAKE_SOURCE_DIR}/external/flextgl/*.cpp)
 set(THIRD_PARTY_SOURCES ${THIRD_PARTY_SOURCES} ${FLEXTGL_SOURCES})
 include_directories(external/flextgl)
-
-# Game source code
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 # Include
 include_directories(
@@ -78,5 +73,5 @@ target_link_libraries(CG2015
 	${OPENGL_LIBRARY}
 	glfw ${GLFW_LIBRARIES}
     tinyobjloader
-    jsoncpp
+    jsoncpp_lib_static
 )
