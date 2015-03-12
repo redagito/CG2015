@@ -78,5 +78,5 @@ target_link_libraries(CG2015
 	${OPENGL_LIBRARY}
 	glfw ${GLFW_LIBRARIES}
     tinyobjloader
-    jsoncpp_lib
+    jsoncpp
 )
