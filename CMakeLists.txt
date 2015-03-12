@@ -17,6 +17,7 @@ option(GLFW_INSTALL OFF)
 option(JSONCPP_WITH_TESTS OFF)
 option(JSONCPP_WITH_POST_BUILD_UNITTEST OFF)
 option(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF)
+option(JSONCPP_WITH_WARNING_AS_ERROR OFF)
 
 # Add glfw
 add_subdirectory(external/glfw)
@@ -77,5 +78,5 @@ target_link_libraries(CG2015
 	${OPENGL_LIBRARY}
 	glfw ${GLFW_LIBRARIES}
     tinyobjloader
-    jsoncpp
+    jsoncpp_lib
 )
