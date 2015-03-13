@@ -11,5 +11,7 @@
 	path = external/jsoncpp
 	url = https://github.com/open-source-parsers/jsoncpp.git
 [submodule "external/lodepng"]
+	
 	path = external/lodepng
+
 	url = https://github.com/lvandeve/lodepng.git

@@ -32,6 +32,8 @@ add_subdirectory(external/jsoncpp)
 include_directories(external/jsoncpp/include)
 
 # Add glm
+# Fix for 32 bit alignment issue in 9.6.0 branch
+add_definitions(-DGLM_FORCE_PURE)
 include_directories(external/glm)
 
 # Add lodepng
@@ -43,6 +45,14 @@ include_directories(external/lodepng)
 file(GLOB FLEXTGL_SOURCES ${CMAKE_SOURCE_DIR}/external/flextgl/*.cpp)
 set(THIRD_PARTY_SOURCES ${THIRD_PARTY_SOURCES} ${FLEXTGL_SOURCES})
 include_directories(external/flextgl)
+
+# Add irrklang
+include_directories(external/irrklang/irrKlang-1.5.0/include)
+# Windows only, TODO fix
+link_directories(
+	external/irrklang/irrKlang-1.5.0/lib/Win32-visualStudio
+	external/irrklang/irrKlang-1.5.0/lib/Win32-gcc
+)
 
 # Include
 include_directories(
@@ -74,4 +84,5 @@ target_link_libraries(CG2015
 	glfw ${GLFW_LIBRARIES}
     tinyobjloader
     jsoncpp_lib_static
+	irrKlang
 )
