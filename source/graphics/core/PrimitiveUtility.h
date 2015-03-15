@@ -1,17 +1,7 @@
 #pragma once
 
+#include "graphics/api/PrimitiveType.h"
 #include "CoreConfig.h"
-
-/**
-* \brief Primitive types supported.
-*/
-enum class EPrimitiveType
-{
-	Point,
-	Line,
-	Triangle,
-	Invalid
-};
 
 unsigned int getSize(EPrimitiveType type);
 

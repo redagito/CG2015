@@ -1,8 +1,8 @@
 #include <cassert>
 
-#include "CoreConfig.h"
-#include "ShaderConfig.h"
-#include "Debug.h"
+#include "graphics/core/CoreConfig.h"
+#include "graphics/core/ShaderConfig.h"
+#include "graphics/core/Debug.h"
 #include "CMesh.h"
 
 #include "log/Log.h"

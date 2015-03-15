@@ -1,19 +1,114 @@
+#include <string>
+
 #include "CGraphicsSystem.h"
 
+#include "graphics/core/CoreConfig.h"
+#include <GLFW/glfw3.h>
 
-bool CGraphicsSystem::init()
+#include "log/Log.h"
+
+CGraphicsSystem::~CGraphicsSystem()
 {
+	stop();
+}
+
+bool CGraphicsSystem::init(unsigned int width, unsigned int height, const std::string& name)
+{
+	if (m_init)
+	{
+		return true;
+	}
+
+	LOG_INFO("Initializing graphics system.");
+	LOG_INFO("Initializing GLFW.");
+	if (!glfwInit())
+	{
+		LOG_ERROR("Failed to initialize GLFW.");
+		return false;
+	}
+
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, FLEXT_MAJOR_VERSION);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, FLEXT_MINOR_VERSION);
+	// Remove deprecated functionality
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	// Request core profile
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// Create window from parameters
+	m_window = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
+	if (m_window == nullptr)
+	{
+		LOG_ERROR("Failed to create GLFW window.");
+		glfwTerminate();
+		return false;
+	}
+
+	int framebufferWidth;
+	int framebufferHeight;
+
+	glfwGetFramebufferSize(m_window, &framebufferWidth, &framebufferHeight);
+
+	m_width = framebufferWidth;
+	m_height = framebufferHeight;
+
+	glfwMakeContextCurrent(m_window);
+	glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
+
+	// Load extensions
+	if (flextInit() != GL_TRUE)
+	{
+		glfwTerminate();
+		LOG_ERROR("Failed to initialize flextGL.");
+		return false;
+	}
+	LOG_INFO("OpenGL version %u.%u core.", FLEXT_MAJOR_VERSION, FLEXT_MINOR_VERSION);
+	glfwShowWindow(m_window);
+	glfwMakeContextCurrent(nullptr);
+	m_init = true;
 	return true;
 }
 
 void CGraphicsSystem::start()
 {
+	if (!m_init)
+	{
+		LOG_CRITICAL("Cannot start rendering without initailization.");
+		return;
+	}
+	m_running = true;
+	m_renderThread = std::thread(&CGraphicsSystem::render, this);
 	return;
+}
+
+bool CGraphicsSystem::isRunning() const
+{
+	return m_running;
 }
 
 void CGraphicsSystem::stop()
 {
+	m_running = false;
+	m_renderThread.join();
 	return;
+}
+
+void CGraphicsSystem::pollEvents()
+{
+	glfwPollEvents();
+}
+
+void CGraphicsSystem::render()
+{
+	glfwMakeContextCurrent(m_window);
+	glClearColor(0.2f, 0.3f, 0.2f, 1.f);
+	while (m_running && glfwWindowShouldClose(m_window) == 0)
+	{
+		// Draw logic here
+		glClear(GL_COLOR_BUFFER_BIT);
+		glfwSwapBuffers(m_window);
+	}
+	m_running = false;
 }
 
 GraphicsResourceId CGraphicsSystem::createMesh()

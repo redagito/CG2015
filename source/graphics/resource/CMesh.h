@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "PrimitiveType.h"
+#include "graphics/api/PrimitiveType.h"
 #include "CVertexBuffer.h"
 #include "CIndexBuffer.h"
 #include "CVertexArrayObject.h"

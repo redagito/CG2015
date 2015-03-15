@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "CoreConfig.h"
+#include "graphics/core/CoreConfig.h"
 
 /*
 * \brief Manages an OpenGL VBO in VRAM.

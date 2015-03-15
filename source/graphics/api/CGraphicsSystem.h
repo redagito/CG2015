@@ -4,17 +4,24 @@
 #include <atomic>
 #include <unordered_map>
 #include <memory>
+#include <thread>
 
 #include <glm/glm.hpp>
 
 #include "GraphicsConfig.h"
 #include "CGraphicsWorld.h"
 
+struct GLFWwindow;
+
 class CGraphicsSystem
 {
 public:
-	bool init();
+	~CGraphicsSystem();
+
+	bool init(unsigned int width, unsigned int height, const std::string& name);
 	void start();
+	bool isRunning() const;
+	void pollEvents();
 	void stop();
 	
 	GraphicsResourceId createMesh();
@@ -40,7 +47,19 @@ public:
 
 	void worldSetActve(GraphicsResourceId world);
 
+protected:
+	void render();
+
 private:
+	GLFWwindow* m_window = nullptr;
+	unsigned int m_width = 0;
+	unsigned int m_height = 0;
+
+	std::atomic<bool> m_running = false;
+	bool m_init = false;
+
+	std::thread m_renderThread;
+
 	GraphicsResourceId m_nextMeshId = 1;
 	GraphicsResourceId m_nextTextureId = 1;
 	GraphicsResourceId m_nextMaterialId = 1;

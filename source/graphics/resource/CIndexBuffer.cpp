@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "Debug.h"
+#include "graphics/core/Debug.h"
 #include "log/Log.h"
 
 CIndexBuffer::CIndexBuffer(const std::vector<uint32_t>& indices, GLenum usage)

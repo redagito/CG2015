@@ -1,7 +1,6 @@
-#include "PrimitiveType.h"
+#include "PrimitiveUtility.h"
 
 #include "log/Log.h"
-
 
 unsigned int getSize(EPrimitiveType type)
 {

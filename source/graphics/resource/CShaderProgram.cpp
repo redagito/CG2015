@@ -4,7 +4,7 @@
 
 #include "CShaderProgram.h"
 
-#include "Debug.h"
+#include "graphics/core/Debug.h"
 #include "log/Log.h"
 
 GLuint CShaderProgram::s_activeShaderProgram = 0;

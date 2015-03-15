@@ -1,5 +1,7 @@
 #pragma once
 
+#include "graphics/Graphics.h"
+
 /**
 * \brief Game engine class.
 */
@@ -11,4 +13,5 @@ public:
 	int run();
 
 private:
+	CGraphicsSystem m_graphicsSystem;
 };

@@ -2,7 +2,7 @@
 
 #include "CVertexBuffer.h"
 
-#include "Debug.h"
+#include "graphics/core/Debug.h"
 #include "log/Log.h"
 
 CVertexBuffer::CVertexBuffer(const std::vector<float>& data, GLenum usage)

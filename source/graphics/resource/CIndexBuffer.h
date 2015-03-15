@@ -3,7 +3,7 @@
 #include <vector>
 #include <cstdint>
 
-#include "CoreConfig.h"
+#include "graphics/core/CoreConfig.h"
 
 /**
 * \brief Represents an index buffer.

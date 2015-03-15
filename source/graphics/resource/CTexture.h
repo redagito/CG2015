@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "CoreConfig.h"
-#include "PrimitiveType.h"
-#include "ColorFormat.h"
+#include "graphics/core/CoreConfig.h"
+#include "graphics/api/PrimitiveType.h"
+#include "graphics/api/ColorFormat.h"
 
 /**
  * \brief Texture class.
