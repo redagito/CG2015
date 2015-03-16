@@ -69,7 +69,7 @@ bool CGraphicsSystem::init(unsigned int width, unsigned int height, const std::s
 	return true;
 }
 
-void CGraphicsSystem::start()
+void CGraphicsSystem::start(CJobSystem& jobSystem)
 {
 	if (!m_init)
 	{
@@ -77,7 +77,7 @@ void CGraphicsSystem::start()
 		return;
 	}
 	m_running = true;
-	m_renderThread = std::thread(&CGraphicsSystem::render, this);
+	jobSystem.addJob(std::bind(&CGraphicsSystem::render, this));
 	return;
 }
 
@@ -89,7 +89,6 @@ bool CGraphicsSystem::isRunning() const
 void CGraphicsSystem::stop()
 {
 	m_running = false;
-	m_renderThread.join();
 	return;
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "graphics/Graphics.h"
+#include "core/CJobSystem.h"
 
 /**
 * \brief Game engine class.
@@ -13,5 +14,6 @@ public:
 	int run();
 
 private:
+	CJobSystem m_jobSystem;
 	CGraphicsSystem m_graphicsSystem;
 };

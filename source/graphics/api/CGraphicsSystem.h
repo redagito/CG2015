@@ -8,6 +8,8 @@
 
 #include <glm/glm.hpp>
 
+#include "core/CJobSystem.h"
+
 #include "GraphicsConfig.h"
 #include "CGraphicsWorld.h"
 
@@ -19,7 +21,7 @@ public:
 	~CGraphicsSystem();
 
 	bool init(unsigned int width, unsigned int height, const std::string& name);
-	void start();
+	void start(CJobSystem& jobSystem);
 	bool isRunning() const;
 	void pollEvents();
 	void stop();
@@ -57,8 +59,6 @@ private:
 
 	std::atomic<bool> m_running = false;
 	bool m_init = false;
-
-	std::thread m_renderThread;
 
 	GraphicsResourceId m_nextMeshId = 1;
 	GraphicsResourceId m_nextTextureId = 1;
