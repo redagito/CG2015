@@ -1,11 +1,10 @@
-#include <cassert>
-
-#include "graphics/core/CoreConfig.h"
-#include "graphics/core/ShaderConfig.h"
-#include "graphics/core/Debug.h"
 #include "CMesh.h"
+#include "debug/Log.h"
 
-#include "log/Log.h"
+#include "graphics/renderer/core/RendererCoreConfig.h"
+#include "graphics/renderer/debug/RendererDebug.h"
+
+#include <cassert>
 
 CMesh::CMesh(const std::vector<float>& vertices, const std::vector<unsigned int>& indices,
              const std::vector<float>& normals, const std::vector<float>& uvs, EPrimitiveType type)
@@ -56,14 +55,14 @@ bool CMesh::init(const std::vector<float>& vertices, const std::vector<unsigned 
     // Set primitive type
     m_type = type;
 
+    // Initialize state
+    m_vao->setActive();
+
     // Sanity check
     if (!m_vertices->isValid())
     {
         return false;
     }
-
-	// Initialize state
-	m_vao->setActive();
 
     // Set vertex data attributes
     // TODO The location should be in some kind of shader interface definition
@@ -101,8 +100,8 @@ bool CMesh::init(const std::vector<float>& vertices, const std::vector<unsigned 
     if (hasGLError(error))
     {
         LOG_ERROR("GL Error: %s", error.c_str());
-		return false;
     }
+
     return true;
 }
 
@@ -119,3 +118,42 @@ const std::unique_ptr<CVertexBuffer>& CMesh::getUVBuffer() const { return m_uvs;
 const EPrimitiveType CMesh::getPrimitiveType() const { return m_type; }
 
 const std::unique_ptr<CVertexArrayObject>& CMesh::getVertexArray() const { return m_vao; }
+
+GLenum CMesh::toGLPrimitive(EPrimitiveType type)
+{
+    switch (type)
+    {
+    case EPrimitiveType::Point:
+        return GL_POINTS;
+        break;
+    case EPrimitiveType::Line:
+        return GL_LINE;
+        break;
+    case EPrimitiveType::Triangle:
+        return GL_TRIANGLES;
+        break;
+    default:
+        LOG_ERROR("Invalid or unknown primitive type, default triangle type used.");
+        // Default
+        return GL_TRIANGLES;
+    }
+}
+
+unsigned int CMesh::getPrimitiveSize(EPrimitiveType type)
+{
+    switch (type)
+    {
+    case EPrimitiveType::Point:
+        return 1;
+        break;
+    case EPrimitiveType::Line:
+        return 2;
+        break;
+    case EPrimitiveType::Triangle:
+        return 3;
+        break;
+    default:
+        LOG_ERROR("Invalid or unknown primitive type");
+        return 0;
+    }
+}

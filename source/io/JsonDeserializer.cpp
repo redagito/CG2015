@@ -2,7 +2,7 @@
 
 #include <json/json.h>
 
-#include "log/Log.h"
+#include "debug/Log.h"
 
 bool deserialize(const Json::Value& node, bool& b)
 {

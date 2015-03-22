@@ -1,11 +1,11 @@
+#include "CShaderProgram.h"
+
+#include "graphics/renderer/debug/RendererDebug.h"
+#include "debug/Log.h"
+
 #include <cassert>
 
 #include <glm/ext.hpp>
-
-#include "CShaderProgram.h"
-
-#include "graphics/core/Debug.h"
-#include "log/Log.h"
 
 GLuint CShaderProgram::s_activeShaderProgram = 0;
 
@@ -14,6 +14,7 @@ CShaderProgram::CShaderProgram(TShaderObject<GL_VERTEX_SHADER>* vertex,
                                TShaderObject<GL_TESS_EVALUATION_SHADER>* tessEval,
                                TShaderObject<GL_GEOMETRY_SHADER>* geometry,
                                TShaderObject<GL_FRAGMENT_SHADER>* fragment)
+    : m_programId(0), m_valid(false)
 {
     init(vertex, tessControl, tessEval, geometry, fragment);
 }
@@ -100,29 +101,26 @@ bool CShaderProgram::init(TShaderObject<GL_VERTEX_SHADER>* vertex,
         // Clean up temp id
         glDeleteProgram(programId);
         return false;
-	}
-
-	// Error check
-	std::string error;
-	if (hasGLError(error))
-	{
-		LOG_ERROR("GL Error: %s", error.c_str());
-		return false;
-	}
-    
-	// New shader program linked successfully
+    }
+    // New shader program linked successfully
     // Delete old shader object
     if (m_valid)
     {
         glDeleteShader(m_programId);
     }
-
     // Set new id
     m_programId = programId;
     // Set validity flag
     m_valid = true;
     // Clear uniform location cache
     m_uniformLocations.clear();
+
+    // Error check
+    std::string error;
+    if (hasGLError(error))
+    {
+        LOG_ERROR("GL Error: %s", error.c_str());
+    }
 
     return true;
 }

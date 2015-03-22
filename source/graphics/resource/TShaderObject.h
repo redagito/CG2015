@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "graphics/core/CoreConfig.h"
-#include "graphics/core/Debug.h"
-#include "log/Log.h"
+#include "graphics/renderer/core/RendererCoreConfig.h"
+#include "graphics/renderer/debug/RendererDebug.h"
+#include "debug/Log.h"
 
 /**
 * \brief Represents a compiled shader object.
@@ -13,7 +13,7 @@
 template <GLenum ShaderType>
 class TShaderObject
 {
-public:
+   public:
     /**
     * \brief Creates shader object from shader type and source code.
     */
@@ -40,7 +40,7 @@ public:
     */
     bool isValid() const;
 
-private:
+   private:
     std::string m_infoLog;
     GLuint m_objectId;
     bool m_valid;

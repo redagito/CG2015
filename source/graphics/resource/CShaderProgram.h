@@ -4,7 +4,8 @@
 
 #include <glm/glm.hpp>
 
-#include "graphics/core/CoreConfig.h"
+#include "graphics/renderer/core/RendererCoreConfig.h"
+
 #include "TShaderObject.h"
 
 /**
@@ -12,10 +13,9 @@
 */
 class CShaderProgram
 {
-public:
+   public:
     /**
     * \brief Creates shader program from shader objects.
-	*
     * Unused shader objects are represented by nullptr. All used shader objects
     * must be valid or program creation will fail and the program object will
     * be in invalid state after creation.
@@ -34,7 +34,6 @@ public:
     /**
     * \brief Initializes the program with new shader objects.
     * \return True for success and false for error.
-	*
     * If the function returns false, an error string can be retrieved with
     * getErrorString.
     * Multiple calls to init reset the error string content.
@@ -61,7 +60,6 @@ public:
 
     /**
     * \brief Returns the error string.
-	*
     * Set by a formerly failed call to init or on failed construction.
     */
     const std::string& getErrorString() const;
@@ -98,10 +96,13 @@ public:
     void setUniform(GLint location, const glm::mat4& m);
     void setUniform(const std::string& uniformName, const glm::mat4& m);
 
-private:
-    static GLuint s_activeShaderProgram; /**< Stores currently active shader id to prevent unnecessary calls to setActive. */
-    mutable std::unordered_map<std::string, GLint> m_uniformLocations; /**< Caches uniform location ids. */
-	std::string m_infoLog; /**< Last info log retrieved from shader program. */
-	GLuint m_programId = 0; /**< Internal GL id. */
-	bool m_valid = false; /**< Validity flag. */
+   private:
+    static GLuint s_activeShaderProgram; /**< Stores currently active shader id to prevent
+                                                                             unnecessary calls to
+                                            setActive. */
+    mutable std::unordered_map<std::string, GLint>
+        m_uniformLocations; /**< Caches uniform location ids. */
+    std::string m_infoLog;
+    GLuint m_programId;
+    bool m_valid;
 };

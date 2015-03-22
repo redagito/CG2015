@@ -1,18 +1,20 @@
+#include "CTexture.h"
+
 #include <cassert>
 #include <string>
 
-#include "CTexture.h"
+#include "graphics/renderer/debug/RendererDebug.h"
+#include <lodepng.h>
+#include "debug/Log.h"
 
-#include "graphics/core/Debug.h"
-#include "log/Log.h"
-
-CTexture::CTexture()
+CTexture::CTexture() : m_valid(false), m_textureId(0), m_width(0), m_height(0), m_format(0)
 {
     // empty
 }
 
 CTexture::CTexture(const std::vector<unsigned char>& image, unsigned int width, unsigned int height,
                    EColorFormat format, bool createMipmaps)
+    : m_valid(false), m_textureId(0), m_width(0), m_height(0), m_format(0)
 {
     // Init texture with data
     if (!init(image, width, height, format, createMipmaps))
@@ -22,12 +24,25 @@ CTexture::CTexture(const std::vector<unsigned char>& image, unsigned int width, 
 }
 
 CTexture::CTexture(unsigned int width, unsigned int height, EColorFormat format, bool createMipmaps)
+    : m_valid(false), m_textureId(0), m_width(0), m_height(0), m_format(0)
 {
     // Init texture with data
     if (!init({}, width, height, format, createMipmaps))
     {
         LOG_ERROR("Failed to initialize texture.");
     }
+}
+
+CTexture::CTexture(GLint id, bool hasMipmaps, unsigned int width, unsigned int height, GLint format,
+                   GLenum externalFormat)
+{
+    m_valid = true;
+    m_hasMipmaps = hasMipmaps;
+    m_textureId = id;
+    m_width = width;
+    m_height = height;
+    m_format = format;
+    m_externalFormat = externalFormat;
 }
 
 CTexture::~CTexture()
@@ -89,6 +104,15 @@ void CTexture::setActive(GLint textureUnit) const
     assert(isValid());
     glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
+}
+
+void CTexture::saveAsPng(const std::string& file)
+{
+    std::vector<unsigned char> image;
+    image.resize(m_width * m_height * 3);
+    glBindTexture(GL_TEXTURE_2D, m_textureId);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, image.data());
+    lodepng::encode(file, image, m_width, m_height, LCT_RGB);
 }
 
 bool CTexture::init(const std::vector<unsigned char>& image, unsigned int width,

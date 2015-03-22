@@ -3,10 +3,11 @@
 #include <memory>
 #include <vector>
 
-#include "graphics/api/PrimitiveType.h"
-#include "CVertexBuffer.h"
-#include "CIndexBuffer.h"
-#include "CVertexArrayObject.h"
+#include "resource/ResourceConfig.h"
+
+#include "graphics/renderer/core/CVertexBuffer.h"
+#include "graphics/renderer/core/CIndexBuffer.h"
+#include "graphics/renderer/core/CVertexArrayObject.h"
 
 /**
 * \brief Contains mesh data (vertices, faces, normals and uv data).
@@ -17,7 +18,7 @@
 */
 class CMesh
 {
-public:
+   public:
     CMesh(const std::vector<float>& vertices, const std::vector<unsigned int>& indices,
           const std::vector<float>& normals, const std::vector<float>& uvs, EPrimitiveType type);
 
@@ -61,22 +62,33 @@ public:
     */
     const std::unique_ptr<CVertexBuffer>& getUVBuffer() const;
 
-	/**
-	* \brief Returns vertex array object.
-	*/
-	const std::unique_ptr<CVertexArrayObject>& getVertexArray() const;
-
     /**
     * \brief Returns primitive type of the mesh.
     */
     const EPrimitiveType getPrimitiveType() const;
 
+    /**
+    * \brief Returns vertex array object.
+    */
+    const std::unique_ptr<CVertexArrayObject>& getVertexArray() const;
 
-private:
-    std::unique_ptr<CVertexBuffer> m_vertices = nullptr; /**< Mesh vertices. */
-	std::unique_ptr<CIndexBuffer> m_indices = nullptr;   /**< Mesh indices. */
-	std::unique_ptr<CVertexBuffer> m_normals = nullptr;  /**< Per vertex normals. */
-	std::unique_ptr<CVertexBuffer> m_uvs = nullptr;      /**< Texture coordinates. */
-	std::unique_ptr<CVertexArrayObject> m_vao = nullptr; /**< Vertex array object. */
-    EPrimitiveType m_type = EPrimitiveType::Invalid;     /**< Mesh primitive type. */
+    /**
+    * \brief Maps primitive type to GL type.
+    * Example: Maps EPrimitiveType::Triangle to GL_TRIANGLES.
+    */
+    static GLenum toGLPrimitive(EPrimitiveType type);
+
+    /**
+    * \brief Returns primitive size for the type.
+    * Example: Returns value 3 for EPrimitiveType::Triangle.
+    */
+    static unsigned int getPrimitiveSize(EPrimitiveType type);
+
+   private:
+    std::unique_ptr<CVertexBuffer> m_vertices; /**< Mesh vertices. */
+    std::unique_ptr<CIndexBuffer> m_indices;   /**< Mesh indices. */
+    std::unique_ptr<CVertexBuffer> m_normals;  /**< Per vertex normals. */
+    std::unique_ptr<CVertexBuffer> m_uvs;      /**< Texture coordinates. */
+    std::unique_ptr<CVertexArrayObject> m_vao; /**< Vertex array object. */
+    EPrimitiveType m_type;                     /**< Mesh primitive type. */
 };

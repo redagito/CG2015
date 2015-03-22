@@ -1,7 +1,7 @@
 #pragma once
 
 /**
-* \brief Master include for public graphics api.
+* \brief Graphics system master include.
 */
-#include "api/CGraphicsSystem.h"
-#include "api/CGraphicsWorld.h"
+#include "IGraphicsSystem.h"
+#include "IScene.h"

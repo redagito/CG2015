@@ -2,16 +2,15 @@
 
 #include <vector>
 
-#include "graphics/core/CoreConfig.h"
-#include "graphics/api/PrimitiveType.h"
-#include "graphics/api/ColorFormat.h"
+#include "graphics/renderer/core/RendererCoreConfig.h"
+#include "resource/ResourceConfig.h"
 
 /**
  * \brief Texture class.
  */
 class CTexture
 {
-public:
+   public:
     CTexture();
 
     /**
@@ -25,6 +24,11 @@ public:
      */
     CTexture(unsigned int width, unsigned int height, EColorFormat format,
              bool createMipmaps = true);
+
+    // TODO remove this and introduce ability to create cubetextures (necessary for point light
+    // shadows)
+    CTexture(GLint id, bool hasMipmaps, unsigned int width, unsigned int height, GLint format,
+             GLenum externalFormat);
 
     ~CTexture();
 
@@ -56,16 +60,21 @@ public:
     */
     void setActive(GLint textureUnit) const;
 
-protected:
+    /**
+    * \brief Saves texture data as png.
+    */
+    void saveAsPng(const std::string& file);
+
+   protected:
     bool init(const std::vector<unsigned char>& imageData, unsigned int width, unsigned int height,
               GLint format, bool createMipmaps);
 
-private:
-    bool m_valid = false;
+   private:
+    bool m_valid;
     bool m_hasMipmaps = false;
-    GLuint m_textureId = 0;
-    unsigned int m_width = 0;
-    unsigned int m_height = 0;
-    GLint m_format = 0;
-    GLenum m_externalFormat = 0;
+    GLuint m_textureId;
+    unsigned int m_width;
+    unsigned int m_height;
+    GLint m_format;
+    GLenum m_externalFormat;
 };

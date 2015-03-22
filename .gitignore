@@ -84,3 +84,6 @@
 /ZERO_CHECK.vcxproj
 /ZERO_CHECK.vcxproj.filters
 /cmake_install.cmake
+/*.opensdf
+/CMakeFiles/3366d2c30a6b29124db3dee2e2532782/*.rule
+/CMakeFiles/43b1c7e1e13c9ec7e7c20c2dc0f1a994/*.rule

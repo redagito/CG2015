@@ -1,0 +1,10 @@
+{
+	"world" : "data/world/test_1.json",
+	"renderer" : "deferred",
+	"window" :
+	{
+		"width" : 800,
+		"height" : 600,
+		"title" : "Defenders of Cthedra - CG2015"
+	}
+}
