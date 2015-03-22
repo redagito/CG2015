@@ -1,4 +1,4 @@
-#include "RTRDemo.h"
+#include "CEngine.h"
 
 #include <string>
 #include <vector>
@@ -36,11 +36,11 @@
 // Animation
 #include "animation/CAnimationWorld.h"
 
-RTRDemo::RTRDemo() {}
+CEngine::CEngine() {}
 
-RTRDemo::~RTRDemo() {}
+CEngine::~CEngine() {}
 
-int RTRDemo::init(const std::string& configFile)
+bool CEngine::init(const char* configFile)
 {
     // Init log file
     std::string logFile = "log/" + createTimeStamp() + ".log";
@@ -55,14 +55,14 @@ int RTRDemo::init(const std::string& configFile)
     if (!m_config.load(configFile))
     {
         LOG_WARNING("Failed to load config file %s, starting with default settings.",
-                    configFile.c_str());
+                    configFile);
     }
 
     // Create window for rendering
     if (!initWindow())
     {
         LOG_ERROR("Failed to initialize window.");
-        return 1;
+        return false;
     }
 
 	m_inputProvider = std::make_shared<CGlfwInputProvider>(m_window->getGlfwHandle());
@@ -72,7 +72,7 @@ int RTRDemo::init(const std::string& configFile)
     if (m_resourceManager == nullptr)
     {
         LOG_ERROR("Failed to initialize resource manager.");
-        return 1;
+        return false;
     }
 
 	// Create animation world
@@ -87,13 +87,13 @@ int RTRDemo::init(const std::string& configFile)
     if (!initRenderer())
     {
         LOG_ERROR("Failed to initialize renderer.");
-        return 1;
+        return false;
     }
 
     if (!initScene())
     {
         LOG_ERROR("Failed to initialize scene.");
-        return 1;
+        return false;
     }
 
     m_camera = std::make_shared<CFirstPersonCamera>(
@@ -108,10 +108,10 @@ int RTRDemo::init(const std::string& configFile)
 
     m_window->addListener(m_cameraController.get());
 
-    return 0;
+    return true;
 }
 
-int RTRDemo::run()
+void CEngine::run()
 {
     double f1Cooldown = 0.0;
     double f2Cooldown = 0.0;
@@ -211,10 +211,10 @@ int RTRDemo::run()
 
     glfwTerminate();
 
-    return 0;
+    return;
 }
 
-bool RTRDemo::initWindow()
+bool CEngine::initWindow()
 {
     // Check if already initialized
     if (m_window != nullptr)
@@ -247,7 +247,7 @@ bool RTRDemo::initWindow()
     return true;
 }
 
-bool RTRDemo::initRenderer()
+bool CEngine::initRenderer()
 {
     if (m_renderer != nullptr || m_deferredRenderer != nullptr || m_forwardRenderer != nullptr)
     {
@@ -303,7 +303,7 @@ bool RTRDemo::initRenderer()
     return true;
 }
 
-bool RTRDemo::initScene()
+bool CEngine::initScene()
 {
     m_scene = std::make_shared<CScene>();
     CSceneLoader loader(*m_resourceManager);

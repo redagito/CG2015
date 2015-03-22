@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "IEngine.h"
+
 #include "io/CIniFile.h"
 
 // GLFW
@@ -31,23 +33,23 @@ class CDebugInfoDisplay;
 /**
 * \brief Demo application class.
 */
-class RTRDemo
+class CEngine : public IEngine
 {
-   public:
-    RTRDemo();
-    ~RTRDemo();
+public:
+	CEngine();
+	~CEngine();
 
 	/**
 	* \brief nitialize demo with config file.
 	*/
-    int init(const std::string& configFile);
+    bool init(const char* configFile);
 
 	/**
 	* \brief Run demo.
 	*/
-    int run();
+    void run();
 
-   private:
+private:
     bool initWindow();
     bool initRenderer();
     bool initScene();
