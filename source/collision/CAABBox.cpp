@@ -44,6 +44,7 @@ std::string CAABBox::toString() const
 CAABBox CAABBox::create(const std::vector<float>& vertices)
 {
 	assert(vertices.size() >= 3);
+	assert(vertices.size() % 3 == 0);
 	float xmin = vertices[0];
 	float xmax = vertices[0];
 	float ymin = vertices[1];
