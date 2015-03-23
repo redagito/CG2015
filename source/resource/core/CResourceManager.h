@@ -39,19 +39,20 @@ class CResourceManager : public IResourceManager
     bool getImage(ResourceId id, std::vector<unsigned char>& data, unsigned int& width,
                   unsigned int& height, EColorFormat& format) const;
 
-    ResourceId createMaterial(ResourceId diffuse, ResourceId normal, ResourceId specular,
-                              ResourceId glow, ResourceId alpha, ResourceId customShader);
+    ResourceId createMaterial(ResourceId base, ResourceId normal, ResourceId specular,
+                              ResourceId glow, ResourceId alpha);
 
     ResourceId loadMaterial(const std::string& file);
 
-    bool getMaterial(ResourceId id, ResourceId& diffuse, ResourceId& normal, ResourceId& specular,
-                     ResourceId& glow, ResourceId& alpha, ResourceId& customShader) const;
+    bool getMaterial(ResourceId id, ResourceId& base, ResourceId& normal, ResourceId& specular,
+                     ResourceId& glow, ResourceId& alpha) const;
 
     ResourceId createString(const std::string& text);
 
-    ResourceId loadString(const std::string& file);
+	ResourceId loadString(const std::string& file);
+	ResourceId loadString(const std::string& file, bool doPreprocessing);
 
-    bool getString(ResourceId id, std::string& text) const;
+	bool getString(ResourceId id, std::string& text) const;
 
     ResourceId createShader(ResourceId vertex, ResourceId tessCtrl, ResourceId tessEval,
                             ResourceId geometry, ResourceId fragment);
@@ -65,7 +66,6 @@ class CResourceManager : public IResourceManager
     void removeResourceListener(IResourceListener* listener);
 
    protected:
-    ResourceId loadString(const std::string& file, bool doPreprocessing);
 
     void notifyResourceListeners(EResourceType type, ResourceId id, EListenerEvent event);
 

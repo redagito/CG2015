@@ -8,9 +8,14 @@
 
 #include "resource/IResourceListener.h"
 
+#include "io/JsonUtil.h"
+#include "io/JsonDeserializer.h"
 #include "io/CIniFile.h"
 #include "io/CObjModelLoader.h"
 #include "io/CShaderPreprocessor.h"
+
+#include "LoadMaterial.h"
+#include "LoadShader.h"
 
 #include "debug/Log.h"
 
@@ -162,7 +167,7 @@ ResourceId CResourceManager::loadImage(const std::string& file, EColorFormat for
 	if (file.find(".png") == std::string::npos)
 	{
 		LOG_ERROR("Unknown file format encountered while loading image file %s.", file.c_str());
-		return false;
+		return invalidResource;
 	}
 
     // Map color type
@@ -221,16 +226,15 @@ bool CResourceManager::getImage(ResourceId id, std::vector<unsigned char>& data,
     return true;
 }
 
-ResourceId CResourceManager::createMaterial(ResourceId diffuse, ResourceId normal,
-                                            ResourceId specular, ResourceId glow, ResourceId alpha,
-                                            ResourceId customShader)
+ResourceId CResourceManager::createMaterial(ResourceId base, ResourceId normal,
+                                            ResourceId specular, ResourceId glow, ResourceId alpha)
 {
     // Create material
     ResourceId id = m_nextMaterialId;
     ++m_nextMaterialId;
 
     // Add material
-    m_materials[id] = SMaterial(diffuse, normal, specular, glow, alpha, customShader);
+    m_materials[id] = SMaterial(base, normal, specular, glow, alpha);
 
     // Notify listener with create event
     notifyResourceListeners(EResourceType::Material, id, EListenerEvent::Create);
@@ -246,102 +250,26 @@ ResourceId CResourceManager::loadMaterial(const std::string& file)
     }
 
 	LOG_DEBUG("Loading material from file %s.", file.c_str());
-    CIniFile ini;
-    if (!ini.load(file))
-    {
-        LOG_ERROR("Failed to load material file %s as ini file.", file.c_str());
-        return -1;
-    }
-
-    ResourceId diffuseId = -1;
-    if (ini.hasKey("diffuse", "file"))
-    {
-        // Diffuse texture is RGB format, ignore alpha
-        diffuseId = loadImage(ini.getValue("diffuse", "file", "error"), EColorFormat::RGB24);
-        if (diffuseId == -1)
-        {
-            LOG_ERROR("Failed to load diffuse texture specified in material file %s.",
-                      file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId normalId = -1;
-    if (ini.hasKey("normal", "file"))
-    {
-        // Normal texture is RGB format
-        normalId = loadImage(ini.getValue("normal", "file", "error"), EColorFormat::RGB24);
-        if (normalId == -1)
-        {
-            LOG_ERROR("Failed to load normal texture specified in material file %s.", file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId specularId = -1;
-    if (ini.hasKey("specular", "file"))
-    {
-        // Specular texture is grey-scale format
-        specularId = loadImage(ini.getValue("specular", "file", "error"), EColorFormat::GreyScale8);
-        if (specularId == -1)
-        {
-            LOG_ERROR("Failed to load specular texture specified in material file %s.",
-                      file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId glowId = -1;
-    if (ini.hasKey("glow", "file"))
-    {
-        // Glow texture is grey-scale format
-        glowId = loadImage(ini.getValue("glow", "file", "error"), EColorFormat::GreyScale8);
-        if (glowId == -1)
-        {
-            LOG_ERROR("Failed to load glow texture specified in material file %s.", file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId alphaId = -1;
-    if (ini.hasKey("alpha", "file"))
-    {
-        // Alpha texture is grey-scale format
-        alphaId = loadImage(ini.getValue("alpha", "file", "error"), EColorFormat::GreyScale8);
-        if (alphaId == -1)
-        {
-            LOG_ERROR("Failed to load alpha texture specified in material file %s.", file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId customShaderId = -1;
-    if (ini.hasKey("shader", "file"))
-    {
-        // Has custom shader file specified
-        customShaderId = loadShader(ini.getValue("shader", "file", "error"));
-        if (customShaderId == -1)
-        {
-            LOG_ERROR("Failed to load custom shader file specified in material file %s.",
-                      file.c_str());
-            return -1;
-        }
-    }
+	SMaterial material;
+	if (!load(file, *this, material))
+	{
+		LOG_ERROR("Failed to load material from file %s.", file.c_str());
+		return invalidResource;
+	}
 
     ResourceId materialId =
-        createMaterial(diffuseId, normalId, specularId, glowId, alphaId, customShaderId);
-    if (materialId == -1)
+		createMaterial(material.m_base, material.m_normal, material.m_specular, material.m_glow, material.m_alpha);
+    if (materialId == invalidResource)
     {
         LOG_ERROR("Failed to create material resource id for material file %s.", file.c_str());
-        return -1;
+        return invalidResource;
     }
     m_materialFiles[file] = materialId;
     return materialId;
 }
 
-bool CResourceManager::getMaterial(ResourceId id, ResourceId& diffuse, ResourceId& normal,
-                                   ResourceId& specular, ResourceId& glow, ResourceId& alpha,
-                                   ResourceId& customShader) const
+bool CResourceManager::getMaterial(ResourceId id, ResourceId& base, ResourceId& normal,
+                                   ResourceId& specular, ResourceId& glow, ResourceId& alpha) const
 {
     // Retrieve from map
     auto iter = m_materials.find(id);
@@ -350,12 +278,11 @@ bool CResourceManager::getMaterial(ResourceId id, ResourceId& diffuse, ResourceI
         return false;
     }
     // Copy data
-    diffuse = iter->second.m_diffuse;
+    base = iter->second.m_base;
     normal = iter->second.m_normal;
     specular = iter->second.m_specular;
     glow = iter->second.m_glow;
     alpha = iter->second.m_alpha;
-    customShader = iter->second.m_customShader;
     return true;
 }
 
@@ -436,100 +363,22 @@ ResourceId CResourceManager::loadShader(const std::string& file)
     }
 
 	LOG_DEBUG("Loading shader from file %s.", file.c_str());
+	SShader shader;
+	if (!load(file, *this, shader))
+	{
+		return invalidResource;
+	}
 
-    // Load shader ini
-    CIniFile ini;
-    if (!ini.load(file))
-    {
-        LOG_ERROR("Failed to load shader program file %s", file.c_str());
-        return -1;
-    }
+	ResourceId shaderId = invalidResource;
+	shaderId = createShader(shader.m_vertex, shader.m_tessCtrl, shader.m_tessEval, shader.m_geometry, shader.m_fragment);
+	if (shaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to create reasource id for shader file %s.", file.c_str());
+		return false;
+	}
 
-    // Requires vertex and fragment shader files
-    if (!ini.hasKey("vertex", "file") || !ini.hasKey("fragment", "file"))
-    {
-        LOG_ERROR(
-            "The shader program file %s is missing a vertex and/or fragment shader source file "
-            "specifier.",
-            file.c_str());
-        return -1;
-    }
-
-    ResourceId vertexId = loadString(ini.getValue("vertex", "file", "error"), true);
-    if (vertexId == -1)
-    {
-        LOG_ERROR(
-            "The vertex shader source file %s, specified in the shader program file %s could not "
-            "be loaded.",
-            ini.getValue("vertex", "file", "error").c_str(), file.c_str());
-        return -1;
-    }
-
-	ResourceId fragmentId = loadString(ini.getValue("fragment", "file", "error"), true);
-    if (fragmentId == -1)
-    {
-        LOG_ERROR(
-            "The fragment shader source file %s, specified in the shader program file %s could not "
-            "be loaded.",
-            ini.getValue("fragment", "file", "error").c_str(), file.c_str());
-        return -1;
-    }
-
-    ResourceId tessCtrlId = -1;
-    // Check for and load tessellation control shader source
-    if (ini.hasKey("tessellation_control", "file"))
-    {
-		tessCtrlId = loadString(ini.getValue("tessellation_control", "file", "error"), true);
-        if (tessCtrlId == -1)
-        {
-            LOG_ERROR(
-                "The tessellation control shader source file %s, specified in the shader program "
-                "file %s could not be loaded.",
-                ini.getValue("tessellation_control", "file", "error").c_str(), file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId tessEvalId = -1;
-    // Check for and load tessellation evaluation shader source
-    if (ini.hasKey("tessellation_evaluation", "file"))
-    {
-		tessEvalId = loadString(ini.getValue("tessellation_evaluation", "file", "error"), true);
-        if (tessEvalId == -1)
-        {
-            LOG_ERROR(
-                "The tessellation evaluation shader source file %s, specified in the shader "
-                "program file %s could not be loaded.",
-                ini.getValue("tessellation_evaluation", "file", "error").c_str(), file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId geometryId = -1;
-    // Check for and load geometry shader source
-    if (ini.hasKey("geometry", "file"))
-    {
-		geometryId = loadString(ini.getValue("geometry", "file", "error"), true);
-        if (geometryId == -1)
-        {
-            LOG_ERROR(
-                "The geometry shader source file %s, specified in the shader program file %s could "
-                "not be loaded.",
-                ini.getValue("geometry", "file", "error").c_str(), file.c_str());
-            return -1;
-        }
-    }
-
-    ResourceId shaderId = -1;
-    // Create new entry
-    shaderId = createShader(vertexId, tessCtrlId, tessEvalId, geometryId, fragmentId);
-    if (shaderId == -1)
-    {
-        LOG_ERROR("Failed to create reasource id for shader file %s.", file.c_str());
-        return -1;
-    }
-    m_shaderFiles[file] = shaderId;
-    return shaderId;
+	m_shaderFiles[file] = shaderId;
+	return shaderId;
 }
 
 void CResourceManager::addResourceListener(IResourceListener* listener)
@@ -579,7 +428,7 @@ ResourceId CResourceManager::loadString(const std::string& file, bool preprocess
 	{
 		// Preprocessing of include statements for shader source files
 		CShaderPreprocessor preprocessor;
-		preprocessor.setIncludePath("data/shadersource/include/");
+		preprocessor.setIncludePath("data/shader/include/");
 		if (!preprocessor.preprocess(text, text))
 		{
 			LOG_ERROR("Failed to preprocess the text file %s.", file.c_str());

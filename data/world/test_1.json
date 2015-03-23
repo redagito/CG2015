@@ -2,35 +2,35 @@
     "scene_objects" :  [
         {
             "mesh" :  "data/mesh/cube.obj",
-            "material" : "data/material/brick_1_diffuse_normal_specular.ini",
+            "material" : "data/material/brick_1.json",
             "position" :  [ 3, 0, 0 ],
             "rotation" :  [ 0 , 0, 0 ],
             "scale" :  [ 1, 1, 1 ]
         },
         {
             "mesh" :  "data/mesh/cube.obj",
-            "material" : "data/material/brick_1_diffuse_normal_specular.ini",
+            "material" : "data/material/brick_1.json",
             "position" :  [ -3, 0, 0 ],
             "rotation" :  [ 0 , 0, 0 ],
             "scale" :  [ 1, 1, 1 ]
         },
         {
             "mesh" :  "data/mesh/cube.obj",
-            "material" : "data/material/brick_1_diffuse_normal_specular.ini",
+            "material" : "data/material/brick_1.json",
             "position" :  [ 0, 0, 3 ],
             "rotation" :  [ 0 , 0, 0 ],
             "scale" :  [ 1, 1, 1 ]
         },
         {
             "mesh" :  "data/mesh/cube.obj",
-            "material" : "data/material/brick_1_diffuse_normal_specular.ini",
+            "material" : "data/material/brick_1.json",
             "position" :  [ 0, 0, -3 ],
             "rotation" :  [ 0 , 0, 0 ],
             "scale" :  [ 1, 1, 1 ]
         },
         {
             "mesh" :  "data/mesh/cube.obj",
-            "material" : "data/material/brick_1_diffuse_normal_specular.ini",
+            "material" : "data/material/brick_1.json",
             "position" :  [ 0, -3, 0 ],
             "rotation" :  [ 0 , 0, 0 ],
             "scale" :  [ 1, 1, 1 ]
@@ -50,7 +50,7 @@
     },
     "directional_lights" : [
         {
-            "direction" :  [ 0, -1, 0],
+            "direction" :  [ 0, -1.1, 0],
             "color" :  [ 1, 1, 1 ],
             "intensity" :  1
         }

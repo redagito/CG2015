@@ -8,6 +8,7 @@
 #include "graphics/IScene.h"
 #include "resource/IResourceManager.h"
 
+#include "JsonUtil.h"
 #include "JsonDeserializer.h"
 
 #include "debug/Log.h"
@@ -23,26 +24,13 @@ CSceneLoader::CSceneLoader(IResourceManager& resourceManager) : m_resourceManage
 
 bool CSceneLoader::load(const std::string& file, IScene& scene, CAnimationWorld& animationWorld)
 {
-    Json::Reader reader;
     Json::Value root;
 
-    // Load scene file
-    std::ifstream ifs(file);
-    if (!ifs.is_open())
-    {
-        LOG_ERROR("Failed to open json file %s.", file.c_str());
-        return false;
-    }
-
-    // Parse json data
-    if (!reader.parse(ifs, root))
-    {
-        LOG_ERROR("Failed to load scene file %s with error %s.", file.c_str(),
-                  reader.getFormattedErrorMessages().c_str());
-        return false;
-    }
-    // Read done, close file
-    ifs.close();
+	if (!::load(file, root))
+	{
+		LOG_ERROR("Failed to load scene.");
+		return false;
+	}
 
     // Load scene objects
     if (!loadSceneObjects(root["scene_objects"], scene, animationWorld))

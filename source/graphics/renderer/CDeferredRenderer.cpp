@@ -251,17 +251,9 @@ void CDeferredRenderer::geometryPass(const IScene& scene, const ICamera& camera,
             m_transformer.setRotation(rotation);
             m_transformer.setScale(scale);
 
-            if (material->hasCustomShader())
-            {
-                // Custom shaders not supported
-                LOG_WARNING("Deferred renderer does not support custom material shaders.");
-            }
-            else
-            {
-                // Forward draw call
-                draw(mesh, m_transformer.getTranslationMatrix(), m_transformer.getRotationMatrix(),
-                     m_transformer.getScaleMatrix(), material, manager, geometryPassShader);
-            }
+			// Forward draw call
+			draw(mesh, m_transformer.getTranslationMatrix(), m_transformer.getRotationMatrix(),
+					m_transformer.getScaleMatrix(), material, manager, geometryPassShader);
         }
     }
 
@@ -371,17 +363,9 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
             transformer.setRotation(rotation);
             transformer.setScale(scale);
 
-            if (material->hasCustomShader())
-            {
-                // Custom shaders not supported
-                LOG_WARNING("Deferred renderer does not support custom material shaders.");
-            }
-            else
-            {
-                // Forward draw call
-                draw(mesh, transformer.getTranslationMatrix(), transformer.getRotationMatrix(),
-                     transformer.getScaleMatrix(), material, manager, m_shadowMapPassShader);
-            }
+            // Forward draw call
+            draw(mesh, transformer.getTranslationMatrix(), transformer.getRotationMatrix(),
+                    transformer.getScaleMatrix(), material, manager, m_shadowMapPassShader);
         }
     }
 

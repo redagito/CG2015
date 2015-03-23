@@ -152,18 +152,7 @@ void CForwardRenderer::draw(CMesh* mesh, const glm::mat4& translation, const glm
 {
     // Decide which shader program to use
 	CShaderProgram* shader = m_currentShader;
-    if (material->hasCustomShader())
-    {
-        shader = material->getCustomShader();
-    }
     shader->setActive();
-
-    // Custom shader needs access to view/projection matrices
-    if (material->hasCustomShader())
-    {
-        shader->setUniform(viewMatrixUniformName, m_currentView);
-        shader->setUniform(projectionMatrixUniformName, m_currentProjection);
-    }
 
     // Transformation matrices
     shader->setUniform(translationMatrixUniformName, translation);

@@ -9,6 +9,7 @@ class IResourceListener; /**< Listener class. */
 
 /**
  * \brief Resource manager interface class.
+ *
  * Central resource holder and provider.
  */
 class IResourceManager
@@ -63,9 +64,9 @@ class IResourceManager
     /**
     * \brief Creates material.
     */
-    virtual ResourceId createMaterial(ResourceId diffuseImage, ResourceId normalImage,
+    virtual ResourceId createMaterial(ResourceId baseImage, ResourceId normalImage,
                                       ResourceId specularImage, ResourceId glowImage,
-                                      ResourceId alphaImage, ResourceId customShader) = 0;
+                                      ResourceId alphaImage) = 0;
 
     /**
     * \brief Loads material from file.
@@ -75,9 +76,9 @@ class IResourceManager
     /**
     * \brief Returns material data.
     */
-    virtual bool getMaterial(ResourceId id, ResourceId& diffuseImage, ResourceId& alphaImage,
+    virtual bool getMaterial(ResourceId id, ResourceId& baseImage, ResourceId& alphaImage,
                              ResourceId& normalImage, ResourceId& specularImage,
-                             ResourceId& glowImage, ResourceId& customShader) const = 0;
+                             ResourceId& glowImage) const = 0;
 
     /**
      * \brief Creates string resource.
@@ -105,11 +106,11 @@ class IResourceManager
 
     /**
     * \brief Loads shader program from file.
+	*
     * The file should usually contain refernces to the shader sources used for the shading stages.
-    * For now, .ini files are used.
     * Does not reload already loaded files.
     */
-    virtual ResourceId loadShader(const std::string& shaderIniFile) = 0;
+    virtual ResourceId loadShader(const std::string& shaderFile) = 0;
 
     /**
     * \brief Creates shader resource.

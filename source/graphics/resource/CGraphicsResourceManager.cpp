@@ -513,14 +513,13 @@ void CGraphicsResourceManager::handleMaterialEvent(ResourceId id, EListenerEvent
 	ResourceId specular;
 	ResourceId glow;
 	ResourceId alpha;
-	ResourceId customShader;
 
 	switch (event)
 	{
 	case EListenerEvent::Create:
 		assert(m_materials.count(id) == 0 && "Material id already exists");
 
-		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha, customShader))
+		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
 		{
 			assert(false && "Failed to access material resource");
 		}
@@ -528,21 +527,20 @@ void CGraphicsResourceManager::handleMaterialEvent(ResourceId id, EListenerEvent
 		// Create new material
 		m_materials[id] = std::move(std::unique_ptr<CMaterial>(
 			new CMaterial(getTexture(diffuse), getTexture(normal), getTexture(specular),
-			getTexture(glow), getTexture(alpha), getShaderProgram(customShader))));
+				getTexture(glow), getTexture(alpha))));
 		break;
 
 	case EListenerEvent::Change:
 		assert(m_materials.count(id) == 1 && "Material id does not exist");
 
-		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha, customShader))
+		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
 		{
 			assert(false && "Failed to access material resource");
 		}
 
 		// Reinitialize material on change
 		m_materials.at(id)->init(getTexture(diffuse), getTexture(normal), getTexture(specular),
-			getTexture(glow), getTexture(alpha),
-			getShaderProgram(customShader));
+			getTexture(glow), getTexture(alpha));
 		break;
 
 	case EListenerEvent::Delete:

@@ -309,7 +309,7 @@ bool CEngine::initScene()
     CSceneLoader loader(*m_resourceManager);
 
     // Get startup scene from config
-    std::string sceneFile = m_config.getValue("scene", "file", "data/scene/test_1.json");
+    std::string sceneFile = m_config.getValue("scene", "file", "data/world/test_1.json");
     LOG_INFO("Loading initial scene from file %s.", sceneFile.c_str());
     if (!loader.load(sceneFile, *m_scene, *m_animationWorld))
     {
