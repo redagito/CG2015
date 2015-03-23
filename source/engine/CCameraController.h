@@ -25,11 +25,11 @@ class CCameraController : public IInputListener, public IGlfwWindowListener
     
     void animate(float dt);
 
-    virtual void handleKeyEvent(EKeyEventType type, int keyCode) override;
-    virtual void handleMouseMovementEvent(int x, int y) override;
-    virtual void handleMouseButtonEvent(EMouseButtonEventType type, int buttonCode) override;
+    void handleKeyEvent(EKeyEventType type, int keyCode) override;
+    void handleMouseMovementEvent(int x, int y) override;
+    void handleMouseButtonEvent(EMouseButtonEventType type, int buttonCode) override;
     
-    virtual void handleResizeEvent(int width, int height) override;
+    void handleResizeEvent(int width, int height) override;
 
    private:
     // TODO "animate" is a stupid name

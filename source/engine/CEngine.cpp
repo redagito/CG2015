@@ -6,6 +6,7 @@
 // Debug
 #include "debug/CDebugInfo.h"
 #include "debug/Log.h"
+#include "debug/Profile.h"
 
 // Graphics
 #include "graphics/renderer/core/RendererCoreConfig.h"
@@ -38,7 +39,10 @@
 
 CEngine::CEngine() {}
 
-CEngine::~CEngine() {}
+CEngine::~CEngine() 
+{
+	LOG_DEBUG("Profiler info: %s", CProfiler::toString().c_str());
+}
 
 bool CEngine::init(const char* configFile)
 {
@@ -113,6 +117,8 @@ bool CEngine::init(const char* configFile)
 
 void CEngine::run()
 {
+	START_PROFILE(engine_run);
+
     double f1Cooldown = 0.0;
     double f2Cooldown = 0.0;
     double f3Cooldown = 0.0;
