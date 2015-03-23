@@ -43,5 +43,6 @@ bool loadPng(const std::string& file, EColorFormat format, SImage& image)
 		LOG_ERROR("An error occured while decoding the image file %s: %s", file.c_str(), lodepng_error_text(err));
 		return false;
 	}
+	image.m_format = format;
 	return true;
 }

@@ -16,6 +16,8 @@
 
 #include "LoadMaterial.h"
 #include "LoadShader.h"
+#include "LoadMesh.h"
+#include "LoadImage.h"
 
 #include "debug/Log.h"
 
@@ -50,65 +52,20 @@ ResourceId CResourceManager::loadMesh(const std::string& file)
         return entry->second;
     }
 
-    // Retrieve file extension
-    auto pos = file.find_last_of('.');
-    if (pos == std::string::npos)
-    {
-        LOG_ERROR("The mesh file %s does not have a file extension and could not be loaded.",
-                  file.c_str());
-        return -1;
-    }
-    std::string extension = file.substr(file.find_last_of('.') + 1);
+    // Load mesh
+	SMesh mesh;
+	if (!load(file, mesh))
+	{
+		LOG_ERROR("Failed to load mesh from file %s.", file.c_str());
+		return invalidResource;
+	}
 
-    // Mesh resource id
-    ResourceId meshId = -1;
-
-    // Decide loading method based on extension
-    // TODO Register loader functions for extensions
-    if (extension == "obj")
-    {
-        // Wavefront OBJ file format loaded with tinyobj
-        std::vector<tinyobj::shape_t> shapes;
-        std::vector<tinyobj::material_t> materials;
-        // Load as obj
-        std::string err = tinyobj::LoadObj(shapes, materials, file.c_str());
-
-        if (!err.empty())
-        {
-            LOG_ERROR("%s.", err.c_str());
-            return -1;
-        }
-        if (shapes.size() > 1)
-        {
-            LOG_WARNING("Multple meshes in obj files not supported.");
-        }
-        if (shapes.empty())
-        {
-            LOG_ERROR("No mesh data loaded from file %s.", file.c_str());
-            return -1;
-        }
-        // Create mesh resource
-        meshId = createMesh(shapes.at(0).mesh.positions, shapes.at(0).mesh.indices,
-                            shapes.at(0).mesh.normals, shapes.at(0).mesh.texcoords,
-                            EPrimitiveType::Triangle);
-    }
-    else if (extension == "oni")
-    {
-        // Load without building index buffer
-        CObjModelLoader objLoader;
-        if (!objLoader.load(file))
-        {
-            LOG_ERROR("Failed to load mesh file %s as non-indexed obj file.", file.c_str());
-            return -1;
-        }
-        meshId = createMesh(objLoader.getVertices(), {}, objLoader.getNormals(), objLoader.getUV(),
-                            EPrimitiveType::Triangle);
-    }
-
-    if (meshId == -1)
+    // Create mesh resource
+    ResourceId meshId = createMesh(mesh.m_vertices, mesh.m_indices, mesh.m_normals, mesh.m_uvs, mesh.m_type);
+    if (meshId == invalidResource)
     {
         LOG_ERROR("Failed to create mesh resource id from file %s.", file.c_str());
-        return -1;
+        return invalidResource;
     }
     m_meshFiles[file] = meshId;
     return meshId;
@@ -158,51 +115,20 @@ ResourceId CResourceManager::loadImage(const std::string& file, EColorFormat for
         return entry->second;
     }
 
-    // TODO Check extension, png format assumed
-    std::vector<unsigned char> data;
-    unsigned int width;
-    unsigned int height;
-
-	// PNG type check
-	if (file.find(".png") == std::string::npos)
+	// Load image
+	SImage image;
+	if (!load(file, format, image))
 	{
-		LOG_ERROR("Unknown file format encountered while loading image file %s.", file.c_str());
+		LOG_ERROR("Failed to load image from file %s.", file.c_str());
 		return invalidResource;
 	}
 
-    // Map color type
-    LodePNGColorType colorType;
-    switch (format)
-    {
-    case EColorFormat::GreyScale8:
-        colorType = LCT_GREY;
-        break;
-    case EColorFormat::RGB24:
-        colorType = LCT_RGB;
-        break;
-    case EColorFormat::RGBA32:
-        colorType = LCT_RGBA;
-        break;
-    default:
-        LOG_ERROR("Unknown color format encountered while loading image file %s.", file.c_str());
-        return -1;
-        break;
-    }
-
-    // Decode image data
-    unsigned int err = lodepng::decode(data, width, height, file, colorType);
-    if (err != 0)
-    {
-        LOG_ERROR("An error occured while decoding the image file %s: %s", file.c_str(),
-                  lodepng_error_text(err));
-        return -1;
-    }
-
-    ResourceId imageId = createImage(data, width, height, format);
-    if (imageId == -1)
+	// Create managed resource
+    ResourceId imageId = createImage(image.m_data, image.m_width, image.m_height, image.m_format);
+    if (imageId == invalidResource)
     {
         LOG_ERROR("Failed to create image resource id from file %s.", file.c_str());
-        return -1;
+        return invalidResource;
     }
     m_imageFiles[file] = imageId;
     return imageId;
