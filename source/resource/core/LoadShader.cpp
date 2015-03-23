@@ -104,6 +104,11 @@ bool load(const std::string& file, CResourceManager& manager, SShader& shader)
 		}
 	}
 
+	shader.m_vertex = vertexId;
+	shader.m_tessCtrl = tessCtrlId;
+	shader.m_tessEval = tessEvalId;
+	shader.m_geometry = geometryId;
+	shader.m_fragment = fragmentId;
 	return true;
 }
 

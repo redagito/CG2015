@@ -15,13 +15,17 @@ bool loadShader(const std::string &path, std::shared_ptr<IResourceManager> &reso
                 std::unique_ptr<CShaderProgram> &resultShader)
 {
     ResourceId shaderId = resourceManager->loadShader(path);
+	if (shaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to load shader from %s, invalid id returned.", path.c_str());
+	}
     ResourceId vertexShaderId, tessellationControlShaderId, tessellationEvaluationShaderId,
         geometryShaderId, fragmentShaderId;
     if (!resourceManager->getShader(shaderId, vertexShaderId, tessellationControlShaderId,
                                     tessellationEvaluationShaderId, geometryShaderId,
                                     fragmentShaderId))
     {
-        LOG_ERROR("Error on retrieving shader code.");
+        LOG_ERROR("Error on retrieving shader code from %s.", path.c_str());
         return false;
     }
 
@@ -31,7 +35,7 @@ bool loadShader(const std::string &path, std::shared_ptr<IResourceManager> &reso
     resourceManager->getString(fragmentShaderId, fragmentShaderText);
     if (vertexShaderText.empty() || fragmentShaderText.empty())
     {
-        LOG_ERROR("Error on retrieving shader code.");
+		LOG_ERROR("Error on retrieving shader code from %s.", path.c_str());
         return false;
     }
 

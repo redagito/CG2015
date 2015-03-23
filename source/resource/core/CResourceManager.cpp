@@ -366,6 +366,7 @@ ResourceId CResourceManager::loadShader(const std::string& file)
 	SShader shader;
 	if (!load(file, *this, shader))
 	{
+		LOG_ERROR("Failed to load shader from file %s.", file.c_str());
 		return invalidResource;
 	}
 
@@ -374,7 +375,7 @@ ResourceId CResourceManager::loadShader(const std::string& file)
 	if (shaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to create reasource id for shader file %s.", file.c_str());
-		return false;
+		return invalidResource;
 	}
 
 	m_shaderFiles[file] = shaderId;
