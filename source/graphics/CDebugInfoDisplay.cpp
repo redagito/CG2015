@@ -69,7 +69,7 @@ CDebugInfoDisplay::CDebugInfoDisplay(std::shared_ptr<IResourceManager> resourceM
     m_overlaysBuffer.reset(new CVertexBuffer(GL_STATIC_DRAW));
 
     // TODO this should not be called in constructor / move to init() method
-    loadFont("data/images/font1.png");
+    loadFont("data/image/font1.png");
 }
 
 bool CDebugInfoDisplay::loadFont(const std::string &path)

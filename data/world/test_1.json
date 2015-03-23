@@ -41,7 +41,8 @@
             "position" :  [ 0, 0, 0 ],
             "color" : [ 1, 1, 1 ],
             "radius" :  3,
-            "intensity" : 3
+            "intensity" : 3,
+            "casts_shadow" : true
         }
     ],
     "ambient_light" : {
@@ -52,7 +53,8 @@
         {
             "direction" :  [ 0, -1.1, 0],
             "color" :  [ 1, 1, 1 ],
-            "intensity" :  1
+            "intensity" :  1,
+            "casts_shadow" : true
         }
     ]
 }
