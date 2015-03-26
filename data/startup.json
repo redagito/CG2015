@@ -1,0 +1,13 @@
+{
+	"scene" : {
+		"file" : "data/world/test_1.json"
+	},
+	"renderer" : {
+		"type" : "deferred"
+	},
+	"window" : {
+		"width" : 800,
+		"height" : 600,
+		"title" : "Defenders of Cthedra - CG 2015"
+	}
+}
