@@ -9,7 +9,7 @@ CFreeCamera::CFreeCamera(const glm::vec3& position, const glm::vec3& target, con
     setProjection(fieldOfView, aspectRatio, zNear, zFar);
 }
 
-glm::vec3 CFreeCamera::getPosition() const { return m_position; }
+const glm::vec3& CFreeCamera::getPosition() const { return m_position; }
 
 void CFreeCamera::setPosition(const glm::vec3& position)
 {

@@ -56,9 +56,4 @@ public:
 	/* Check if the box is in the Frustum*/
 	int CFrustum::boxInFrustum(CAABBox &b);
 
-	void CFrustum::drawPoints();
-	void CFrustum::drawLines();
-	void CFrustum::drawPlanes();
-	void CFrustum::drawNormals();
-
 };

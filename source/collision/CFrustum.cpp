@@ -1,8 +1,6 @@
-#pragma once;
 #include "CFrustum.h"
 #include <math.h>
 
-#include <gl\GLU.h>
 
 #define ANG2RAD 3.14159265358979323846/180.0
 

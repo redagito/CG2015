@@ -12,7 +12,7 @@ CFirstPersonCamera::CFirstPersonCamera(const glm::vec3& position, const glm::vec
     setProjection(fieldOfView, aspectRatio, zNear, zFar);
 }
 
-glm::vec3 CFirstPersonCamera::getPosition() const { return m_position; }
+const glm::vec3& CFirstPersonCamera::getPosition() const { return m_position; }
 
 void CFirstPersonCamera::setPosition(const glm::vec3& position)
 {

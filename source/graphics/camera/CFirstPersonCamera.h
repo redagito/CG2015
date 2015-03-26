@@ -14,7 +14,7 @@ class CFirstPersonCamera : public IControllableCamera
     const glm::mat4& getView() const override;
     const glm::mat4& getProjection() const override;
 
-    glm::vec3 getPosition() const override;
+	const glm::vec3& getPosition() const override;
     void setPosition(const glm::vec3& position) override;
 
     void move(const glm::vec3& direction) override;

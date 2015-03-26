@@ -63,7 +63,7 @@ class ICamera
     */
     virtual const glm::mat4& getProjection() const = 0;
 
-    virtual glm::vec3 getPosition() const = 0;
+    virtual const glm::vec3& getPosition() const = 0;
 
     // TODO extract functionality to a better place
     virtual SFeatureInfo& getFeatureInfoForWrite() { return m_info; } // TODO Rename
