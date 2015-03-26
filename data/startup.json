@@ -1,6 +1,6 @@
 {
-	"scene" : {
-		"file" : "data/world/test_1.json"
+	"game" : {
+		"file" : "data/game/defenders_of_cthedra/test_1.json"
 	},
 	"renderer" : {
 		"type" : "deferred"
