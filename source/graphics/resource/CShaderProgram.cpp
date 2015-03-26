@@ -158,6 +158,11 @@ GLint CShaderProgram::getUniformLocation(const std::string& uniformName) const
     {
         // Cache location
         GLint location = glGetUniformLocation(m_programId, uniformName.data());
+		// Invalid location, uniform name does not exist in shader
+		if (location == -1)
+		{
+			LOG_ERROR("Failed to retrieve uniform name %s from shader program.", uniformName.c_str());
+		}
         m_uniformLocations[uniformName] = location;
         return location;
     }
@@ -172,6 +177,10 @@ GLint CShaderProgram::getAttributeLocation(const std::string& attributeName) con
 
 void CShaderProgram::setUniform(GLint location, int i)
 {
+	if (location == -1)
+	{
+		return;
+	}
     setActive();
     glUniform1i(location, i);
 }
@@ -183,6 +192,10 @@ void CShaderProgram::setUniform(const std::string& name, int i)
 
 void CShaderProgram::setUniform(GLint location, float f)
 {
+	if (location == -1)
+	{
+		return;
+	}
     setActive();
     glUniform1f(location, f);
 }
@@ -194,6 +207,10 @@ void CShaderProgram::setUniform(const std::string& name, float f)
 
 void CShaderProgram::setUniform(GLint location, const glm::vec2& v)
 {
+	if (location == -1)
+	{
+		return;
+	}
 	setActive();
 	glUniform2f(location, v.x, v.y);
 }
@@ -205,6 +222,10 @@ void CShaderProgram::setUniform(const std::string& name, const glm::vec2& v)
 
 void CShaderProgram::setUniform(GLint location, const glm::vec3& v)
 {
+	if (location == -1)
+	{
+		return;
+	}
     setActive();
     glUniform3f(location, v.x, v.y, v.z);
 }
@@ -216,6 +237,10 @@ void CShaderProgram::setUniform(const std::string& name, const glm::vec3& v)
 
 void CShaderProgram::setUniform(GLint location, const glm::vec4& v)
 {
+	if (location == -1)
+	{
+		return;
+	}
     setActive();
     glUniform4f(location, v.x, v.y, v.z, v.w);
 }
@@ -227,6 +252,10 @@ void CShaderProgram::setUniform(const std::string& name, const glm::vec4& v)
 
 void CShaderProgram::setUniform(GLint location, const glm::mat2& m)
 {
+	if (location == -1)
+	{
+		return;
+	}
     setActive();
     glUniformMatrix2fv(location, 1, GL_FALSE, glm::value_ptr(m));
 }
@@ -238,6 +267,10 @@ void CShaderProgram::setUniform(const std::string& name, const glm::mat2& m)
 
 void CShaderProgram::setUniform(GLint location, const glm::mat3& m)
 {
+	if (location == -1)
+	{
+		return;
+	}
     setActive();
     glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(m));
 }
@@ -249,6 +282,10 @@ void CShaderProgram::setUniform(const std::string& name, const glm::mat3& m)
 
 void CShaderProgram::setUniform(GLint location, const glm::mat4& m)
 {
+	if (location == -1)
+	{
+		return;
+	}
     setActive();
     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(m));
 }

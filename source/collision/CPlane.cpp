@@ -40,7 +40,7 @@ void CPlane::setCoefficients(float a, float b, float c, float d) {
 	normal.y = b;
 	normal.z = c;
 	//compute the lenght of the vector
-	float l = normal.length();
+	float l = glm::length(normal);
 	// normalize the vector
 	normal.x = a / l;
 	normal.y = b / l;

@@ -47,7 +47,7 @@ void CGlfwInputProvider::glfwCursorPositionCallback(GLFWwindow* window, double x
     {
         for (IInputListener* listener : it->second->m_listeners)
         {
-            listener->handleMouseMovementEvent(xpos, ypos);
+			listener->handleMouseMovementEvent((int) xpos, (int) ypos);
         }
     }
 }

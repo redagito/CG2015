@@ -26,7 +26,7 @@ class CScene : public IScene
     bool getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material, glm::vec3& position,
                    glm::vec3& rotation, glm::vec3& scale) const;
 
-    void setObject(ResourceId id, ResourceId mesh, ResourceId material, const glm::vec3& position,
+	void setObject(SceneObjectId id, ResourceId mesh, ResourceId material, const glm::vec3& position,
                    const glm::vec3& rotation, const glm::vec3& scale);
 
     SceneObjectId createPointLight(const glm::vec3& position, float radius, const glm::vec3& color,

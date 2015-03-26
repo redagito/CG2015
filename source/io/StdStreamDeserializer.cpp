@@ -22,7 +22,7 @@ bool deserializeNative(std::istream& stream, T& value)
 template <typename T>
 bool deserializeNativeVector(std::istream& stream, std::vector<T>& value)
 {
-    uint64_t size;
+    uint32_t size;
     if (!deserialize(stream, size))
     {
         return false;
@@ -35,7 +35,7 @@ template <typename T>
 bool deserializeVector(std::istream& stream, std::vector<T>& value)
 {
     // Read size
-    uint64_t size;
+    uint32_t size;
     if (!deserialize(stream, size))
     {
         return false;
@@ -107,13 +107,13 @@ bool deserialize(std::istream& stream, glm::mat4& value)
 
 bool deserialize(std::istream& stream, std::string& value)
 {
-    uint64_t size;
+    uint32_t size;
     if (!deserialize(stream, size))
     {
         return false;
     }
     value.resize(size);
-    for (uint64_t i = 0; i < size; ++i)
+    for (uint32_t i = 0; i < size; ++i)
     {
         if (!deserializeNative(stream, value[i]))
         {

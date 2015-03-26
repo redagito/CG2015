@@ -2,5 +2,5 @@
 
 #include <cstdint>
 
-typedef int64_t SceneObjectId;
+typedef int32_t SceneObjectId;
 static const SceneObjectId invalidObject = -1;

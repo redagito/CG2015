@@ -34,18 +34,18 @@ bool CScene::getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
     return true;
 }
 
-void CScene::setObject(ResourceId id, ResourceId mesh, ResourceId material,
+void CScene::setObject(SceneObjectId id, ResourceId mesh, ResourceId material,
                        const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
 {
     // TODO Needs to be changed for better data structures
     assert(id >= 0 && ((unsigned int)id) < m_objects.size() && "Invalid scene object id");
-
+	unsigned int index = (unsigned int) id;
     // Write data
-    m_objects[id].m_mesh = mesh;
-    m_objects[id].m_material = material;
-    m_objects[id].m_position = position;
-    m_objects[id].m_rotation = rotation;
-    m_objects[id].m_scale = scale;
+	m_objects[index].m_mesh = mesh;
+	m_objects[index].m_material = material;
+	m_objects[index].m_position = position;
+	m_objects[index].m_rotation = rotation;
+	m_objects[index].m_scale = scale;
     return;
 }
 

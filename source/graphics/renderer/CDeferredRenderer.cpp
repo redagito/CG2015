@@ -11,6 +11,7 @@
 #include "graphics/IWindow.h"
 
 #include "resource/IResourceManager.h"
+#include "graphics/camera/CStaticCamera.h"
 
 #include "graphics/IGraphicsResourceManager.h"
 #include "graphics/resource/CMaterial.h"
@@ -268,29 +269,6 @@ void CDeferredRenderer::geometryPass(const IScene& scene, const ICamera& camera,
     // Disable geometry buffer
     m_geometryBuffer.setInactive(GL_FRAMEBUFFER);
 }
-
-// TODO extract in own file(s)
-class StaticCamera : public ICamera
-{
-   public:
-    StaticCamera(glm::mat4 view, glm::mat4 proj, glm::vec3 position)
-    {
-        m_view = view;
-        m_proj = proj;
-        m_pos = position;
-    }
-
-    const glm::mat4& getView() const { return m_view; }
-
-    const glm::mat4& getProjection() const { return m_proj; }
-
-    const glm::vec3& getPosition() const { return m_pos; }
-
-   private:
-    glm::mat4 m_view;
-    glm::mat4 m_proj;
-    glm::vec3 m_pos;
-};
 
 void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera,
                                       const IWindow& window,
@@ -578,7 +556,7 @@ void CDeferredRenderer::pointLightPass(const IScene& scene, const ICamera& camer
             // wide in this case. 89.54f is determined by testing. 89.53 is already too small and
             // 89.55 too big.
             glm::mat4 shadowProj = glm::perspective(89.54f, 1.0f, 0.01f, radius * 1.5f);
-            StaticCamera shadowCamera = StaticCamera(glm::mat4(), shadowProj, position);
+            CStaticCamera shadowCamera(glm::mat4(), shadowProj, position);
             shadowCubePass(scene, shadowCamera, window, manager);
 
             // Prepare light pass frame buffer
@@ -689,7 +667,7 @@ void CDeferredRenderer::directionalLightPass(const IScene& scene, const ICamera&
             glm::mat4 shadowView =
                 glm::lookAt(glm::vec3(0), glm::normalize(direction), glm::vec3(0.0f, 1.0f, 0.0f));
             glm::mat4 shadowProj = glm::ortho(-150.0f, 150.0f, -150.0f, 150.0f, -150.0f, 150.0f);
-            StaticCamera shadowCamera = StaticCamera(shadowView, shadowProj, camera.getPosition());
+            CStaticCamera shadowCamera(shadowView, shadowProj, camera.getPosition());
 
             // Render shadow map
             shadowMapPass(scene, shadowCamera, window, manager);
