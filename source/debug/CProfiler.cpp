@@ -1,46 +1,45 @@
-#include "CProfiler.h"
-
-#include <GLFW/glfw3.h>
-
 #include <cassert>
 #include <sstream>
 #include <iostream>
 
-std::mutex CProfiler::d_mutex;
+#include "CProfiler.h"
+#include "util/Time.h"
+
+std::mutex CProfiler::s_mutex;
 
 std::unordered_map<std::string, CProfiler::SData> CProfiler::s_profileData;
 
 CProfiler::CProfiler(const std::string& name)
 	:
-	d_time(glfwGetTime()),
-	d_name(name)
+	m_time(getTime()),
+	m_name(name)
 {
 	return;
 }
 
 CProfiler::~CProfiler()
 {
-	d_time = (glfwGetTime() - d_time) * 1000.0;
+	m_time = (getTime() - m_time) * 1000.0;
 
 	// Lock map
 	// TODO Per entry locking
-	//std::lock_guard<std::mutex> lock(d_mutex);
+	std::lock_guard<std::mutex> lock(s_mutex);
 
 	// Get entry
-	CProfiler::SData& data = s_profileData[d_name];
+	CProfiler::SData& data = s_profileData[m_name];
 
 	// Update call count and call time
 	data.callCount++;
-	data.totalCallTime += d_time;
+	data.totalCallTime += m_time;
 	
 	// Update max and min times
-	if (data.maxCallTime < d_time)
+	if (data.maxCallTime < m_time)
 	{
-		data.maxCallTime = d_time;
+		data.maxCallTime = m_time;
 	}
-	if (data.minCallTime > d_time)
+	if (data.minCallTime > m_time)
 	{
-		data.minCallTime = d_time;
+		data.minCallTime = m_time;
 	}
 }
 
@@ -48,10 +47,9 @@ std::string CProfiler::toString()
 {
 	std::stringstream ss;
 	ss << "[Profile data]" << std::endl;
-
+	
 	// Lock map
-	//std::lock_guard<std::mutex> lock(d_mutex);
-
+	std::lock_guard<std::mutex> lock(s_mutex);
 	// Write profiling statistics
 	for (const auto& data : s_profileData)
 	{

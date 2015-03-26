@@ -1,10 +1,17 @@
 #include "Interpolation.h"
 
-float quadricInterpolation(float x0, float y0, float x1, float y1, float x2, float y2, float x)
+float quadricInterpolation(const glm::vec2& sample0, const glm::vec2& sample1, const glm::vec2& sample2, float x)
 {
-    assert(x0 - x1 != 0.f);
-    assert(x0 - x2 != 0.f);
-    assert(x1 - x2 != 0.f);
+    assert(sample0.x - sample1.x != 0.f);
+    assert(sample0.x - sample2.x != 0.f);
+    assert(sample1.x - sample2.x != 0.f);
+	
+	float x0 = sample0.x;
+	float x1 = sample1.x;
+	float x2 = sample2.x;
+	float y0 = sample0.y;
+	float y1 = sample1.y;
+	float y2 = sample2.y;
 
     // Quadric interpolation constants
     float a =

@@ -3,7 +3,7 @@
 #include <list>
 
 // Required by inheritance
-#include "ARenderer.h"
+#include "graphics/IRenderer.h"
 
 #include "resource/ResourceConfig.h"
 #include "SRenderRequest.h"
@@ -14,7 +14,7 @@ class IResourceManager;
 /**
 * \brief Forward renderer.
 */
-class CForwardRenderer : public ARenderer
+class CForwardRenderer : public IRenderer
 {
    public:
     /**

@@ -1,9 +1,9 @@
-#include "TimeStamp.h"
-
 #include <ctime>
 #include <string>
 #include <cstdio>
 #include <cstring>
+
+#include "TimeStamp.h"
 
 std::string createTimeStamp()
 {

@@ -20,6 +20,7 @@
 #include "graphics/renderer/CRenderBuffer.h"
 
 #include "core/RendererCoreConfig.h"
+#include "Draw.h"
 
 #include "debug/RendererDebug.h"
 #include "debug/Log.h"
@@ -636,7 +637,7 @@ void CDeferredRenderer::pointLightPass(const IScene& scene, const ICamera& camer
             pointLightPassShader->setUniform(lightRadiusUniformName, radius);
             pointLightPassShader->setUniform(lightColorUniformName, color);
             pointLightPassShader->setUniform(lightIntensityUniformName, intensity);
-            ARenderer::draw(pointLightMesh);
+            ::draw(*pointLightMesh);
         }
     }
 
@@ -747,7 +748,7 @@ void CDeferredRenderer::directionalLightPass(const IScene& scene, const ICamera&
             directionalLightPassShader->setUniform(lightDirectionUniformName, direction);
             directionalLightPassShader->setUniform(lightColorUniformName, color);
             directionalLightPassShader->setUniform(lightIntensityUniformName, intensity);
-            ARenderer::draw(quadMesh);
+            ::draw(*quadMesh);
         }
     }
 
@@ -803,7 +804,7 @@ void CDeferredRenderer::illuminationPass(const IScene& scene, const ICamera& cam
 
     // Draw into frame buffer
     m_illumationPassFrameBuffer.setActive(GL_FRAMEBUFFER);
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
     m_illumationPassFrameBuffer.setInactive(GL_FRAMEBUFFER);
 }
 
@@ -919,7 +920,7 @@ void CDeferredRenderer::fxaaPass(const IWindow& window, const IGraphicsResourceM
     fxaaShader->setUniform(screenWidthUniformName, (float)window.getWidth());
     fxaaShader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::fogPass(const ICamera& camera, const IWindow& window,
@@ -973,7 +974,7 @@ void CDeferredRenderer::fogPass(const ICamera& camera, const IWindow& window,
     }
     fogShader->setUniform(fogPassTypeUniformName, fogType);
 
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::gaussBlurVerticalPass(const IWindow& window,
@@ -1008,7 +1009,7 @@ void CDeferredRenderer::gaussBlurVerticalPass(const IWindow& window,
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
     // Perform pass
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::gaussBlurHorizontalPass(const IWindow& window,
@@ -1043,7 +1044,7 @@ void CDeferredRenderer::gaussBlurHorizontalPass(const IWindow& window,
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
     // Perform pass
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::depthOfFieldPass(const ICamera& camera, const IWindow& window,
@@ -1097,7 +1098,7 @@ void CDeferredRenderer::depthOfFieldPass(const ICamera& camera, const IWindow& w
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
     // Perform pass
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::displayPass(const IWindow& window, const IGraphicsResourceManager& manager,
@@ -1139,7 +1140,7 @@ void CDeferredRenderer::passthroughPass(const IWindow& window,
     displayShader->setUniform(screenWidthUniformName, (float)window.getWidth());
     displayShader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::godRayPass1(const IWindow& window, const IGraphicsResourceManager& manager,
@@ -1181,7 +1182,7 @@ void CDeferredRenderer::godRayPass1(const IWindow& window, const IGraphicsResour
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
     // Perform pass
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::godRayPass2(const IWindow& window, const IGraphicsResourceManager& manager,
@@ -1217,7 +1218,7 @@ void CDeferredRenderer::godRayPass2(const IWindow& window, const IGraphicsResour
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
     // Perform pass
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::visualizeDepthPass(const ICamera& camera, const IWindow& window,
@@ -1253,7 +1254,7 @@ void CDeferredRenderer::visualizeDepthPass(const ICamera& camera, const IWindow&
     shader->setUniform(cameraZFarUniformName, 1000.f);
 
     // Perform pass
-    ARenderer::draw(quadMesh);
+    ::draw(*quadMesh);
 }
 
 void CDeferredRenderer::draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
@@ -1352,7 +1353,7 @@ void CDeferredRenderer::draw(CMesh* mesh, const glm::mat4& translation, const gl
 
     // Draw mesh
     // TODO Consider custom shader bindings for meshes
-    ARenderer::draw(mesh);
+    ::draw(*mesh);
 
     if (hasGLError(error))
     {

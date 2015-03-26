@@ -117,8 +117,6 @@ bool CEngine::init(const char* configFile)
 
 void CEngine::run()
 {
-	START_PROFILE(engine_run);
-
     double f1Cooldown = 0.0;
     double f2Cooldown = 0.0;
     double f3Cooldown = 0.0;
@@ -197,9 +195,8 @@ void CEngine::run()
 		m_animationWorld->update((float) timeDiff);
 
         m_window->swapBuffer();
-
-        // Update input
-        glfwPollEvents();
+		// Update input
+		glfwPollEvents();
 
         if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F1) == GLFW_PRESS && f1Cooldown <= 0.f)
         {

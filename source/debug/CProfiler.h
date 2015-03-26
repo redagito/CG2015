@@ -33,8 +33,8 @@ private:
 		double maxCallTime = 0.f; /**< Max call time. */
 	};
 
-	double d_time; /**< Start time. */
-	std::string d_name; /**< Profile name. */
+	double m_time = 0.0; /**< Start time. */
+	std::string m_name; /**< Profile name. */
 	static std::unordered_map<std::string, SData> s_profileData; /**< Profile data. */
-	static std::mutex d_mutex;
+	static std::mutex s_mutex;
 };

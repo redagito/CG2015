@@ -4,7 +4,7 @@
 #include <list>
 
 // Required by inheritance
-#include "ARenderer.h"
+#include "graphics/IRenderer.h"
 
 #include "CFrameBuffer.h"
 #include "SRenderRequest.h"
@@ -21,7 +21,7 @@ class ISceneQuery;
 /**
 * \brief Deferred renderer implementation.
 */
-class CDeferredRenderer : public ARenderer
+class CDeferredRenderer : public IRenderer
 {
    public:
     CDeferredRenderer();

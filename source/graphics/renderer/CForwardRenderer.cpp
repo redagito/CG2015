@@ -15,6 +15,7 @@
 #include "graphics/resource/CMesh.h"
 #include "graphics/resource/CShaderProgram.h"
 #include "graphics/resource/CTexture.h"
+#include "Draw.h"
 
 #include "resource/IResourceManager.h"
 
@@ -217,7 +218,7 @@ void CForwardRenderer::draw(CMesh* mesh, const glm::mat4& translation, const glm
 
     // Draw mesh
     // TODO Consider custom shader bindings for meshes
-    ARenderer::draw(mesh);
+    ::draw(*mesh);
 
     // TODO Cleanup?
 }
