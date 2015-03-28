@@ -6,7 +6,7 @@
 #include <glm/ext.hpp>
 
 #include "graphics/IScene.h"
-#include "graphics/ISceneQuery.h"
+#include "graphics/scene/CSceneQuery.h"
 #include "graphics/ICamera.h"
 #include "graphics/IWindow.h"
 
@@ -118,17 +118,19 @@ void CDeferredRenderer::draw(const IScene& scene, const ICamera& camera, const I
     // Draw init
     window.setActive();
 
+	CSceneQuery query;
+
     // Query visible scene objects and lights
-    std::unique_ptr<ISceneQuery> query(std::move(scene.createQuery(camera)));
+    scene.getVisibleObjects(camera, query);
 
     // Geometry pass fills gbuffer
-    geometryPass(scene, camera, window, manager, *query);
+    geometryPass(scene, camera, window, manager, query);
 
     // Light pass fills lbuffer
-    lightPass(scene, camera, window, manager, *query);
+    lightPass(scene, camera, window, manager, query);
 
     // Illumination pass renders lit scene from lbuffer and gbuffer
-    illuminationPass(scene, camera, window, manager, *query);
+    illuminationPass(scene, camera, window, manager, query);
 
     // Post processing pass
     postProcessPass(camera, window, manager, m_illuminationPassTexture);
@@ -305,7 +307,8 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
     transformer.setProjectionMatrix(camera.getProjection());
 
     // Query visible scene objects
-    std::unique_ptr<ISceneQuery> query(std::move(scene.createQuery(camera)));
+	CSceneQuery query;
+	scene.getVisibleObjects(camera, query);
 
     // Send view/projection to default shader
     m_shadowMapPassShader->setUniform(viewMatrixUniformName, transformer.getViewMatrix());
@@ -313,10 +316,10 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
                                       transformer.getProjectionMatrix());
 
     // Traverse visible objects
-    while (query->hasNextObject())
+    while (query.hasNextObject())
     {
         // Get next visible object
-        SceneObjectId id = query->getNextObject();
+        SceneObjectId id = query.getNextObject();
 
         // Object attributes
         ResourceId meshId = -1;
@@ -424,13 +427,14 @@ void CDeferredRenderer::shadowCubePass(const IScene& scene, const ICamera& camer
         m_shadowCubePassShader->setUniform(viewMatrixUniformName, view);
 
         // Query visible scene objects
-        std::unique_ptr<ISceneQuery> query(std::move(scene.createQuery(camera)));
+		CSceneQuery query;
+		scene.getVisibleObjects(camera, query);
 
         // Traverse visible objects
-        while (query->hasNextObject())
+        while (query.hasNextObject())
         {
             // Get next visible object
-            SceneObjectId id = query->getNextObject();
+            SceneObjectId id = query.getNextObject();
 
             // Object attributes
             ResourceId meshId = -1;

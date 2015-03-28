@@ -140,21 +140,16 @@ bool CScene::getAmbientLight(glm::vec3& color, float& intensity) const
     return true;
 }
 
-ISceneQuery* CScene::createQuery(const ICamera& camera) const
+void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 {
     // TODO Extract frustum planes from camera
-
-    // New query with max storage
-    // TODO Allocate less storage, needs experiments on how much is actually needed
-    CSceneQuery* query =
-        new CSceneQuery((unsigned int)m_objects.size(), (unsigned int)m_pointLights.size());
 
     // TODO Frustum culling, occlusion culling, better data structure for objects
     // For now add all objects
     for (unsigned int i = 0; i < m_objects.size(); ++i)
     {
         // Counter variable is object id
-        query->addObject(i);
+        query.addObject(i);
     }
 
     // TODO Light culling
@@ -162,7 +157,7 @@ ISceneQuery* CScene::createQuery(const ICamera& camera) const
     for (unsigned int i = 0; i < m_pointLights.size(); ++i)
     {
         // Counter variable is light id
-        query->addPointLight(i);
+        query.addPointLight(i);
     }
 
     // TODO Directional light culling?
@@ -170,9 +165,7 @@ ISceneQuery* CScene::createQuery(const ICamera& camera) const
     for (unsigned int i = 0; i < m_directionalLights.size(); ++i)
     {
         // Counter variable is light id
-        query->addDirectionalLight(i);
+        query.addDirectionalLight(i);
     }
-
-    // Return query
-    return query;
+	return;
 }

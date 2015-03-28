@@ -51,7 +51,7 @@ class CScene : public IScene
 
     bool getAmbientLight(glm::vec3& color, float& intensity) const;
 
-    ISceneQuery* createQuery(const ICamera& camera) const;
+	void getVisibleObjects(const ICamera& camera, ISceneQuery& query) const;
 
    private:
     glm::vec3 m_ambientColor; /**< Global ambient light color. */

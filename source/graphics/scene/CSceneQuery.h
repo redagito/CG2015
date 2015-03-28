@@ -15,32 +15,23 @@ class CSceneQuery : public ISceneQuery
      */
     CSceneQuery(unsigned int objectStorage = 200, unsigned int lightStorage = 100);
 
+	void addObject(SceneObjectId id);
+
     bool hasNextObject() const;
 
     SceneObjectId getNextObject();
+
+	void addPointLight(SceneObjectId id);
 
     bool hasNextPointLight() const;
 
     SceneObjectId getNextPointLight();
 
+	void addDirectionalLight(SceneObjectId id);
+
     bool hasNextDirectionalLight() const;
 
     SceneObjectId getNextDirectionalLight();
-
-    /**
-     * \brief Adds object id.
-     */
-    void addObject(SceneObjectId id);
-
-    /**
-     * \brief Adds point light id.
-     */
-    void addPointLight(SceneObjectId id);
-
-    /**
-    * \brief Adds directional light id.
-    */
-    void addDirectionalLight(SceneObjectId id);
 
    private:
     unsigned int m_nextObjectIndex = 0;

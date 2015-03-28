@@ -6,7 +6,7 @@
 #include <glm/ext.hpp>
 
 #include "graphics/IScene.h"
-#include "graphics/ISceneQuery.h"
+#include "graphics/scene/CSceneQuery.h"
 #include "graphics/ICamera.h"
 #include "graphics/IWindow.h"
 #include "graphics/IGraphicsResourceManager.h"
@@ -83,17 +83,18 @@ void CForwardRenderer::draw(const IScene& scene, const ICamera& camera, const IW
 	m_currentProjection = camera.getProjection();
 
 	// Query visible scene objects
-	std::unique_ptr<ISceneQuery> query(std::move(scene.createQuery(camera)));
+	CSceneQuery query;
+	scene.getVisibleObjects(camera, query);
 
 	// Send view/projection to default shader
 	m_currentShader->setUniform(viewMatrixUniformName, m_currentView);
 	m_currentShader->setUniform(projectionMatrixUniformName, m_currentProjection);
 
 	// Traverse visible objects
-	while (query->hasNextObject())
+	while (query.hasNextObject())
 	{
 		// Get next visible object
-		SceneObjectId id = query->getNextObject();
+		SceneObjectId id = query.getNextObject();
 
 		// Object attributes
 		ResourceId meshId = -1;

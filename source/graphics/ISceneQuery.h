@@ -14,6 +14,11 @@ class ISceneQuery
      */
     virtual ~ISceneQuery();
 
+	/**
+	* \brief Adds scene object id to query.
+	*/
+	virtual void addObject(SceneObjectId id) = 0;
+
     /**
      * \brief Has visible objects to return.
      */
@@ -24,6 +29,11 @@ class ISceneQuery
      */
     virtual SceneObjectId getNextObject() = 0;
 
+	/**
+	* \brief Adds point light id to query.
+	*/
+	virtual void addPointLight(SceneObjectId id) = 0;
+
     /**
      * \brief Has visible point lights to return.
      */
@@ -33,6 +43,11 @@ class ISceneQuery
     * \brief Returns id of next visible point light.
     */
     virtual SceneObjectId getNextPointLight() = 0;
+
+	/**
+	* \brief Adds directional light to query.
+	*/
+	virtual void addDirectionalLight(SceneObjectId id) = 0;
 
     /**
     * \brief Has visible directional light to return.

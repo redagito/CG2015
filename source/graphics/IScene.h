@@ -17,7 +17,7 @@ class ISceneQuery;
  */
 class IScene
 {
-   public:
+public:
     virtual ~IScene();
 
     /**
@@ -84,8 +84,7 @@ class IScene
 	virtual bool getAmbientLight(glm::vec3& color, float& intensity) const = 0;
 
     /**
-     * \brief Creates scene query for specified camera.
-     * Returns heap allocated query object. Control is transfered to the calling function.
+     * \brief Queries scene for objects and lights visible by the camera.
      */
-    virtual ISceneQuery* createQuery(const ICamera& camera) const = 0;
+	virtual void getVisibleObjects(const ICamera& camera, ISceneQuery& query) const = 0;
 };
