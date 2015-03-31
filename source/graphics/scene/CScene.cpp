@@ -9,6 +9,13 @@ CScene::CScene() {}
 
 CScene::~CScene() {}
 
+SceneObjectId CScene::createObject(ResourceId model, const glm::vec3& position,
+	const glm::vec3& rotation, const glm::vec3& scale)
+{
+	m_objects.push_back(SSceneObject(model, position, rotation, scale));
+	return m_objects.size() - 1;
+}
+
 SceneObjectId CScene::createObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
                                    const glm::vec3& rotation, const glm::vec3& scale)
 {

@@ -12,7 +12,7 @@
  */
 class CMaterial
 {
-   public:
+public:
     CMaterial(const CTexture* diffuse, const CTexture* normal, const CTexture* specular,
               const CTexture* glow, const CTexture* alpha);
 
@@ -31,7 +31,7 @@ class CMaterial
     const CTexture* getGlow() const;
     const CTexture* getAlpha() const;
 
-   private:
+private:
     const CTexture* m_diffuseTexture;  /**< Base color. */
     const CTexture* m_normalTexture;   /**< Normal map. */
     const CTexture* m_specularTexture; /**< Specular highlights. */

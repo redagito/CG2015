@@ -20,6 +20,12 @@ class IScene
 public:
     virtual ~IScene();
 
+	/**
+	* \brief Creates scene object from model and returns scene object id..
+	*/
+	virtual SceneObjectId createObject(ResourceId model, const glm::vec3& position,
+									   const glm::vec3& rotation, const glm::vec3& scale) = 0;
+
     /**
      * \brief Creates object in scene and returns id.
      */

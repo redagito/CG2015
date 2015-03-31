@@ -20,6 +20,9 @@ class CScene : public IScene
     CScene();
     ~CScene();
 
+	SceneObjectId createObject(ResourceId model, const glm::vec3& position,
+							   const glm::vec3& rotation, const glm::vec3& scale);
+
     SceneObjectId createObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
                                const glm::vec3& rotation, const glm::vec3& scale);
 

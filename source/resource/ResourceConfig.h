@@ -14,7 +14,8 @@ enum class EResourceType
     Image,
     String,
     Shader,
-    Material
+    Material,
+	Model
 };
 
 /**

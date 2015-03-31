@@ -80,6 +80,21 @@ class IResourceManager
                              ResourceId& normalImage, ResourceId& specularImage,
                              ResourceId& glowImage) const = 0;
 
+	/**
+	* \brief Creates model from mesh and material.
+	*/
+	virtual ResourceId createModel(ResourceId mesh, ResourceId material) = 0;
+
+	/**
+	* \brief Loads model from file.
+	*/
+	virtual ResourceId loadModel(const std::string& file) = 0;
+
+	/**
+	* \brief Retrieves model data.
+	*/
+	virtual bool getModel(ResourceId id, ResourceId& mesh, ResourceId& model) = 0;
+
     /**
      * \brief Creates string resource.
      */

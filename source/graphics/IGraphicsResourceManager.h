@@ -4,6 +4,7 @@
 
 class CMesh;
 class CMaterial;
+class CModel;
 class CTexture;
 class CShaderProgram;
 
@@ -28,6 +29,11 @@ public:
 	* \brief Maps id to internal material object.
 	*/
 	virtual CMaterial* getMaterial(ResourceId) const = 0;
+	
+	/**
+	* \brief Maps id to internal model object.
+	*/
+	virtual CModel* getModel(ResourceId) const = 0;
 
 	/**
 	* \brief Maps id to internal texture object.

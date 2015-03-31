@@ -10,6 +10,7 @@
 #include "graphics/resource/CTexture.h"
 #include "graphics/resource/CMaterial.h"
 #include "graphics/resource/CMesh.h"
+#include "graphics/resource/CModel.h"
 #include "graphics/resource/TShaderObject.h"
 #include "graphics/resource/CShaderProgram.h"
 
@@ -57,6 +58,11 @@ class CGraphicsResourceManager : public IGraphicsResourceManager, public IResour
     * \brief Maps id to internal material object.
     */
     CMaterial* getMaterial(ResourceId) const;
+
+	/**
+	* \brief Maps id to internal model object.
+	*/
+	CModel* getModel(ResourceId) const;
 
     /**
     * \brief Maps id to internal texture object.
@@ -149,6 +155,11 @@ class CGraphicsResourceManager : public IGraphicsResourceManager, public IResour
     */
     void handleMaterialEvent(ResourceId, EListenerEvent event, IResourceManager* resourceManager);
 
+	/**
+	* \brief Handles resource events for model resource.
+	*/
+	void handleModelEvent(ResourceId, EListenerEvent event, IResourceManager* resourceManager);
+
     /**
     * \brief Handles resource events for shader resources.
     */
@@ -170,6 +181,9 @@ class CGraphicsResourceManager : public IGraphicsResourceManager, public IResour
 
     std::unordered_map<ResourceId, std::unique_ptr<CMaterial>>
         m_materials; /**< Maps material id from resource manager to cached material. */
+
+	std::unordered_map<ResourceId, std::unique_ptr<CModel>>
+		m_models; /**< Maps model id from resource manager to cached model. */
 
     std::unordered_map<ResourceId, std::unique_ptr<TShaderObject<GL_VERTEX_SHADER>>>
         m_vertexShader; /**< Maps string resource ids to compiled vertex shader objects. */

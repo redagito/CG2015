@@ -11,6 +11,7 @@
 #include "SImage.h"
 #include "SMaterial.h"
 #include "SMesh.h"
+#include "SModel.h"
 #include "SShader.h"
 
 /**
@@ -47,6 +48,12 @@ class CResourceManager : public IResourceManager
     bool getMaterial(ResourceId id, ResourceId& base, ResourceId& normal, ResourceId& specular,
                      ResourceId& glow, ResourceId& alpha) const;
 
+	ResourceId createModel(ResourceId mesh, ResourceId material);
+	
+	ResourceId loadModel(const std::string& file);
+
+	bool getModel(ResourceId id, ResourceId& mesh, ResourceId& material);
+
     ResourceId createString(const std::string& text);
 
 	ResourceId loadString(const std::string& file);
@@ -73,22 +80,26 @@ class CResourceManager : public IResourceManager
     ResourceId m_nextMeshId;     /**< Next free mesh id. */
     ResourceId m_nextImageId;    /**< Next free image id. */
     ResourceId m_nextMaterialId; /**< Next free material id. */
+	ResourceId m_nextModelId;    /**< Next free model id. */
     ResourceId m_nextStringId;   /**< Next free string id. */
     ResourceId m_nextShaderId;   /**< Next free shader id. */
 
     // TODO Change to vector?
     std::unordered_map<ResourceId, SMesh> m_meshes;        /**< Loaded meshes. */
     std::unordered_map<ResourceId, SImage> m_images;       /**< Loaded images. */
-    std::unordered_map<ResourceId, SMaterial> m_materials; /**< Loaded materials. */
+	std::unordered_map<ResourceId, SMaterial> m_materials; /**< Loaded materials. */
+	std::unordered_map<ResourceId, SModel> m_models;    /**< Loaded models. */
     std::unordered_map<ResourceId, std::string> m_strings; /**< Loaded strings. */
     std::unordered_map<ResourceId, SShader> m_shaders;     /**< Loaded shaders. */
 
     std::unordered_map<std::string, ResourceId>
-        m_meshFiles; /**< Maps mesh file to string resource id. */
+        m_meshFiles; /**< Maps mesh file to mesh resource id. */
     std::unordered_map<std::string, ResourceId>
-        m_imageFiles; /**< Maps image file to string resource id. */
+        m_imageFiles; /**< Maps image file to image resource id. */
     std::unordered_map<std::string, ResourceId>
-        m_materialFiles; /**< Maps material file to string resource id. */
+        m_materialFiles; /**< Maps material file to material resource id. */
+	std::unordered_map<std::string, ResourceId>
+		m_modelFiles; /**< Maps model file to model resource id. */
     std::unordered_map<std::string, ResourceId>
         m_textFiles; /**< Maps text file to string resource id. */
     std::unordered_map<std::string, ResourceId>

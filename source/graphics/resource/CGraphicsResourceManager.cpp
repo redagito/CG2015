@@ -118,6 +118,22 @@ CMaterial* CGraphicsResourceManager::getMaterial(ResourceId id) const
 	return iter->second.get();
 }
 
+CModel* CGraphicsResourceManager::getModel(ResourceId id) const
+{
+	// Invalid id
+	if (id == invalidResource)
+	{
+		return nullptr;
+	}
+	// Search for id
+	auto iter = m_models.find(id);
+
+	// Id must exist
+	// TODO Allow model loading if not found?
+	assert(iter != m_models.end());
+	return iter->second.get();
+}
+
 CTexture* CGraphicsResourceManager::getTexture(ResourceId id) const
 {
 	// Invalid id
@@ -522,6 +538,7 @@ void CGraphicsResourceManager::handleMaterialEvent(ResourceId id, EListenerEvent
 		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
 		{
 			assert(false && "Failed to access material resource");
+			return;
 		}
 
 		// Create new material
@@ -536,6 +553,7 @@ void CGraphicsResourceManager::handleMaterialEvent(ResourceId id, EListenerEvent
 		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
 		{
 			assert(false && "Failed to access material resource");
+			return;
 		}
 
 		// Reinitialize material on change
@@ -545,6 +563,50 @@ void CGraphicsResourceManager::handleMaterialEvent(ResourceId id, EListenerEvent
 
 	case EListenerEvent::Delete:
 		// Keep material?
+		break;
+
+	default:
+		break;
+	}
+}
+
+void CGraphicsResourceManager::handleModelEvent(ResourceId id, EListenerEvent event, 
+	IResourceManager* resourceManager)
+{
+	ResourceId mesh;
+	ResourceId material;
+
+	switch (event)
+	{
+	case EListenerEvent::Create:
+		assert(m_models.count(id) == 0 && "Model id already exists");
+
+		if (!resourceManager->getModel(id, mesh, material))
+		{
+			assert(false && "Failed to access model resource");
+			return;
+		}
+
+		// Create new model
+		m_models[id] = std::move(std::unique_ptr<CModel>(
+			new CModel(getMesh(mesh), getMaterial(material))));
+		break;
+
+	case EListenerEvent::Change:
+		assert(m_models.count(id) == 1 && "Model id does not exist");
+
+		if (!resourceManager->getModel(id, mesh, material))
+		{
+			assert(false && "Failed to access model resource");
+			return;
+		}
+
+		// Reinitialize model on change
+		m_models.at(id)->init(getMesh(mesh), getMaterial(material));
+		break;
+
+	case EListenerEvent::Delete:
+		// Keep model?
 		break;
 
 	default:

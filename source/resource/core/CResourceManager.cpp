@@ -18,6 +18,7 @@
 #include "LoadShader.h"
 #include "LoadMesh.h"
 #include "LoadImage.h"
+#include "LoadModel.h"
 
 #include "debug/Log.h"
 
@@ -210,6 +211,60 @@ bool CResourceManager::getMaterial(ResourceId id, ResourceId& base, ResourceId& 
     glow = iter->second.m_glow;
     alpha = iter->second.m_alpha;
     return true;
+}
+
+ResourceId CResourceManager::createModel(ResourceId mesh, ResourceId material)
+{
+	// Create model
+	ResourceId id = m_nextModelId;
+	++m_nextModelId;
+
+	// Add material
+	m_models[id] = SModel(mesh, material);
+
+	// Notify listener with create event
+	notifyResourceListeners(EResourceType::Model, id, EListenerEvent::Create);
+	return id;
+}
+
+ResourceId CResourceManager::loadModel(const std::string& file)
+{
+	auto entry = m_modelFiles.find(file);
+	if (entry != m_modelFiles.end())
+	{
+		return entry->second;
+	}
+
+	LOG_DEBUG("Loading model from file %s.", file.c_str());
+	SModel model;
+	if (!load(file, *this, model))
+	{
+		LOG_ERROR("Failed to load model from file %s.", file.c_str());
+		return invalidResource;
+	}
+
+	ResourceId modelId = createModel(model.m_mesh, model.m_material);
+	if (modelId == invalidResource)
+	{
+		LOG_ERROR("Failed to create model resource id for model file %s.", file.c_str());
+		return invalidResource;
+	}
+	m_modelFiles[file] = modelId;
+	return modelId;
+}
+
+bool CResourceManager::getModel(ResourceId id, ResourceId& mesh, ResourceId& material)
+{
+	// Retrieve from map
+	auto iter = m_models.find(id);
+	if (iter == m_models.end())
+	{
+		return false;
+	}
+	// Copy data
+	mesh = iter->second.m_mesh;
+	material = iter->second.m_material;
+	return true;
 }
 
 ResourceId CResourceManager::createString(const std::string& text)
