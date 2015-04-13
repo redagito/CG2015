@@ -48,11 +48,16 @@ include_directories(external/flextgl)
 
 # Add irrklang
 include_directories(external/irrklang/irrKlang-1.5.0/include)
+
 # Windows only, TODO fix
 link_directories(
 	external/irrklang/irrKlang-1.5.0/lib/Win32-visualStudio
 	external/irrklang/irrKlang-1.5.0/lib/Win32-gcc
 )
+
+# Add zlib
+add_subdirectory(external/zlib)
+include_directories(externa/zlib)
 
 # Include
 include_directories(
@@ -84,5 +89,6 @@ target_link_libraries(CG2015
 	glfw ${GLFW_LIBRARIES}
     tinyobjloader
     jsoncpp_lib_static
+	zlibstatic
 	irrKlang
 )

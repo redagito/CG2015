@@ -13,9 +13,9 @@ private:
 	float d;
 
 public:
-	CPlane::CPlane(glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3);
-	CPlane::CPlane();
-	CPlane::~CPlane();
+	CPlane(glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3);
+	CPlane();
+	~CPlane();
 
 	// Ordering of points defines normal vector
 	// Clockwise/Counterclockwise ordering rule is used to calculate normal vector
