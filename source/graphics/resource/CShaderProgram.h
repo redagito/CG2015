@@ -8,12 +8,14 @@
 
 #include "TShaderObject.h"
 
+class CTexture;
+
 /**
 * \brief Represents a linked shader program.
 */
 class CShaderProgram
 {
-   public:
+public:
     /**
     * \brief Creates shader program from shader objects.
     * Unused shader objects are represented by nullptr. All used shader objects
@@ -96,7 +98,9 @@ class CShaderProgram
     void setUniform(GLint location, const glm::mat4& m);
     void setUniform(const std::string& uniformName, const glm::mat4& m);
 
-   private:
+	void setUniform(CTexture& texture, const std::string& textureName, GLint textureUnit);
+
+private:
     static GLuint s_activeShaderProgram; /**< Stores currently active shader id to prevent
                                                                              unnecessary calls to
                                             setActive. */

@@ -1,0 +1,9 @@
+{
+	"description" : "Screen space noise based distortion effect.",
+	"vertex" : {
+		"file" : "data/shader/source/post/distortion_vertex.glsl"
+	},
+	"fragment" : {
+		"file" : "data/shader/source/post/distortion_fragment.glsl"
+	}
+}

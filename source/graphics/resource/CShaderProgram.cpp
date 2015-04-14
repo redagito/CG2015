@@ -1,11 +1,13 @@
-#include "CShaderProgram.h"
-
-#include "graphics/renderer/debug/RendererDebug.h"
-#include "debug/Log.h"
-
 #include <cassert>
 
 #include <glm/ext.hpp>
+
+#include "CShaderProgram.h"
+
+#include "CTexture.h"
+#include "graphics/renderer/debug/RendererDebug.h"
+#include "debug/Log.h"
+
 
 GLuint CShaderProgram::s_activeShaderProgram = 0;
 
@@ -293,4 +295,10 @@ void CShaderProgram::setUniform(GLint location, const glm::mat4& m)
 void CShaderProgram::setUniform(const std::string& name, const glm::mat4& m)
 {
     setUniform(getUniformLocation(name), m);
+}
+
+void CShaderProgram::setUniform(CTexture& texture, const std::string& textureName, GLint textureUnit)
+{
+	texture.setActive(textureUnit);
+	setUniform(textureName, textureUnit);
 }

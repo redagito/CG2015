@@ -108,7 +108,15 @@ bool CDeferredRenderer::init(IResourceManager* manager)
     if (!initVisualizeDepthPass(manager))
     {
         LOG_ERROR("Failed to initialize depth visualization pass.");
+		return false;
     }
+
+	// Screen distortion pass
+	if (!initDistortionPass(manager))
+	{
+		LOG_ERROR("Failed to initialize depth visualization pass.");
+		return false;
+	}
     return true;
 }
 
@@ -812,12 +820,13 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
         // Passthrough
         passthroughPass(window, manager, texture);
     }
+	// Anti aliased scene texture in texture0
 
     // Pass 2: fog
     // TODO Fog parameter
     m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
     fogPass(camera, window, manager, m_postProcessPassTexture0);
-    // Foggy scene in tex1
+    // Foggy scene in texture1
 
     // Pass 3: dof
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
@@ -825,11 +834,11 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
     {
         // Pass 3.1: gauss blur
         gaussBlurVerticalPass(window, manager, m_postProcessPassTexture1);
-        // Blurred in tex0
+        // Blurred in texture0
 
         m_postProcessPassFrameBuffer2.setActive(GL_FRAMEBUFFER);
         gaussBlurHorizontalPass(window, manager, m_postProcessPassTexture0);
-        // Blurred in tex 2
+        // Blurred in texture2
 
         // TODO DOF parameter
         m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
@@ -839,10 +848,11 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
     else
     {
         // Passthrough
-        passthroughPass(window, manager, texture);
+		passthroughPass(window, manager, m_postProcessPassTexture1);
     }
-    // Processed scene in tex 0
+    // Processed scene in texture0
 
+	// Godray technique, consists of 2 passes
 	if (camera.getFeatureInfo().godRayActive || camera.getFeatureInfo().renderMode == RenderMode::GodRay)
 	{
 		// TODO God ray pass disabled, not working as intended
@@ -867,11 +877,15 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	{
 		// Passthrough into tex 2
 		m_postProcessPassFrameBuffer2.setActive(GL_FRAMEBUFFER);
-		passthroughPass(window, manager, texture);
+		passthroughPass(window, manager, m_postProcessPassTexture0);
 	}
 
+	//
+	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+	distortionPass(window, manager, m_postProcessPassTexture2);
+
     // Set output texture
-    m_postProcessPassOutputTexture = m_postProcessPassTexture2;
+    m_postProcessPassOutputTexture = m_postProcessPassTexture0;
 	return;
 }
 
@@ -1237,6 +1251,35 @@ void CDeferredRenderer::visualizeDepthPass(const ICamera& camera, const IWindow&
 
     // Perform pass
     ::draw(*quadMesh);
+}
+
+void CDeferredRenderer::distortionPass(const IWindow& window, const IGraphicsResourceManager& manager, const std::shared_ptr<CTexture>& texture)
+{
+	// Get distortion shader
+	CShaderProgram* shader = manager.getShaderProgram(m_distortionPassShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for distortion pass could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for distortion pass could not be retrieved.");
+		return;
+	}
+
+	// Set input texture
+	texture->setActive(distortionPassInputTextureUnit);
+	shader->setUniform(sceneTextureUniformName, distortionPassInputTextureUnit);
+
+	// Set screen size
+	shader->setUniform(screenWidthUniformName, (float) window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float) window.getHeight());
+
+	::draw(*quadMesh);
 }
 
 void CDeferredRenderer::draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
@@ -1897,4 +1940,18 @@ bool CDeferredRenderer::initVisualizeDepthPass(IResourceManager* manager)
         return false;
     }
     return true;
+}
+
+bool CDeferredRenderer::initDistortionPass(IResourceManager* manager)
+{
+	// Get shader
+	std::string shaderFile = "data/shader/post/distortion_pass.ini";
+	m_distortionPassShaderId = manager->loadShader(shaderFile);
+	// Check if ok
+	if (m_distortionPassShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
 }

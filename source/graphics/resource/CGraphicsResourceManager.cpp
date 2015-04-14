@@ -89,7 +89,7 @@ void CGraphicsResourceManager::initDefaultTextures()
 CMesh* CGraphicsResourceManager::getMesh(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -105,7 +105,7 @@ CMesh* CGraphicsResourceManager::getMesh(ResourceId id) const
 CMaterial* CGraphicsResourceManager::getMaterial(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -137,7 +137,7 @@ CModel* CGraphicsResourceManager::getModel(ResourceId id) const
 CTexture* CGraphicsResourceManager::getTexture(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -199,7 +199,7 @@ CTexture* CGraphicsResourceManager::getDefaultAlphaTexture() const
 TShaderObject<GL_VERTEX_SHADER>* CGraphicsResourceManager::getVertexShaderObject(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -215,7 +215,7 @@ TShaderObject<GL_VERTEX_SHADER>* CGraphicsResourceManager::getVertexShaderObject
 TShaderObject<GL_TESS_CONTROL_SHADER>* CGraphicsResourceManager::getTessControlShaderObject(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -231,7 +231,7 @@ TShaderObject<GL_TESS_CONTROL_SHADER>* CGraphicsResourceManager::getTessControlS
 TShaderObject<GL_TESS_EVALUATION_SHADER>* CGraphicsResourceManager::getTessEvalShaderObject(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -247,7 +247,7 @@ TShaderObject<GL_TESS_EVALUATION_SHADER>* CGraphicsResourceManager::getTessEvalS
 TShaderObject<GL_GEOMETRY_SHADER>* CGraphicsResourceManager::getGeometryShaderObject(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -263,7 +263,7 @@ TShaderObject<GL_GEOMETRY_SHADER>* CGraphicsResourceManager::getGeometryShaderOb
 TShaderObject<GL_FRAGMENT_SHADER>* CGraphicsResourceManager::getFragmentShaderObject(ResourceId id) const
 {
 	// Invalid id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return nullptr;
 	}
@@ -279,7 +279,7 @@ TShaderObject<GL_FRAGMENT_SHADER>* CGraphicsResourceManager::getFragmentShaderOb
 bool CGraphicsResourceManager::loadVertexShader(ResourceId id, IResourceManager* resourceManager)
 {
 	// Unused id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return true;
 	}
@@ -311,7 +311,7 @@ bool CGraphicsResourceManager::loadVertexShader(ResourceId id, IResourceManager*
 bool CGraphicsResourceManager::loadTessControlShader(ResourceId id, IResourceManager* resourceManager)
 {
 	// Unused id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return true;
 	}
@@ -343,7 +343,7 @@ bool CGraphicsResourceManager::loadTessControlShader(ResourceId id, IResourceMan
 bool CGraphicsResourceManager::loadTessEvalShader(ResourceId id, IResourceManager* resourceManager)
 {
 	// Unused id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return true;
 	}
@@ -375,7 +375,7 @@ bool CGraphicsResourceManager::loadTessEvalShader(ResourceId id, IResourceManage
 bool CGraphicsResourceManager::loadGeometryShader(ResourceId id, IResourceManager* resourceManager)
 {
 	// Unused id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return true;
 	}
@@ -407,7 +407,7 @@ bool CGraphicsResourceManager::loadGeometryShader(ResourceId id, IResourceManage
 bool CGraphicsResourceManager::loadFragmentShader(ResourceId id, IResourceManager* resourceManager)
 {
 	// Unused id
-	if (id == -1)
+	if (id == invalidResource)
 	{
 		return true;
 	}

@@ -116,6 +116,9 @@ const GLint depthOfFieldPassDepthTextureUnit = 2;
 // Texture units for depth texture visualization pass
 const GLint visualizeDepthPassDepthTextureUnit = 0;
 
+// Texture unit for distortion pass
+const GLint distortionPassInputTextureUnit = 0;
+
 // Texture sampler uniform names
 const std::string diffuseTextureUniformName = "diffuse_texture";
 const std::string normalTextureUniformName = "normal_texture";

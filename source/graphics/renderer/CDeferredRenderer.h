@@ -134,6 +134,12 @@ class CDeferredRenderer : public IRenderer
     void visualizeDepthPass(const ICamera& camera, const IWindow& window,
                             const IGraphicsResourceManager& manager);
 
+	/**
+	* \brief Distortion pass.
+	*/
+	void distortionPass(const IWindow& window, const IGraphicsResourceManager& manager,
+						const std::shared_ptr<CTexture>& texture);
+
     /**
     * \brief Initializes resources for geometry pass.
     */
@@ -205,6 +211,11 @@ class CDeferredRenderer : public IRenderer
     bool initDisplayPass(IResourceManager* manager);
 
     bool initVisualizeDepthPass(IResourceManager* manager);
+
+	/**
+	* \brief Initializes distortion pass.
+	*/
+	bool initDistortionPass(IResourceManager* manager);
 
     void draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
               const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager,
@@ -288,6 +299,9 @@ class CDeferredRenderer : public IRenderer
 
     // Depth visualization pass
     ResourceId m_visualizeDepthPassShaderId = -1;
+
+	// Distortion pass
+	ResourceId m_distortionPassShaderId = invalidResource;
 
     // Fullscreen draw pass
     CScreenQuadPass m_screenQuadPass;
