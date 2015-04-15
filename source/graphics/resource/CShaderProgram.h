@@ -74,31 +74,31 @@ public:
     GLint getUniformLocation(const std::string& uniformName) const;
     GLint getAttributeLocation(const std::string& attributeName) const;
 
-    void setUniform(GLint location, int i);
-    void setUniform(const std::string& uniformName, int i);
+    bool setUniform(GLint location, int i);
+	bool setUniform(const std::string& uniformName, int i);
 
-    void setUniform(GLint location, float f);
-    void setUniform(const std::string& uniformName, float f);
+	bool setUniform(GLint location, float f);
+	bool setUniform(const std::string& uniformName, float f);
 
-    void setUniform(GLint location, const glm::vec2& v);
-    void setUniform(const std::string& uniformName, const glm::vec2& v);
+	bool setUniform(GLint location, const glm::vec2& v);
+	bool setUniform(const std::string& uniformName, const glm::vec2& v);
 
-    void setUniform(GLint location, const glm::vec3& v);
-    void setUniform(const std::string& uniformName, const glm::vec3& v);
+	bool setUniform(GLint location, const glm::vec3& v);
+	bool setUniform(const std::string& uniformName, const glm::vec3& v);
 
-    void setUniform(GLint location, const glm::vec4& v);
-    void setUniform(const std::string& uniformName, const glm::vec4& v);
+	bool setUniform(GLint location, const glm::vec4& v);
+	bool setUniform(const std::string& uniformName, const glm::vec4& v);
 
-    void setUniform(GLint location, const glm::mat2& m);
-    void setUniform(const std::string& uniformName, const glm::mat2& m);
+	bool setUniform(GLint location, const glm::mat2& m);
+	bool setUniform(const std::string& uniformName, const glm::mat2& m);
 
-    void setUniform(GLint location, const glm::mat3& m);
-    void setUniform(const std::string& uniformName, const glm::mat3& m);
+	bool setUniform(GLint location, const glm::mat3& m);
+	bool setUniform(const std::string& uniformName, const glm::mat3& m);
 
-    void setUniform(GLint location, const glm::mat4& m);
-    void setUniform(const std::string& uniformName, const glm::mat4& m);
+	bool setUniform(GLint location, const glm::mat4& m);
+	bool setUniform(const std::string& uniformName, const glm::mat4& m);
 
-	void setUniform(CTexture& texture, const std::string& textureName, GLint textureUnit);
+	bool setUniform(CTexture& texture, const std::string& textureName, GLint textureUnit);
 
 private:
     static GLuint s_activeShaderProgram; /**< Stores currently active shader id to prevent

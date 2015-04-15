@@ -126,9 +126,8 @@ void CDeferredRenderer::draw(const IScene& scene, const ICamera& camera, const I
     // Draw init
     window.setActive();
 
-	CSceneQuery query;
-
     // Query visible scene objects and lights
+	CSceneQuery query;
     scene.getVisibleObjects(camera, query);
 
     // Geometry pass fills gbuffer
@@ -208,6 +207,11 @@ void CDeferredRenderer::geometryPass(const IScene& scene, const ICamera& camera,
 
     // Geometry pass, uses gbuffer fbo
     CShaderProgram* geometryPassShader = manager.getShaderProgram(m_geometryPassShaderId);
+	if (geometryPassShader == nullptr)
+	{
+		LOG_ERROR("Failed to retrieve geometry pass shader.");
+		return;
+	}
 
     // Depth
     glEnable(GL_DEPTH_TEST);
@@ -1286,6 +1290,7 @@ void CDeferredRenderer::draw(CMesh* mesh, const glm::mat4& translation, const gl
                              const glm::mat4& scale, CMaterial* material,
                              const IGraphicsResourceManager& manager, CShaderProgram* shader)
 {
+	// TODO Only called from geometry pass, rename?
     std::string error;
     if (hasGLError(error))
     {
@@ -1305,9 +1310,9 @@ void CDeferredRenderer::draw(CMesh* mesh, const glm::mat4& translation, const gl
     }
 
     // Transformation matrices
-    shader->setUniform(translationMatrixUniformName, translation);
+    //shader->setUniform(translationMatrixUniformName, translation);
     shader->setUniform(rotationMatrixUniformName, rotation);
-    shader->setUniform(scaleMatrixUniformName, scale);
+    //shader->setUniform(scaleMatrixUniformName, scale);
     shader->setUniform(modelMatrixUniformName, translation * rotation * scale);
 
     if (hasGLError(error))
@@ -1466,6 +1471,7 @@ bool CDeferredRenderer::initShadowCubePass(IResourceManager* manager)
     m_shadowCubeDepthTexture = std::make_shared<CTexture>();
     m_shadowCubeDepthTexture->init(1024, 1024, GL_DEPTH_COMPONENT24);
 
+	// TODO Cleanup and move into cube texture class
     glBindTexture(GL_TEXTURE_2D, m_shadowCubeDepthTexture->getId());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
