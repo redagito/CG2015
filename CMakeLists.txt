@@ -1,5 +1,5 @@
 # Minimum cmake version
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8)
 
 # Project name
 project(CG2015)
@@ -78,7 +78,11 @@ set(SRC_FILES ${SRC_FILES} ${THIRD_PARTY_SOURCES})
 
 # Flags
 # TODO Only for g++
+if (UNIX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
+endif (UNIX)
+
 
 # Add library
 add_executable(CG2015 ${SRC_FILES})
@@ -86,9 +90,21 @@ add_executable(CG2015 ${SRC_FILES})
 # Link dependencies
 target_link_libraries(CG2015
 	${OPENGL_LIBRARY}
-	glfw ${GLFW_LIBRARIES}
+	glfw
+	${GLFW_LIBRARIES}
     tinyobjloader
     jsoncpp_lib_static
 	zlibstatic
+)
+
+if (UNIX)
+target_link_libraries(CG2015
+	dl
+)
+endif (UNIX)
+
+if (WIN32)
+target_link_libraries(CG2015
 	irrKlang
 )
+endif (WIN32)
