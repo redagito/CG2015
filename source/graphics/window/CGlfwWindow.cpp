@@ -35,6 +35,7 @@ bool CGlfwWindow::init(unsigned int width, unsigned int height, const std::strin
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window from parameters
+	LOG_INFO("Creating GLFW window for OpenGL version %u.%u.", FLEXT_MAJOR_VERSION, FLEXT_MINOR_VERSION);
     m_window = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
     if (m_window == nullptr)
     {

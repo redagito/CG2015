@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <list>
+#include <algorithm>
 #include <unordered_map>
 
 #include "resource/IResourceListener.h"

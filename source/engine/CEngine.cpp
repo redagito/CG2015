@@ -6,6 +6,7 @@
 // Debug
 #include "debug/CDebugInfo.h"
 #include "debug/Log.h"
+#include "debug/CLogger.h"
 #include "debug/Profile.h"
 
 // Graphics

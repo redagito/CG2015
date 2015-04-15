@@ -77,7 +77,7 @@ void CFirstPersonCamera::yaw(float amount)
 void CFirstPersonCamera::lookAt(const glm::vec3& target, const glm::vec3& /* up */)
 {
     glm::vec3 forward = glm::normalize(target - m_position);
-    m_pitch = -std::asinf(forward.y / std::sqrt(2.f));
+    m_pitch = -std::asin(forward.y / std::sqrt(2.f));
 
     m_forward.x = forward.x;
     m_forward.y = forward.z;

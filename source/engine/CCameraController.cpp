@@ -1,11 +1,12 @@
 #include <algorithm>
+#include <fstream>
 
 #include "CCameraController.h"
 
-#include "debug/Log.h"
-
 #include <GLFW/glfw3.h>
 #include <json/json.h>
+
+#include "debug/Log.h"
 
 #include "graphics/camera/IControllableCamera.h"
 

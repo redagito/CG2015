@@ -1,7 +1,7 @@
 #include "LoadMaterial.h"
 
 #include "CResourceManager.h"
-#include "Debug/Log.h"
+#include "debug/Log.h"
 #include "io/CIniFile.h"
 #include "io/JsonUtil.h"
 #include "io/JsonDeserializer.h"

@@ -12,6 +12,11 @@
 extern "C" {
 #endif
 
+/* No __stdcall on Linux */
+#ifdef __linux
+#define __stdcall
+#endif
+
 typedef void(__stdcall *GLPROC)();
 
 void flextLoadOpenGLFunctions(void);
@@ -1209,7 +1214,7 @@ static GLPROC get_proc(const char *proc)
 
     res = (GLPROC) glXGetProcAddress((const GLubyte *) proc);
     if (!res)
-        res = dlsym(libgl, proc);
+        res = (GLPROC) dlsym(libgl, proc);
     return res;
 }
 #endif

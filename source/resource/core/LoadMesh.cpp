@@ -3,7 +3,7 @@
 #include "LoadMesh.h"
 
 #include "util/StringUtil.h"
-#include "Debug/Log.h"
+#include "debug/Log.h"
 
 bool load(const std::string& file, SMesh& mesh)
 {
