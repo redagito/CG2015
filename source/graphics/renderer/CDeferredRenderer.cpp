@@ -112,7 +112,7 @@ bool CDeferredRenderer::init(IResourceManager* manager)
     }
 
 	// Screen distortion pass
-	if (!initDistortionPass(manager))
+	if (!initVignetteBlurPass(manager))
 	{
 		LOG_ERROR("Failed to initialize depth visualization pass.");
 		return false;
@@ -884,9 +884,9 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 		passthroughPass(window, manager, m_postProcessPassTexture0);
 	}
 
-	//
+	// Vignette blur pass
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
-	distortionPass(window, manager, m_postProcessPassTexture2);
+	vignetteBlurPass(window, manager, m_postProcessPassTexture2);
 
     // Set output texture
     m_postProcessPassOutputTexture = m_postProcessPassTexture0;
@@ -1257,10 +1257,10 @@ void CDeferredRenderer::visualizeDepthPass(const ICamera& camera, const IWindow&
     ::draw(*quadMesh);
 }
 
-void CDeferredRenderer::distortionPass(const IWindow& window, const IGraphicsResourceManager& manager, const std::shared_ptr<CTexture>& texture)
+void CDeferredRenderer::vignetteBlurPass(const IWindow& window, const IGraphicsResourceManager& manager, const std::shared_ptr<CTexture>& texture)
 {
 	// Get distortion shader
-	CShaderProgram* shader = manager.getShaderProgram(m_distortionPassShaderId);
+	CShaderProgram* shader = manager.getShaderProgram(m_vignetteBlurPassShaderId);
 	if (shader == nullptr)
 	{
 		LOG_ERROR("Shader program for distortion pass could not be retrieved.");
@@ -1948,13 +1948,13 @@ bool CDeferredRenderer::initVisualizeDepthPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initDistortionPass(IResourceManager* manager)
+bool CDeferredRenderer::initVignetteBlurPass(IResourceManager* manager)
 {
 	// Get shader
-	std::string shaderFile = "data/shader/post/distortion_pass.ini";
-	m_distortionPassShaderId = manager->loadShader(shaderFile);
+	std::string shaderFile = "data/shader/post/vignette_blur_pass.ini";
+	m_vignetteBlurPassShaderId = manager->loadShader(shaderFile);
 	// Check if ok
-	if (m_distortionPassShaderId == invalidResource)
+	if (m_vignetteBlurPassShaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
 		return false;
