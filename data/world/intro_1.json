@@ -6,6 +6,13 @@
             "position" :  [ 0, -3, 0 ],
             "rotation" :  [ 0 , 0, 0 ],
             "scale" :  [ 1, 1, 1 ]
+        },
+		{
+            "mesh" :  "data/mesh/platform_1.obj",
+            "material" : "data/material/silver.json",
+            "position" :  [ 0, -6, 0 ],
+            "rotation" :  [ 0 , 0, 0 ],
+            "scale" :  [ 1, 1, 1 ]
         }
     ],
     "ambient_light" : {
@@ -15,8 +22,8 @@
     "directional_lights" : [
         {
             "direction" :  [ 1, -1, 0],
-            "color" :  [ 1, 1, 1 ],
-            "intensity" :  1,
+            "color" :  [ 1, 0.2, 0.0 ],
+            "intensity" :  5,
             "casts_shadow" : true
         }
     ]
