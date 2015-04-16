@@ -119,6 +119,13 @@ const GLint visualizeDepthPassDepthTextureUnit = 0;
 // Texture unit for distortion pass
 const GLint distortionPassInputTextureUnit = 0;
 
+// Texture units for bloom pass 1 (bloom texture generation)
+const GLint bloomPass1InputTextureUnit = 0;
+
+// Texture units for bloom pass 2 (additive blending and clamp)
+const GLint bloomPass2SceneTextureUnit = 0;
+const GLint bloomPass2BloomTextureUnit = 1;
+
 // Texture sampler uniform names
 const std::string diffuseTextureUniformName = "diffuse_texture";
 const std::string normalTextureUniformName = "normal_texture";
@@ -134,6 +141,7 @@ const std::string shadowCubeTextureUniformName = "shadow_cube";
 const std::string sceneTextureUniformName = "scene_texture";
 const std::string blurTextureUniformName = "blur_texture";
 const std::string godRayTextureUniformName = "godray_texture";
+const std::string bloomTextureUniformName = "bloom_texture";
 
 // Generic texture names
 const std::string texture0UniformName = "texture0";

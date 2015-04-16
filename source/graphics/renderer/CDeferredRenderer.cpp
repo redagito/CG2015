@@ -111,12 +111,6 @@ bool CDeferredRenderer::init(IResourceManager* manager)
 		return false;
     }
 
-	// Screen distortion pass
-	if (!initVignetteBlurPass(manager))
-	{
-		LOG_ERROR("Failed to initialize depth visualization pass.");
-		return false;
-	}
     return true;
 }
 
@@ -887,6 +881,16 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	// Vignette blur pass
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
 	vignetteBlurPass(window, manager, m_postProcessPassTexture2);
+	// Scene in texture 0
+
+	// Bloom pass
+	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
+	bloomPass1(window, manager, m_postProcessPassTexture0);
+	// Bloom scene in texture 1
+
+	// Additive blend
+	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+	bloomPass2(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
 
     // Set output texture
     m_postProcessPassOutputTexture = m_postProcessPassTexture0;
@@ -1004,7 +1008,7 @@ void CDeferredRenderer::gaussBlurVerticalPass(const IWindow& window,
     // Blur parameter
     shader->setUniform(blurStrengthUniformName, 3.f);
 
-    /// Screen size
+    // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
@@ -1039,7 +1043,7 @@ void CDeferredRenderer::gaussBlurHorizontalPass(const IWindow& window,
     // Blur parameter
     shader->setUniform(blurStrengthUniformName, 3.f);
 
-    /// Screen size
+    // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
@@ -1093,7 +1097,7 @@ void CDeferredRenderer::depthOfFieldPass(const ICamera& camera, const IWindow& w
     shader->setUniform(inverseViewProjectionMatrixUniformName,
                        m_transformer.getInverseViewProjectionMatrix());
 
-    /// Screen size
+    // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
@@ -1177,7 +1181,7 @@ void CDeferredRenderer::godRayPass1(const IWindow& window, const IGraphicsResour
     // Light position
     shader->setUniform(lightPositionScreenUniformName, glm::vec2(0.5, 0.5));
 
-    /// Screen size
+    // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
@@ -1213,7 +1217,7 @@ void CDeferredRenderer::godRayPass2(const IWindow& window, const IGraphicsResour
     godrayTexture->setActive(godRayPass2GodRayTextureUnit);
     shader->setUniform(godRayTextureUniformName, godRayPass2GodRayTextureUnit);
 
-    /// Screen size
+    // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
@@ -1244,11 +1248,11 @@ void CDeferredRenderer::visualizeDepthPass(const ICamera& camera, const IWindow&
     m_depthTexture->setActive(visualizeDepthPassDepthTextureUnit);
     shader->setUniform(depthTextureUniformName, visualizeDepthPassDepthTextureUnit);
 
-    /// Screen size
+    // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());
     shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
-    // camera parameters
+    // Camera parameters
     // TODO Replace
     shader->setUniform(cameraZNearUniformName, 0.01f);
     shader->setUniform(cameraZFarUniformName, 1000.f);
@@ -1283,6 +1287,73 @@ void CDeferredRenderer::vignetteBlurPass(const IWindow& window, const IGraphicsR
 	shader->setUniform(screenWidthUniformName, (float) window.getWidth());
 	shader->setUniform(screenHeightUniformName, (float) window.getHeight());
 
+	::draw(*quadMesh);
+}
+
+void CDeferredRenderer::bloomPass1(const IWindow& window, const IGraphicsResourceManager& manager,
+	const std::shared_ptr<CTexture>& texture)
+{
+	// Get bloom pass 1 shader
+	CShaderProgram* shader = manager.getShaderProgram(m_bloomPass1ShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for bloom 1 pass could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for bloom 1 pass could not be retrieved.");
+		return;
+	}
+
+	// Set input texture
+	texture->setActive(bloomPass1InputTextureUnit);
+	shader->setUniform(sceneTextureUniformName, bloomPass1InputTextureUnit);
+
+	// Set screen size
+	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
+
+	::draw(*quadMesh);
+}
+
+void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourceManager& manager,
+	const std::shared_ptr<CTexture>& sceneTexture,
+	const std::shared_ptr<CTexture>& bloomTexture)
+{
+	// TODO Actually same as godray pass 2, create additive blend pass
+	// Get bloom pass 2 shader
+	CShaderProgram* shader = manager.getShaderProgram(m_bloomPass2ShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for bloom pass 2 could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for bloom pass 2 could not be retrieved.");
+		return;
+	}
+
+	// Scene texture
+	sceneTexture->setActive(bloomPass2SceneTextureUnit);
+	shader->setUniform(sceneTextureUniformName, godRayPass2SceneTextureUnit);
+
+	// Bloom texture
+	bloomTexture->setActive(bloomPass2BloomTextureUnit);
+	shader->setUniform(bloomTextureUniformName, godRayPass2GodRayTextureUnit);
+
+	// Screen size
+	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
+
+	// Perform pass
 	::draw(*quadMesh);
 }
 
@@ -1773,6 +1844,34 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager* manager)
         return false;
     }
 
+	// DOF pass
+	if (!initDepthOfFieldPass(manager))
+	{
+		LOG_ERROR("Failed to initialize depth of field pass.");
+		return false;
+	}
+
+	// Vignette blur pass
+	if (!initVignetteBlurPass(manager))
+	{
+		LOG_ERROR("Failed to initialize depth visualization pass.");
+		return false;
+	}
+
+	// Bloom pass 1
+	if (!initBloomPass1(manager))
+	{
+		LOG_ERROR("Failed to initialize bloom pass 1.");
+		return false;
+	}
+
+	// Bloom pass 2
+	if (!initBloomPass2(manager))
+	{
+		LOG_ERROR("Failed to initialize bloom pass 2.");
+		return false;
+	}
+
     // Screen quad mesh
     std::string quadMesh = "data/mesh/screen_quad.obj";
     m_postProcessScreenQuadId = manager->loadMesh(quadMesh);
@@ -1811,12 +1910,6 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager* manager)
     m_postProcessPassFrameBuffer1.attach(m_postProcessPassTexture1, GL_COLOR_ATTACHMENT0);
     m_postProcessPassFrameBuffer2.attach(m_postProcessPassTexture2, GL_COLOR_ATTACHMENT0);
     // TODO Depth attachment required?
-
-    if (!initDepthOfFieldPass(manager))
-    {
-        LOG_ERROR("Failed to initialize depth of field pass.");
-        return false;
-    }
     return true;
 }
 
@@ -1955,6 +2048,34 @@ bool CDeferredRenderer::initVignetteBlurPass(IResourceManager* manager)
 	m_vignetteBlurPassShaderId = manager->loadShader(shaderFile);
 	// Check if ok
 	if (m_vignetteBlurPassShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool CDeferredRenderer::initBloomPass1(IResourceManager* manager)
+{
+	// Get shader
+	std::string shaderFile = "data/shader/post/bloom_1_pass.ini";
+	m_bloomPass1ShaderId = manager->loadShader(shaderFile);
+	// Check if ok
+	if (m_bloomPass1ShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool CDeferredRenderer::initBloomPass2(IResourceManager* manager)
+{
+	// Get shader
+	std::string shaderFile = "data/shader/post/bloom_2_pass.ini";
+	m_bloomPass2ShaderId = manager->loadShader(shaderFile);
+	// Check if ok
+	if (m_bloomPass2ShaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
 		return false;

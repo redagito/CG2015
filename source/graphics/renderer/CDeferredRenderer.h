@@ -140,6 +140,19 @@ class CDeferredRenderer : public IRenderer
 	void vignetteBlurPass(const IWindow& window, const IGraphicsResourceManager& manager,
 						  const std::shared_ptr<CTexture>& texture);
 
+	/**
+	* \brief Bloom pass 1, writes blooom texture.
+	*/
+	void bloomPass1(const IWindow& window, const IGraphicsResourceManager& manager,
+					const std::shared_ptr<CTexture>& texture);
+
+	/**
+	* \brief Bloom pass 2, blends bloom texture on scene texture.
+	*/
+	void bloomPass2(const IWindow& window, const IGraphicsResourceManager& manager,
+					const std::shared_ptr<CTexture>& texture,
+					const std::shared_ptr<CTexture>& bloomTexture);
+
     /**
     * \brief Initializes resources for geometry pass.
     */
@@ -217,6 +230,12 @@ class CDeferredRenderer : public IRenderer
 	*/
 	bool initVignetteBlurPass(IResourceManager* manager);
 
+	/**
+	* \brief Bloom technique. 
+	*/
+	bool initBloomPass1(IResourceManager* manager);
+	bool initBloomPass2(IResourceManager* manager);
+
     void draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
               const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager,
               CShaderProgram* shader);
@@ -232,17 +251,17 @@ class CDeferredRenderer : public IRenderer
         nullptr; /**< Diffuse texture with glow as alpha. */
     std::shared_ptr<CTexture>
         m_normalSpecularTexture; /**< Normal texture with specularity as alpha. */
-    ResourceId m_geometryPassShaderId = -1;
+	ResourceId m_geometryPassShaderId = invalidResource;
 
     // Shadow map pass
-    ResourceId m_shadowMapPassShaderId = -1;
-    CShaderProgram* m_shadowMapPassShader = nullptr;
+	ResourceId m_shadowMapPassShaderId = invalidResource;
+    CShaderProgram* m_shadowMapPassShader = nullptr; // TODO Remove
     CFrameBuffer m_shadowMapBuffer;
     std::shared_ptr<CTexture> m_shadowDepthTexture = nullptr;
 
     // Shadow cube pass
-    ResourceId m_shadowCubePassShaderId = -1;
-    CShaderProgram* m_shadowCubePassShader = nullptr;
+	ResourceId m_shadowCubePassShaderId = invalidResource;
+    CShaderProgram* m_shadowCubePassShader = nullptr; // TODO Remove
     CFrameBuffer m_shadowCubeBuffer;
     std::shared_ptr<CTexture> m_shadowCubeDepthTexture = nullptr;
     std::shared_ptr<CTexture> m_shadowCubeTexture = nullptr;
@@ -253,21 +272,21 @@ class CDeferredRenderer : public IRenderer
     std::shared_ptr<CTexture> m_lightPassTexture = nullptr;
 
     // Point light pass
-    ResourceId m_pointLightPassShaderId = -1;
-    ResourceId m_pointLightSphereId = -1;
+	ResourceId m_pointLightPassShaderId = invalidResource;
+	ResourceId m_pointLightSphereId = invalidResource;
 
     // Directional light pass
-    ResourceId m_directionalLightPassShaderId = -1;
-    ResourceId m_directionalLightScreenQuadId = -1;
+	ResourceId m_directionalLightPassShaderId = invalidResource;
+	ResourceId m_directionalLightScreenQuadId = invalidResource;
 
     // Illumination pass
-    ResourceId m_illuminationPassShaderId = -1;
-    ResourceId m_illuminationPassScreenQuadId = -1;
+	ResourceId m_illuminationPassShaderId = invalidResource;
+	ResourceId m_illuminationPassScreenQuadId = invalidResource;
     CFrameBuffer m_illumationPassFrameBuffer;
     std::shared_ptr<CTexture> m_illuminationPassTexture = nullptr;
 
     // Post processing pass
-    ResourceId m_postProcessScreenQuadId = -1;
+	ResourceId m_postProcessScreenQuadId = invalidResource;
     CFrameBuffer m_postProcessPassFrameBuffer0;
     CFrameBuffer m_postProcessPassFrameBuffer1;
     CFrameBuffer m_postProcessPassFrameBuffer2;
@@ -278,30 +297,34 @@ class CDeferredRenderer : public IRenderer
     std::shared_ptr<CTexture> m_postProcessPassOutputTexture = nullptr;
 
     // Gauss blur pass
-    ResourceId m_gaussBlurVerticalShaderId = -1;
-    ResourceId m_gaussBlurHorizontalShaderId = -1;
+	ResourceId m_gaussBlurVerticalShaderId = invalidResource;
+	ResourceId m_gaussBlurHorizontalShaderId = invalidResource;
 
     // FXAA pass
-    ResourceId m_fxaaPassShaderId = -1;
+	ResourceId m_fxaaPassShaderId = invalidResource;
 
     // Fog pass
-    ResourceId m_fogPassShaderId = -1;
+	ResourceId m_fogPassShaderId = invalidResource;
 
     // Depth-of-field pass
-    ResourceId m_depthOfFieldPassShaderId = -1;
+	ResourceId m_depthOfFieldPassShaderId = invalidResource;
 
     // Godray pass
-    ResourceId m_godRayPass1ShaderId = -1;
-    ResourceId m_godRayPass2ShaderId = -1;
+	ResourceId m_godRayPass1ShaderId = invalidResource;
+	ResourceId m_godRayPass2ShaderId = invalidResource;
 
     // Display pass for final screen draw
-    ResourceId m_displayPassShaderId = -1;
+	ResourceId m_displayPassShaderId = invalidResource;
 
     // Depth visualization pass
-    ResourceId m_visualizeDepthPassShaderId = -1;
+	ResourceId m_visualizeDepthPassShaderId = invalidResource;
 
 	// Vignette blur pass
 	ResourceId m_vignetteBlurPassShaderId = invalidResource;
+
+	// Bloom pass
+	ResourceId m_bloomPass1ShaderId = invalidResource;
+	ResourceId m_bloomPass2ShaderId = invalidResource;
 
     // Fullscreen draw pass
     CScreenQuadPass m_screenQuadPass;
