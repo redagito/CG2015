@@ -27,3 +27,9 @@ bool CGameObject::isDeleteRequested() const
 {
 	return m_deleteRequested;
 }
+
+void CGameObject::sendMessage() {
+	for (auto contr: m_controllers) {
+		//contr.reciveMessage(...);
+	}
+}

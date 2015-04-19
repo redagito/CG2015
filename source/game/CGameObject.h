@@ -1,5 +1,12 @@
 #pragma once
 
+class IController;
+
+#include <glm/glm.hpp>
+
+#include <list>
+#include <memory>
+
 /**
 * \brief Game object storing relevant data.
 */
@@ -34,6 +41,14 @@ public:
 	*/
 	bool isDeleteRequested() const;
 
+	/**
+	* \brief Send state change messages to all controllers in Object
+	* TODO: What is our message?
+	*/
+	void sendMessage();
+	
+
 protected:
 	bool m_deleteRequested = false; /**< Deletion of this object is requested. */
+	std::list<std::shared_ptr<IController>> m_controllers; /**Controller objects. */
 };
