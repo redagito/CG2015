@@ -9,7 +9,7 @@
 #include "resource/IResourceListener.h"
 
 #include "io/JsonUtil.h"
-#include "io/JsonDeserializer.h"
+#include "io/JsonDeserialize.h"
 #include "io/CIniFile.h"
 #include "io/CObjModelLoader.h"
 #include "io/CShaderPreprocessor.h"

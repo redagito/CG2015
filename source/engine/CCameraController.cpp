@@ -11,7 +11,8 @@
 #include "graphics/camera/IControllableCamera.h"
 
 #include "input/IInputProvider.h"
-#include "io/JsonDeserializer.h"
+#include "io/JsonUtil.h"
+#include "io/JsonDeserialize.h"
 
 CCameraController::CCameraController() {}
 
@@ -41,46 +42,6 @@ void CCameraController::setInputProvider(IInputProvider* provider)
     {
         m_inputProvider->addInputListener(this);
     }
-}
-// TODO methods copied from CSceneLoader. Extract to utility class!
-bool load(const Json::Value& node, const std::string& name, std::string& str)
-{
-    if (!deserialize(node[name], str))
-    {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool load(const Json::Value& node, const std::string& name, glm::vec3& vec)
-{
-    if (!deserialize(node[name], vec))
-    {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool load(const Json::Value& node, const std::string& name, float& f)
-{
-    if (!deserialize(node[name], f))
-    {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
-        return false;
-    }
-    return true;
-}
-
-bool load(const Json::Value& node, const std::string& name, bool& b)
-{
-    if (!deserialize(node[name], b))
-    {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
-        return false;
-    }
-    return true;
 }
 
 bool CCameraController::loadSequence(std::string file)

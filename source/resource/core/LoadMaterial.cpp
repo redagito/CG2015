@@ -4,7 +4,7 @@
 #include "debug/Log.h"
 #include "io/CIniFile.h"
 #include "io/JsonUtil.h"
-#include "io/JsonDeserializer.h"
+#include "io/JsonDeserialize.h"
 
 bool load(const std::string& file, CResourceManager& manager, SMaterial& material)
 {

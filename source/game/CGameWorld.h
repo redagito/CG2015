@@ -18,6 +18,7 @@ public:
 
 	/**
 	* \brief Adds game object.
+	*
 	* The object must be created on the heap and is owned by the game world.
 	*/
 	void addObject(CGameObject* object);

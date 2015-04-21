@@ -4,7 +4,7 @@ class IScene;
 
 class IGraphicsSystem
 {
-   public:
+public:
     virtual ~IGraphicsSystem();
 
     /**

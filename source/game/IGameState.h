@@ -4,6 +4,7 @@
 
 /**
 * \brief Game state interface class.
+*
 * A game state represents a high level state in a game.
 * Several states can be chained together to form the high level game flow.
 */

@@ -1,7 +1,7 @@
 #include "LoadModel.h"
 
 #include "io/JsonUtil.h"
-#include "io/JsonDeserializer.h"
+#include "io/JsonDeserialize.h"
 #include "util/StringUtil.h"
 #include "debug/Log.h"
 

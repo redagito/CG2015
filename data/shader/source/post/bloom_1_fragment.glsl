@@ -6,23 +6,18 @@ uniform float screen_height;
 
 layout (location = 0) out vec3 color;
 
-vec3 simpleBloom(vec3 texel)
+// Bright pass filter for bloom
+
+float brightpass(vec3 texel, float threshold)
 {
-	// Desaturate
-	float grey = max(texel.r, max(texel.g, texel.b));
-
-	// Threshold
-	return vec3(clamp(((grey) - 0.3), 0.0, 0.3));
-}
-
-vec3 advancedBloom(vec3 texel)
-{
-	// Desaturate
-	vec3 lumCoeff = vec3(0.2125, 0.7154, 0.0721);
-
-	vec3 avgLumin = vec3(0.5f, 0.5f, 0.5f);
-	float intensity = dot(texel, lumCoeff);
-	return vec3(intensity);
+	vec3 avgLuminance = vec3(0.2126f, 0.7152f, 0.0722f);
+	float luminance = dot(texel, avgLuminance);
+	// Can be done faster?
+	if (luminance < threshold)
+	{
+		luminance = 0.f;
+	}
+	return luminance;
 }
 
 // Writes bloom texture
@@ -34,9 +29,9 @@ void main()
 	// Get scene texel
 	vec3 texel = texture(scene_texture, screen_coords).rgb;
 
-	// Apply simple bloom
-	color = simpleBloom(texel);
-
+	// Should be uniform
+	float threshold = 0.8;
+	
 	// Apply advanced bloom
-	color = advancedBloom(texel);
+	color = brightpass(texel, threshold) * texel;
 }

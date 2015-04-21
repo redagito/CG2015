@@ -1,6 +1,7 @@
 #include <fstream>
 
 #include "JsonUtil.h"
+#include "JsonDeserialize.h"
 #include "debug/Log.h"
 
 bool load(const std::string& file, Json::Value& value)
@@ -16,6 +17,46 @@ bool load(const std::string& file, Json::Value& value)
 	if (!reader.parse(ifs, value))
 	{
 		LOG_ERROR("Failed to parse json file %s: %s", file.c_str(), reader.getFormattedErrorMessages().c_str());
+		return false;
+	}
+	return true;
+}
+
+bool load(const Json::Value& node, const std::string& name, float& f)
+{
+	if (!deserialize(node[name], f))
+	{
+		LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool load(const Json::Value& node, const std::string& name, bool& b)
+{
+	if (!deserialize(node[name], b))
+	{
+		LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool load(const Json::Value& node, const std::string& name, glm::vec3& vec)
+{
+	if (!deserialize(node[name], vec))
+	{
+		LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool load(const Json::Value& node, const std::string& name, std::string& str)
+{
+	if (!deserialize(node[name], str))
+	{
+		LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
 		return false;
 	}
 	return true;

@@ -9,7 +9,7 @@
 #include "resource/IResourceManager.h"
 
 #include "JsonUtil.h"
-#include "JsonDeserializer.h"
+#include "JsonDeserialize.h"
 
 #include "debug/Log.h"
 
