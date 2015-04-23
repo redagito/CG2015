@@ -1,11 +1,17 @@
 #pragma once
 
-#include "graphics/IGraphicsSystem.h"
+#include <list>
+#include <memory>
 
-class IScene;
+#include "graphics/IGraphicsSystem.h"
+#include "graphics/IScene.h"
 
 class CGraphicsSystem : public IGraphicsSystem
 {
 public:
 	IScene* createScene();
+	
+private:
+	std::list<std::unique_ptr<IScene>> m_scenes;
+	IScene* m_activeScene = nullptr;
 };

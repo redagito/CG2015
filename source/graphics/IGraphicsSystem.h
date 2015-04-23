@@ -6,7 +6,7 @@ class IGraphicsSystem
 {
 public:
     virtual ~IGraphicsSystem();
-
+	
     /**
     * \brief Create scene.
     */

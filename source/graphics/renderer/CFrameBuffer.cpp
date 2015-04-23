@@ -98,9 +98,9 @@ void CFrameBuffer::resize(unsigned int width, unsigned int height)
     }
 }
 
-void CFrameBuffer::attach(const std::shared_ptr<CTexture>& texture, GLenum attachment)
+void CFrameBuffer::attach(const std::shared_ptr<CTexture>& texture, GLenum attachment, ETextureSemantic semantic)
 {
-    // Bind
+	// Bind
     assert(m_valid);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
     // Attach
@@ -112,7 +112,22 @@ void CFrameBuffer::attach(const std::shared_ptr<CTexture>& texture, GLenum attac
         m_drawBuffers.push_back(attachment);
     }
     m_textures[attachment] = texture;
+	if (semantic != ETextureSemantic::Unknown)
+	{
+		m_texturesBySemantic[semantic] = texture;
+	}
     setInactive(GL_FRAMEBUFFER);
+}
+
+void CFrameBuffer::attach(const std::shared_ptr<CTexture>& texture, GLenum attachment)
+{
+	ETextureSemantic semantic = ETextureSemantic::Unknown;
+	// On depth attachment automatically set semantic
+    if (attachment == GL_DEPTH_ATTACHMENT)
+	{
+		semantic = ETextureSemantic::Depth;
+	}
+	attach(texture, attachment, semantic);
 }
 
 void CFrameBuffer::setDefaultActive()
@@ -135,4 +150,14 @@ void CFrameBuffer::attach(const std::shared_ptr<CRenderBuffer>& renderBuffer, GL
     }
     m_renderBuffers[attachment] = renderBuffer;
     setInactive(GL_FRAMEBUFFER);
+}
+
+std::shared_ptr<CTexture> CFrameBuffer::getTexture(ETextureSemantic semantic)
+{
+	// TODO Slow, fix this
+	if (m_texturesBySemantic.count(semantic) == 0)
+	{
+		return nullptr;
+	}
+	return m_texturesBySemantic.at(semantic);
 }

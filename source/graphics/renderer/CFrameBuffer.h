@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "core/RendererCoreConfig.h"
+#include "ETextureSemantic.h"
 
 class CTexture;
 class CRenderBuffer;
@@ -32,17 +33,28 @@ class CFrameBuffer
     void resize(unsigned int width, unsigned int height);
 
     void attach(const std::shared_ptr<CTexture>& texture, GLenum attachment);
+    void attach(const std::shared_ptr<CTexture>& texture, GLenum attachment, ETextureSemantic semantic);
     void attach(const std::shared_ptr<CRenderBuffer>& renderBuffer, GLenum attachment);
 
+	/**
+	* \brief returns attached texture based on semantic.
+	* 
+	* Not const because the returned texture can be modified.
+	*/
+	std::shared_ptr<CTexture> getTexture(ETextureSemantic semantic);
+	
     static void setDefaultActive();
+	
+private:
 
-   private:
     std::vector<GLenum> m_drawBuffers; /**< Stores draw buffer attachments. */
 
     std::unordered_map<GLenum, std::shared_ptr<CTexture>>
-        m_textures; /**< Stores attached textures. */
+        m_textures; /**< Stores attached textures by attachment type. */
     std::unordered_map<GLenum, std::shared_ptr<CRenderBuffer>>
         m_renderBuffers; /**< Stores attached render buffers. */
+	std::unordered_map<ETextureSemantic, std::shared_ptr<CTexture>> 
+		m_texturesBySemantic; /**< Stores textures by their semantic. */
 
     GLuint m_fboId; /**< Frame buffer id. */
     bool m_valid;   /**< Frame buffer validity. */

@@ -54,13 +54,16 @@ bool CEngine::init(const char* configFile)
         LOG_WARNING("Failed to create log file at %s.", logFile.c_str());
     }
 
+	// Create debug info container and register as listener
     m_debugInfo = std::make_shared<CDebugInfo>();
     CLogger::addListener(m_debugInfo.get());
 
+	// Load config file
     if (!m_config.load(configFile))
     {
         LOG_WARNING("Failed to load config file %s, starting with default settings.",
                     configFile);
+		// TODO Return if no config exists?
     }
 
     // Create window for rendering
@@ -69,10 +72,10 @@ bool CEngine::init(const char* configFile)
         LOG_ERROR("Failed to initialize window.");
         return false;
     }
-
+	// TODO GLFW handle not properly wrapped away, GFLW should not be used directly
 	m_inputProvider = std::make_shared<CGlfwInputProvider>(m_window->getGlfwHandle());
 
-    // Create resource manager
+    // Create central resource manager
     m_resourceManager.reset(createResourceManager());
     if (m_resourceManager == nullptr)
     {
@@ -81,26 +84,32 @@ bool CEngine::init(const char* configFile)
     }
 
 	// Create animation world
+	// TODO Move into gameworld or remove entirely? Only used for simple animations.
 	m_animationWorld = std::make_shared<CAnimationWorld>();
 
+	// TODO Everything graphics related shgould be managed/initialized by a graphics system object.
     // Graphics resource manager, listens to resource manager
     CGraphicsResourceManager* manager = new CGraphicsResourceManager;
     m_resourceManager->addResourceListener(manager);
     m_graphicsResourceManager.reset(manager);
 
     // Create renderer
+	// TODO Move to graphics system, user should not create his own renderer.
     if (!initRenderer())
     {
         LOG_ERROR("Failed to initialize renderer.");
         return false;
     }
 
+	// Initialize scene
+	// TODO Move to graphics system, scenes should not be managed by the user.
     if (!initScene())
     {
         LOG_ERROR("Failed to initialize scene.");
         return false;
     }
 
+	// TODO Refactor, camera movement should be implemented with a single camera and camera controllers.
     m_camera = std::make_shared<CFirstPersonCamera>(
         glm::vec3(0.5f, 0.f, 0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
         4.f / 3.f, 0.01f, 1000.f);
@@ -109,8 +118,10 @@ bool CEngine::init(const char* configFile)
     m_cameraController->setCamera(m_camera);
     m_cameraController->setInputProvider(m_inputProvider.get());
 
+	// TODO Debug info display is a simple text overlay which prints stats and logs, needs refactoring.
     m_debugInfoDisplay = std::make_shared<CDebugInfoDisplay>(m_resourceManager);
 
+	// Adds input listener
     m_window->addListener(m_cameraController.get());
 
     return true;

@@ -23,7 +23,7 @@ class ISceneQuery;
 */
 class CDeferredRenderer : public IRenderer
 {
-   public:
+public:
     CDeferredRenderer();
     ~CDeferredRenderer();
 
@@ -34,7 +34,7 @@ class CDeferredRenderer : public IRenderer
 
     static CDeferredRenderer* create(IResourceManager* manager);
 
-   protected:
+protected:
     /**
     * \brief Writes geometry data into g-buffer.
     */
@@ -255,13 +255,11 @@ class CDeferredRenderer : public IRenderer
 
     // Shadow map pass
 	ResourceId m_shadowMapPassShaderId = invalidResource;
-    CShaderProgram* m_shadowMapPassShader = nullptr; // TODO Remove
     CFrameBuffer m_shadowMapBuffer;
     std::shared_ptr<CTexture> m_shadowDepthTexture = nullptr;
 
     // Shadow cube pass
 	ResourceId m_shadowCubePassShaderId = invalidResource;
-    CShaderProgram* m_shadowCubePassShader = nullptr; // TODO Remove
     CFrameBuffer m_shadowCubeBuffer;
     std::shared_ptr<CTexture> m_shadowCubeDepthTexture = nullptr;
     std::shared_ptr<CTexture> m_shadowCubeTexture = nullptr;

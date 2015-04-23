@@ -282,11 +282,12 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
                                       const IWindow& window,
                                       const IGraphicsResourceManager& manager)
 {
-    m_shadowMapPassShader = manager.getShaderProgram(m_shadowMapPassShaderId);
-
+    CShaderProgram* shadowMapPassShader = manager.getShaderProgram(m_shadowMapPassShaderId);
+	
     // Set framebuffer
     m_shadowMapBuffer.setActive(GL_FRAMEBUFFER);
-
+	shadowMapPassShader->setActive();
+	
     // Clear
     glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -317,8 +318,8 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
 	scene.getVisibleObjects(camera, query);
 
     // Send view/projection to default shader
-    m_shadowMapPassShader->setUniform(viewMatrixUniformName, transformer.getViewMatrix());
-    m_shadowMapPassShader->setUniform(projectionMatrixUniformName,
+    shadowMapPassShader->setUniform(viewMatrixUniformName, transformer.getViewMatrix());
+    shadowMapPassShader->setUniform(projectionMatrixUniformName,
                                       transformer.getProjectionMatrix());
 
     // Traverse visible objects
@@ -353,7 +354,7 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
 
             // Forward draw call
             draw(mesh, transformer.getTranslationMatrix(), transformer.getRotationMatrix(),
-                    transformer.getScaleMatrix(), material, manager, m_shadowMapPassShader);
+                    transformer.getScaleMatrix(), material, manager, shadowMapPassShader);
         }
     }
 
@@ -389,8 +390,8 @@ void CDeferredRenderer::shadowCubePass(const IScene& scene, const ICamera& camer
                                        const IWindow& window,
                                        const IGraphicsResourceManager& manager)
 {
-    m_shadowCubePassShader = manager.getShaderProgram(m_shadowCubePassShaderId);
-    m_shadowCubePassShader->setActive();
+    CShaderProgram* shadowCubePassShader = manager.getShaderProgram(m_shadowCubePassShaderId);
+    shadowCubePassShader->setActive();
 
     // Depth
     glEnable(GL_DEPTH_TEST);
@@ -409,7 +410,7 @@ void CDeferredRenderer::shadowCubePass(const IScene& scene, const ICamera& camer
     glViewport(0, 0, 1024, 1024);
     // m_shadowMapBuffer.resize(1024, 1024);
 
-    m_shadowCubePassShader->setUniform(lightPositionUniformName, camera.getPosition());
+    shadowCubePassShader->setUniform(lightPositionUniformName, camera.getPosition());
 
     glClearColor(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
 
@@ -429,8 +430,8 @@ void CDeferredRenderer::shadowCubePass(const IScene& scene, const ICamera& camer
             glm::lookAt(camera.getPosition(), camera.getPosition() + g_cameraDirections[i].target,
                         g_cameraDirections[i].up);
 
-        m_shadowCubePassShader->setUniform(projectionMatrixUniformName, camera.getProjection());
-        m_shadowCubePassShader->setUniform(viewMatrixUniformName, view);
+        shadowCubePassShader->setUniform(projectionMatrixUniformName, camera.getProjection());
+        shadowCubePassShader->setUniform(viewMatrixUniformName, view);
 
         // Query visible scene objects
 		CSceneQuery query;
@@ -470,7 +471,7 @@ void CDeferredRenderer::shadowCubePass(const IScene& scene, const ICamera& camer
 
                 // Forward draw call
                 draw(mesh, transformer.getTranslationMatrix(), transformer.getRotationMatrix(),
-                     transformer.getScaleMatrix(), material, manager, m_shadowCubePassShader);
+                     transformer.getScaleMatrix(), material, manager, shadowCubePassShader);
             }
         }
     }
