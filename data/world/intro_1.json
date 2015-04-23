@@ -26,5 +26,14 @@
             "intensity" :  5,
             "casts_shadow" : true
         }
-    ]
+    ],
+	"point_lights" : [
+		{
+			"position" : [0.2925, -2.3666, -2.775],
+			"color" : [1, 1, 1],
+			"radius" : 3,
+			"intensity" : 10,
+			"casts_shadow" : true
+		}
+	]
 }
