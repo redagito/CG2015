@@ -1,6 +1,13 @@
 # CG2015
 CG 2015 Project
 
+# Screenshots
+![](https://github.com/redagito/CG2015/wiki/testscene_1.png)
+
+![](https://github.com/redagito/CG2015/wiki/testscene_2.png)
+
+![](https://github.com/redagito/CG2015/wiki/testscene_3.png)
+
 Renderer features
 * Modern OpenGL (3.3+ core profile)
 * Deferred renderer
