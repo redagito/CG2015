@@ -1,6 +1,6 @@
 {
 	"game" : {
-		"file" : "data/game/defenders_of_cthedra/test_1.json"
+		"file" : "data/game/defenders_of_cthedra/game.json"
 	},
 	"renderer" : {
 		"type" : "deferred"

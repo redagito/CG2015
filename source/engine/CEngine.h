@@ -6,8 +6,6 @@
 
 #include "IEngine.h"
 
-#include "io/CIniFile.h"
-
 // GLFW
 struct GLFWwindow;
 
@@ -50,17 +48,17 @@ public:
     void run();
 
 private:
-    bool initWindow();
-    bool initRenderer();
-    bool initScene();
+    bool initWindow(unsigned int width, unsigned int height, const std::string& title);
+	bool initRenderer(const std::string& rendererType);
+	bool initScene(const std::string& sceneFile);
 
 	void updateAnimation(float timeDiff);
 
-    CIniFile m_config;
-
     std::shared_ptr<IResourceManager> m_resourceManager =
         nullptr; /**< Resource loader and manager. */
-    std::shared_ptr<IGraphicsResourceManager> m_graphicsResourceManager =
+    
+	// TODO Should actually be managed by the graphics system.
+	std::shared_ptr<IGraphicsResourceManager> m_graphicsResourceManager =
         nullptr; /**< Resource manager for graphics resources. */
     
 	std::shared_ptr<CGlfwWindow> m_window = nullptr;

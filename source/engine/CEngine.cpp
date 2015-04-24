@@ -30,8 +30,14 @@
 #include "graphics/resource/CGraphicsResourceManager.h"
 
 #include "util/TimeStamp.h"
+#include "util/StringUtil.h"
+
 #include "graphics/CDebugInfoDisplay.h"
 #include "input/provider/CGlfwInputProvider.h"
+
+// IO
+#include "io/CIniFile.h"
+#include "io/JsonUtil.h"
 #include "io/CSceneLoader.h"
 #include "CCameraController.h"
 
@@ -58,16 +64,70 @@ bool CEngine::init(const char* configFile)
     m_debugInfo = std::make_shared<CDebugInfo>();
     CLogger::addListener(m_debugInfo.get());
 
-	// Load config file
-    if (!m_config.load(configFile))
-    {
-        LOG_WARNING("Failed to load config file %s, starting with default settings.",
-                    configFile);
+	// Config data with default values
+	std::string modeType = "demo"; // Startup mode for the application
+	std::string sceneFile = "data/world/test_1.json"; // Scene file to load and render if mode is demo
+	std::string gameFile = "data/game/defenders_of_cthedra/game.json"; // Game file to load if mode is game
+	std::string rendererType = "forward"; // Renderer type to use
+	
+	// Window parameters
+	unsigned int windowWidth = 800;
+	unsigned int windowHeight = 600;
+	std::string windowTitle = "CG 2015";
+
+	// Load config file based on extension
+	bool loadSuccess = false;
+	if (getFileExtension(configFile) == "ini")
+	{
+		CIniFile configIni;
+		if (configIni.load(configFile))
+		{
+			// Load values
+			modeType = configIni.getValue("mode", "type", "demo");
+			sceneFile = configIni.getValue("scene", "file", "data/world/test_1.json");
+			gameFile = configIni.getValue("game", "file", "data/game/defenders_of_cthedra/game.json");
+			rendererType = configIni.getValue("renderer", "type", "forward");
+			windowWidth = configIni.getValue("window", "width", 800);
+			windowHeight = configIni.getValue("window", "height", 600);
+			windowTitle = configIni.getValue("window", "type", "CG 2015");
+			loadSuccess = true;
+		}
+	}
+	else if (getFileExtension(configFile) == "json")
+	{
+		Json::Value root;
+		if (load(configFile, root))
+		{
+			// Sub nodes
+			Json::Value game = root["game"];
+			Json::Value renderer = root["renderer"];
+			Json::Value window = root["window"];
+
+			// Load values
+			modeType = "game"; // Json only supports game mode
+			sceneFile = ""; // Scene file not supported/legacy
+			load(game, "file", gameFile);
+			load(renderer, "type", rendererType);
+			load(window, "width", windowWidth);
+			load(window, "height", windowHeight);
+			load(window, "title", windowTitle);
+			loadSuccess = true;
+		}
+	}
+	else
+	{
+		LOG_WARNING("The config file %s has an unknown file extension.");
+	}
+
+	// Check if config loaded successfully
+	if (!loadSuccess)
+	{
+		LOG_WARNING("Failed to load config file %s. Starting with default settings.", configFile);
 		// TODO Return if no config exists?
-    }
+	}
 
     // Create window for rendering
-    if (!initWindow())
+    if (!initWindow(windowWidth, windowHeight, windowTitle))
     {
         LOG_ERROR("Failed to initialize window.");
         return false;
@@ -95,7 +155,7 @@ bool CEngine::init(const char* configFile)
 
     // Create renderer
 	// TODO Move to graphics system, user should not create his own renderer.
-    if (!initRenderer())
+	if (!initRenderer(rendererType))
     {
         LOG_ERROR("Failed to initialize renderer.");
         return false;
@@ -103,7 +163,7 @@ bool CEngine::init(const char* configFile)
 
 	// Initialize scene
 	// TODO Move to graphics system, scenes should not be managed by the user.
-    if (!initScene())
+	if (!initScene(sceneFile))
     {
         LOG_ERROR("Failed to initialize scene.");
         return false;
@@ -229,7 +289,7 @@ void CEngine::run()
     return;
 }
 
-bool CEngine::initWindow()
+bool CEngine::initWindow(unsigned int width, unsigned int height, const std::string& title)
 {
     // Check if already initialized
     if (m_window != nullptr)
@@ -238,12 +298,6 @@ bool CEngine::initWindow()
     }
 
     LOG_INFO("Initializing application window.");
-
-    // Read config values
-    unsigned int width = m_config.getValue("window", "width", 800);
-    unsigned int height = m_config.getValue("window", "height", 600);
-    std::string title = m_config.getValue("window", "title", "Demo");
-
     LOG_INFO("Window width: %u.", width);
     LOG_INFO("Window height: %u.", height);
     LOG_INFO("Window title: %s.", title.c_str());
@@ -262,7 +316,7 @@ bool CEngine::initWindow()
     return true;
 }
 
-bool CEngine::initRenderer()
+bool CEngine::initRenderer(const std::string& rendererType)
 {
     if (m_renderer != nullptr || m_deferredRenderer != nullptr || m_forwardRenderer != nullptr)
     {
@@ -289,7 +343,6 @@ bool CEngine::initRenderer()
     }
 
     // Set renderer
-    std::string rendererType = m_config.getValue("renderer", "type", "forward");
     LOG_INFO("Initial renderer type set to %s.", rendererType.c_str());
 
     // Set renderer object
@@ -318,13 +371,12 @@ bool CEngine::initRenderer()
     return true;
 }
 
-bool CEngine::initScene()
+bool CEngine::initScene(const std::string& sceneFile)
 {
     m_scene = std::make_shared<CScene>();
     CSceneLoader loader(*m_resourceManager);
 
     // Get startup scene from config
-    std::string sceneFile = m_config.getValue("scene", "file", "data/world/test_1.json");
     LOG_INFO("Loading initial scene from file %s.", sceneFile.c_str());
     if (!loader.load(sceneFile, *m_scene, *m_animationWorld))
     {

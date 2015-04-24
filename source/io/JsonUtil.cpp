@@ -22,6 +22,26 @@ bool load(const std::string& file, Json::Value& value)
 	return true;
 }
 
+bool load(const Json::Value& node, const std::string& name, int& i)
+{
+	if (!deserialize(node[name], i))
+	{
+		LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool load(const Json::Value& node, const std::string& name, unsigned int& u)
+{
+	if (!deserialize(node[name], u))
+	{
+		LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+		return false;
+	}
+	return true;
+}
+
 bool load(const Json::Value& node, const std::string& name, float& f)
 {
 	if (!deserialize(node[name], f))
