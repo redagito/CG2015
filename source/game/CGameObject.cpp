@@ -28,8 +28,8 @@ bool CGameObject::isDeleteRequested() const
 	return m_deleteRequested;
 }
 
-void CGameObject::sendMessage() {
+void CGameObject::sendMessage(Message* msg) {
 	for (auto contr: m_controllers) {
-		//contr.reciveMessage(...);
+		//contr->reciveMessage(msg);
 	}
 }

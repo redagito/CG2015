@@ -3,6 +3,7 @@
 class IController;
 
 #include <glm/glm.hpp>
+#include "Message.h"
 
 #include <list>
 #include <memory>
@@ -43,9 +44,8 @@ public:
 
 	/**
 	* \brief Send state change messages to all controllers in Object
-	* TODO: What is our message?
 	*/
-	void sendMessage();
+	void sendMessage(Message* msg);
 	
 
 protected:
