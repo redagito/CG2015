@@ -30,7 +30,7 @@ CDeferredRenderer::CDeferredRenderer() { return; }
 
 CDeferredRenderer::~CDeferredRenderer() { return; }
 
-bool CDeferredRenderer::init(IResourceManager* manager)
+bool CDeferredRenderer::init(IResourceManager& manager)
 {
     LOG_INFO("Initializing deferred renderer.");
 
@@ -169,7 +169,7 @@ void CDeferredRenderer::draw(const IScene& scene, const ICamera& camera, const I
     }
 }
 
-CDeferredRenderer* CDeferredRenderer::create(IResourceManager* manager)
+CDeferredRenderer* CDeferredRenderer::create(IResourceManager& manager)
 {
     CDeferredRenderer* renderer = new CDeferredRenderer;
     if (!renderer->init(manager))
@@ -1464,13 +1464,13 @@ void CDeferredRenderer::draw(CMesh* mesh, const glm::mat4& translation, const gl
     // TODO Cleanup?
 }
 
-bool CDeferredRenderer::initGeometryPass(IResourceManager* manager)
+bool CDeferredRenderer::initGeometryPass(IResourceManager& manager)
 {
     // Init geometry pass shader
     // TODO Read file name from config?
     // Geometry pass shader for filling gbuffer
     std::string geometryPassShaderFile("data/shader/deferred/geometry_pass.ini");
-    m_geometryPassShaderId = manager->loadShader(geometryPassShaderFile);
+    m_geometryPassShaderId = manager.loadShader(geometryPassShaderFile);
 
     // Check if ok
     if (m_geometryPassShaderId == invalidResource)
@@ -1526,10 +1526,10 @@ bool CDeferredRenderer::initGeometryPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initShadowCubePass(IResourceManager* manager)
+bool CDeferredRenderer::initShadowCubePass(IResourceManager& manager)
 {
     std::string shaderFile("data/shader/shadow_cube_pass.ini");
-    m_shadowCubePassShaderId = manager->loadShader(shaderFile);
+    m_shadowCubePassShaderId = manager.loadShader(shaderFile);
 
     if (m_shadowCubePassShaderId == invalidResource)
     {
@@ -1608,10 +1608,10 @@ bool CDeferredRenderer::initShadowCubePass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initShadowMapPass(IResourceManager* manager)
+bool CDeferredRenderer::initShadowMapPass(IResourceManager& manager)
 {
     std::string shaderFile("data/shader/shadow_map_pass.ini");
-    m_shadowMapPassShaderId = manager->loadShader(shaderFile);
+    m_shadowMapPassShaderId = manager.loadShader(shaderFile);
 
     if (m_shadowMapPassShaderId == invalidResource)
     {
@@ -1667,11 +1667,11 @@ bool CDeferredRenderer::initShadowMapPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initPointLightPass(IResourceManager* manager)
+bool CDeferredRenderer::initPointLightPass(IResourceManager& manager)
 {
     // Point light shader
     std::string pointLightPassShaderFile("data/shader/deferred/point_light_pass.ini");
-    m_pointLightPassShaderId = manager->loadShader(pointLightPassShaderFile);
+    m_pointLightPassShaderId = manager.loadShader(pointLightPassShaderFile);
 
     // Check if ok
     if (m_pointLightPassShaderId == invalidResource)
@@ -1683,7 +1683,7 @@ bool CDeferredRenderer::initPointLightPass(IResourceManager* manager)
 
     // Load sphere mesh for point light representation
     std::string sphereMesh = "data/mesh/sphere.obj";
-    m_pointLightSphereId = manager->loadMesh(sphereMesh);
+    m_pointLightSphereId = manager.loadMesh(sphereMesh);
     if (m_pointLightSphereId == invalidResource)
     {
         LOG_ERROR("Failed to load point light volume mesh %s.", sphereMesh.c_str());
@@ -1711,12 +1711,12 @@ bool CDeferredRenderer::initPointLightPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initDirectionalLightPass(IResourceManager* manager)
+bool CDeferredRenderer::initDirectionalLightPass(IResourceManager& manager)
 {
     // Uses same frame buffer as point light pass
     // Directional light shader
     std::string directionalLightPassShaderFile("data/shader/deferred/directional_light_pass.ini");
-    m_directionalLightPassShaderId = manager->loadShader(directionalLightPassShaderFile);
+    m_directionalLightPassShaderId = manager.loadShader(directionalLightPassShaderFile);
 
     // Check if ok
     if (m_directionalLightPassShaderId == invalidResource)
@@ -1728,7 +1728,7 @@ bool CDeferredRenderer::initDirectionalLightPass(IResourceManager* manager)
 
     // Load quad mesh for directional light representation
     std::string quadMesh = "data/mesh/screen_quad.obj";
-    m_directionalLightScreenQuadId = manager->loadMesh(quadMesh);
+    m_directionalLightScreenQuadId = manager.loadMesh(quadMesh);
     if (m_directionalLightScreenQuadId == invalidResource)
     {
         LOG_ERROR("Failed to load screen quad mesh %s.", quadMesh.c_str());
@@ -1738,7 +1738,7 @@ bool CDeferredRenderer::initDirectionalLightPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initIlluminationPass(IResourceManager* manager)
+bool CDeferredRenderer::initIlluminationPass(IResourceManager& manager)
 {
     // Error check
     std::string error;
@@ -1749,7 +1749,7 @@ bool CDeferredRenderer::initIlluminationPass(IResourceManager* manager)
     }
     // Load illumination shader
     std::string illuminationPassShaderFile = "data/shader/deferred/illumination_pass.ini";
-    m_illuminationPassShaderId = manager->loadShader(illuminationPassShaderFile);
+    m_illuminationPassShaderId = manager.loadShader(illuminationPassShaderFile);
     // Check if ok
     if (m_illuminationPassShaderId == invalidResource)
     {
@@ -1767,7 +1767,7 @@ bool CDeferredRenderer::initIlluminationPass(IResourceManager* manager)
 
     // Screen quad mesh
     std::string quadMesh = "data/mesh/screen_quad.obj";
-    m_illuminationPassScreenQuadId = manager->loadMesh(quadMesh);
+    m_illuminationPassScreenQuadId = manager.loadMesh(quadMesh);
     // Check if ok
     if (m_illuminationPassScreenQuadId == invalidResource)
     {
@@ -1803,7 +1803,7 @@ bool CDeferredRenderer::initIlluminationPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initPostProcessPass(IResourceManager* manager)
+bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 {
     // Gauss blur pass
     if (!initGaussBlurHorizontalPass(manager))
@@ -1875,7 +1875,7 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager* manager)
 
     // Screen quad mesh
     std::string quadMesh = "data/mesh/screen_quad.obj";
-    m_postProcessScreenQuadId = manager->loadMesh(quadMesh);
+    m_postProcessScreenQuadId = manager.loadMesh(quadMesh);
     if (m_directionalLightScreenQuadId == invalidResource)
     {
         LOG_ERROR("Failed to load screen quad mesh %s.", quadMesh.c_str());
@@ -1914,11 +1914,11 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initDepthOfFieldPass(IResourceManager* manager)
+bool CDeferredRenderer::initDepthOfFieldPass(IResourceManager& manager)
 {
     // Depth of field shader
     std::string depthOfFieldShaderFile = "data/shader/post/depth_of_field_pass.ini";
-    m_depthOfFieldPassShaderId = manager->loadShader(depthOfFieldShaderFile);
+    m_depthOfFieldPassShaderId = manager.loadShader(depthOfFieldShaderFile);
     // Check if ok
     if (m_depthOfFieldPassShaderId == invalidResource)
     {
@@ -1928,11 +1928,11 @@ bool CDeferredRenderer::initDepthOfFieldPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initGaussBlurVerticalPass(IResourceManager* manager)
+bool CDeferredRenderer::initGaussBlurVerticalPass(IResourceManager& manager)
 {
     // Depth of field shader
     std::string gaussBlurVerticalShaderFile = "data/shader/post/gauss_blur_vertical_pass.ini";
-    m_gaussBlurVerticalShaderId = manager->loadShader(gaussBlurVerticalShaderFile);
+    m_gaussBlurVerticalShaderId = manager.loadShader(gaussBlurVerticalShaderFile);
     // Check if ok
     if (m_gaussBlurVerticalShaderId == invalidResource)
     {
@@ -1943,11 +1943,11 @@ bool CDeferredRenderer::initGaussBlurVerticalPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initGaussBlurHorizontalPass(IResourceManager* manager)
+bool CDeferredRenderer::initGaussBlurHorizontalPass(IResourceManager& manager)
 {
     // Depth of field shader
     std::string gaussBlurHorizontalShaderFile = "data/shader/post/gauss_blur_horizontal_pass.ini";
-    m_gaussBlurHorizontalShaderId = manager->loadShader(gaussBlurHorizontalShaderFile);
+    m_gaussBlurHorizontalShaderId = manager.loadShader(gaussBlurHorizontalShaderFile);
     // Check if ok
     if (m_gaussBlurHorizontalShaderId == invalidResource)
     {
@@ -1958,11 +1958,11 @@ bool CDeferredRenderer::initGaussBlurHorizontalPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initFxaaPass(IResourceManager* manager)
+bool CDeferredRenderer::initFxaaPass(IResourceManager& manager)
 {
     // Fxaa shader
     std::string fxaaShaderFile = "data/shader/post/fxaa_pass.ini";
-    m_fxaaPassShaderId = manager->loadShader(fxaaShaderFile);
+    m_fxaaPassShaderId = manager.loadShader(fxaaShaderFile);
     // Check if ok
     if (m_fxaaPassShaderId == invalidResource)
     {
@@ -1972,11 +1972,11 @@ bool CDeferredRenderer::initFxaaPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initFogPass(IResourceManager* manager)
+bool CDeferredRenderer::initFogPass(IResourceManager& manager)
 {
     // Fog shader
     std::string fogShaderFile = "data/shader/post/fog_pass.ini";
-    m_fogPassShaderId = manager->loadShader(fogShaderFile);
+    m_fogPassShaderId = manager.loadShader(fogShaderFile);
     // Check if ok
     if (m_fogPassShaderId == invalidResource)
     {
@@ -1986,11 +1986,11 @@ bool CDeferredRenderer::initFogPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initGodRayPass1(IResourceManager* manager)
+bool CDeferredRenderer::initGodRayPass1(IResourceManager& manager)
 {
     // Get shader
     std::string shader = "data/shader/post/god_ray_1_pass.ini";
-    m_godRayPass1ShaderId = manager->loadShader(shader);
+    m_godRayPass1ShaderId = manager.loadShader(shader);
     // Check if ok
     if (m_godRayPass1ShaderId == invalidResource)
     {
@@ -2000,11 +2000,11 @@ bool CDeferredRenderer::initGodRayPass1(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initGodRayPass2(IResourceManager* manager)
+bool CDeferredRenderer::initGodRayPass2(IResourceManager& manager)
 {
     // Get shader
     std::string shader = "data/shader/post/god_ray_2_pass.ini";
-    m_godRayPass2ShaderId = manager->loadShader(shader);
+    m_godRayPass2ShaderId = manager.loadShader(shader);
     // Check if ok
     if (m_godRayPass2ShaderId == invalidResource)
     {
@@ -2014,11 +2014,11 @@ bool CDeferredRenderer::initGodRayPass2(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initDisplayPass(IResourceManager* manager)
+bool CDeferredRenderer::initDisplayPass(IResourceManager& manager)
 {
     // Display shader
     std::string displayPassShaderFile = "data/shader/display_pass.ini";
-    m_displayPassShaderId = manager->loadShader(displayPassShaderFile);
+    m_displayPassShaderId = manager.loadShader(displayPassShaderFile);
     // Check if ok
     if (m_displayPassShaderId == invalidResource)
     {
@@ -2028,11 +2028,11 @@ bool CDeferredRenderer::initDisplayPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initVisualizeDepthPass(IResourceManager* manager)
+bool CDeferredRenderer::initVisualizeDepthPass(IResourceManager& manager)
 {
     // Get shader
     std::string shaderFile = "data/shader/debug/visualize_depth_buffer_pass.ini";
-    m_visualizeDepthPassShaderId = manager->loadShader(shaderFile);
+    m_visualizeDepthPassShaderId = manager.loadShader(shaderFile);
     // Check if ok
     if (m_visualizeDepthPassShaderId == invalidResource)
     {
@@ -2042,11 +2042,11 @@ bool CDeferredRenderer::initVisualizeDepthPass(IResourceManager* manager)
     return true;
 }
 
-bool CDeferredRenderer::initVignetteBlurPass(IResourceManager* manager)
+bool CDeferredRenderer::initVignetteBlurPass(IResourceManager& manager)
 {
 	// Get shader
 	std::string shaderFile = "data/shader/post/vignette_blur_pass.ini";
-	m_vignetteBlurPassShaderId = manager->loadShader(shaderFile);
+	m_vignetteBlurPassShaderId = manager.loadShader(shaderFile);
 	// Check if ok
 	if (m_vignetteBlurPassShaderId == invalidResource)
 	{
@@ -2056,11 +2056,11 @@ bool CDeferredRenderer::initVignetteBlurPass(IResourceManager* manager)
 	return true;
 }
 
-bool CDeferredRenderer::initBloomPass1(IResourceManager* manager)
+bool CDeferredRenderer::initBloomPass1(IResourceManager& manager)
 {
 	// Get shader
 	std::string shaderFile = "data/shader/post/bloom_1_pass.ini";
-	m_bloomPass1ShaderId = manager->loadShader(shaderFile);
+	m_bloomPass1ShaderId = manager.loadShader(shaderFile);
 	// Check if ok
 	if (m_bloomPass1ShaderId == invalidResource)
 	{
@@ -2070,11 +2070,11 @@ bool CDeferredRenderer::initBloomPass1(IResourceManager* manager)
 	return true;
 }
 
-bool CDeferredRenderer::initBloomPass2(IResourceManager* manager)
+bool CDeferredRenderer::initBloomPass2(IResourceManager& manager)
 {
 	// Get shader
 	std::string shaderFile = "data/shader/post/bloom_2_pass.ini";
-	m_bloomPass2ShaderId = manager->loadShader(shaderFile);
+	m_bloomPass2ShaderId = manager.loadShader(shaderFile);
 	// Check if ok
 	if (m_bloomPass2ShaderId == invalidResource)
 	{

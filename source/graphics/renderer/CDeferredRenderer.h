@@ -27,12 +27,12 @@ public:
     CDeferredRenderer();
     ~CDeferredRenderer();
 
-    bool init(IResourceManager* manager);
+    bool init(IResourceManager& manager);
 
     void draw(const IScene& scene, const ICamera& camera, const IWindow& window,
               const IGraphicsResourceManager& manager);
 
-    static CDeferredRenderer* create(IResourceManager* manager);
+    static CDeferredRenderer* create(IResourceManager& manager);
 
 protected:
     /**
@@ -156,85 +156,85 @@ protected:
     /**
     * \brief Initializes resources for geometry pass.
     */
-    bool initGeometryPass(IResourceManager* manager);
+    bool initGeometryPass(IResourceManager& manager);
 
     /**
     * \brief Initializes resources for point light pass.
     */
-    bool initPointLightPass(IResourceManager* manager);
+    bool initPointLightPass(IResourceManager& manager);
 
     /**
     * \brief Initializes resources for directional light pass.
     */
-    bool initDirectionalLightPass(IResourceManager* manager);
+    bool initDirectionalLightPass(IResourceManager& manager);
 
     /**
     * \brief Initializes resources for illumination pass.
     */
-    bool initIlluminationPass(IResourceManager* manager);
+    bool initIlluminationPass(IResourceManager& manager);
 
     /**
      * \brief Initializes resources for shadow map pass
      */
-    bool initShadowMapPass(IResourceManager* manager);
+    bool initShadowMapPass(IResourceManager& manager);
 
     /**
      * \brief Initializes resources for shadow map pass
      */
-    bool initShadowCubePass(IResourceManager* manager);
+    bool initShadowCubePass(IResourceManager& manager);
 
     /**
      * \brief Initializes post processing pass.
      */
-    bool initPostProcessPass(IResourceManager* manager);
+    bool initPostProcessPass(IResourceManager& manager);
 
     /**
     * \brief Initializes post process pass for depth of field.
     *
     * Called by initPostProcesPass.
     */
-    bool initDepthOfFieldPass(IResourceManager* manager);
+    bool initDepthOfFieldPass(IResourceManager& manager);
 
     /**
     * \brief Initializes vertical gauss blur pass.
     */
-    bool initGaussBlurVerticalPass(IResourceManager* manager);
+    bool initGaussBlurVerticalPass(IResourceManager& manager);
 
     /**
     * \brief Initializes horizontal gauss blur pass.
     */
-    bool initGaussBlurHorizontalPass(IResourceManager* manager);
+    bool initGaussBlurHorizontalPass(IResourceManager& manager);
 
     /**
     * \brief Initializes FXAA pass for post processing.
     */
-    bool initFxaaPass(IResourceManager* manager);
+    bool initFxaaPass(IResourceManager& manager);
 
     /**
     * \brief Initializes fog pass for post processing.
     */
-    bool initFogPass(IResourceManager* manager);
+    bool initFogPass(IResourceManager& manager);
 
-    bool initGodRayPass1(IResourceManager* manager);
-    bool initGodRayPass2(IResourceManager* manager);
+    bool initGodRayPass1(IResourceManager& manager);
+    bool initGodRayPass2(IResourceManager& manager);
 
     /**
     * \brief Display pass draws final image to screen.
     */
-    bool initDisplayPass(IResourceManager* manager);
+    bool initDisplayPass(IResourceManager& manager);
 
-    bool initVisualizeDepthPass(IResourceManager* manager);
+    bool initVisualizeDepthPass(IResourceManager& manager);
 
 	/**
 	* \brief Initializes distortion pass.
 	*/
-	bool initVignetteBlurPass(IResourceManager* manager);
+	bool initVignetteBlurPass(IResourceManager& manager);
 
 	/**
 	* \brief Bloom technique. 
 	*/
-	bool initBloomPass1(IResourceManager* manager);
-	bool initBloomPass2(IResourceManager* manager);
+	bool initBloomPass1(IResourceManager& manager);
+	bool initBloomPass2(IResourceManager& manager);
 
     void draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
               const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager,

@@ -34,7 +34,7 @@ CForwardRenderer::~CForwardRenderer()
     // TODO Cleanup
 }
 
-bool CForwardRenderer::init(IResourceManager* manager)
+bool CForwardRenderer::init(IResourceManager& manager)
 {
 	// Set clear color
 	glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
@@ -137,7 +137,7 @@ void CForwardRenderer::draw(const IScene& scene, const ICamera& camera, const IW
 	}
 }
 
-CForwardRenderer* CForwardRenderer::create(IResourceManager* manager)
+CForwardRenderer* CForwardRenderer::create(IResourceManager& manager)
 {
 	CForwardRenderer* renderer = new CForwardRenderer;
 	if (!renderer->init(manager))
@@ -224,11 +224,11 @@ void CForwardRenderer::draw(CMesh* mesh, const glm::mat4& translation, const glm
     // TODO Cleanup?
 }
 
-bool CForwardRenderer::initDefaultShaders(IResourceManager* manager)
+bool CForwardRenderer::initDefaultShaders(IResourceManager& manager)
 {
     // TODO Read file name from config?
     std::string defaultShaderFile("data/shader/forward_test_0.ini");
-	m_forwardShader = manager->loadShader(defaultShaderFile);
+	m_forwardShader = manager.loadShader(defaultShaderFile);
 
     // Check if ok
 	if (m_forwardShader == invalidResource)

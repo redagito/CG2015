@@ -50,7 +50,7 @@ struct SFeatureInfo
  */
 class ICamera
 {
-   public:
+public:
     virtual ~ICamera();
 
     /**
@@ -69,6 +69,6 @@ class ICamera
     virtual SFeatureInfo& getFeatureInfoForWrite() { return m_info; } // TODO Rename
     virtual const SFeatureInfo& getFeatureInfo() const { return m_info; }
 
-   private:
+private:
     SFeatureInfo m_info;
 };

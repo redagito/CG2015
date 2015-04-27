@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EKeyCode.h"
+
 class IInputListener;
 
 /**

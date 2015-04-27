@@ -38,12 +38,12 @@ class CForwardRenderer : public IRenderer
     /**
     * \brief Performs resource aqucisition and initialization.
     */
-    bool init(IResourceManager* manager);
+    bool init(IResourceManager& manager);
 
     /**
     * \brief Creates and initializes forward renderer.
     */
-    static CForwardRenderer* create(IResourceManager* manager);
+    static CForwardRenderer* create(IResourceManager& manager);
 
    protected:
     /**
@@ -55,7 +55,7 @@ class CForwardRenderer : public IRenderer
               const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager);
 
    private:
-    bool initDefaultShaders(IResourceManager* manager);
+    bool initDefaultShaders(IResourceManager& manager);
 
     glm::mat4 m_currentView = glm::mat4(1.f);       /**< Stores the current view matrix. */
     glm::mat4 m_currentProjection = glm::mat4(1.f); /**< Stores the current projection matrix. */

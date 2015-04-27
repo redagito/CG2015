@@ -1,4 +1,5 @@
 #include "StringUtil.h"
+#include "hash/CRC32.h"
 
 std::string getFileExtension(const std::string& file)
 {
@@ -27,4 +28,9 @@ std::string getFileExtension(const std::string& file)
 	// Retrieve file extension
 	std::string extension = file.substr(pos + 1);
 	return extension;
+}
+
+uint32_t crc32Hash(const std::string& text)
+{
+	return crc32Calculate((const uint8_t*) text.data(), text.size());
 }

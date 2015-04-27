@@ -11,10 +11,10 @@ CScreenQuadPass::CScreenQuadPass()
 	m_quad.reset(new CMesh(vertices, indices, normals, uvs, EPrimitiveType::Point));
 }
 
-bool CScreenQuadPass::init(IResourceManager* manager)
+bool CScreenQuadPass::init(IResourceManager& manager)
 {
 	std::string screenQuadShaderFile = "data/shader/compose_screenquad.ini";
-	m_shaderId = manager->loadShader(screenQuadShaderFile);
+	m_shaderId = manager.loadShader(screenQuadShaderFile);
 	if (m_shaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to load screenquad shader %s.", screenQuadShaderFile.c_str());

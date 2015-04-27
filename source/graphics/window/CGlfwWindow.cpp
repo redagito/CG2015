@@ -1,6 +1,6 @@
-#include "CGlfwWindow.h"
-
 #include <cassert>
+
+#include "CGlfwWindow.h"
 
 #include "graphics/renderer/core/RendererCoreConfig.h"
 #include <GLFW/glfw3.h>

@@ -326,7 +326,7 @@ bool CEngine::initRenderer(const std::string& rendererType)
 
     // Initialize deferred renderer
     LOG_INFO("Initializing deferred renderer.");
-    m_deferredRenderer.reset(CDeferredRenderer::create(m_resourceManager.get()));
+    m_deferredRenderer.reset(CDeferredRenderer::create(*m_resourceManager));
     if (m_deferredRenderer == nullptr)
     {
         LOG_ERROR("Failed to initialize deferred renderer.");
@@ -335,7 +335,7 @@ bool CEngine::initRenderer(const std::string& rendererType)
 
     // Initialize forward renderer
     LOG_INFO("Initializing forward renderer.");
-    m_forwardRenderer.reset(CForwardRenderer::create(m_resourceManager.get()));
+    m_forwardRenderer.reset(CForwardRenderer::create(*m_resourceManager));
     if (m_forwardRenderer == nullptr)
     {
         LOG_ERROR("Failed to initialize forward renderer.");
@@ -373,6 +373,8 @@ bool CEngine::initRenderer(const std::string& rendererType)
 
 bool CEngine::initScene(const std::string& sceneFile)
 {
+	// Create new scene object
+	// TODO Should be done in graphics system
     m_scene = std::make_shared<CScene>();
     CSceneLoader loader(*m_resourceManager);
 

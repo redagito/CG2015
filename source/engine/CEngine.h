@@ -6,10 +6,14 @@
 
 #include "IEngine.h"
 
+// Game
+class CGameSystem;
+
 // GLFW
 struct GLFWwindow;
 
 // Graphics
+class IGraphicsSystem;
 class CGlfwWindow;
 class IRenderer;
 class IScene;
@@ -53,6 +57,10 @@ private:
 	bool initScene(const std::string& sceneFile);
 
 	void updateAnimation(float timeDiff);
+
+	// TODO Should use interface instead of concrete class.
+	std::shared_ptr<CGameSystem> m_gameSystem; /**< Game system. */
+	std::shared_ptr<IGraphicsSystem> m_graphicsSystem; /**< Graphics system. */
 
     std::shared_ptr<IResourceManager> m_resourceManager =
         nullptr; /**< Resource loader and manager. */

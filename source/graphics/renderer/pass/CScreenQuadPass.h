@@ -18,7 +18,7 @@ class CScreenQuadPass
 public:
 	CScreenQuadPass();
 
-	bool init(IResourceManager* manager);
+	bool init(IResourceManager& manager);
 
     /**
     * \brief Draws screen space quad with specified texture to specified frame buffer.
