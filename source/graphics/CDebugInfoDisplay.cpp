@@ -11,17 +11,19 @@
 
 #include "resource/IResourceManager.h"
 
-bool loadShader(const std::string &path, std::shared_ptr<IResourceManager> &resourceManager,
-                std::unique_ptr<CShaderProgram> &resultShader)
+// Duplicate code
+// TODO Should use graphicsresource manager
+bool loadShader(const std::string& path, IResourceManager& resourceManager,
+                std::unique_ptr<CShaderProgram>& resultShader)
 {
-    ResourceId shaderId = resourceManager->loadShader(path);
+    ResourceId shaderId = resourceManager.loadShader(path);
 	if (shaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to load shader from %s, invalid id returned.", path.c_str());
 	}
     ResourceId vertexShaderId, tessellationControlShaderId, tessellationEvaluationShaderId,
         geometryShaderId, fragmentShaderId;
-    if (!resourceManager->getShader(shaderId, vertexShaderId, tessellationControlShaderId,
+    if (!resourceManager.getShader(shaderId, vertexShaderId, tessellationControlShaderId,
                                     tessellationEvaluationShaderId, geometryShaderId,
                                     fragmentShaderId))
     {
@@ -31,8 +33,8 @@ bool loadShader(const std::string &path, std::shared_ptr<IResourceManager> &reso
 
     // Load from resoucre manager
     std::string vertexShaderText, fragmentShaderText;
-    resourceManager->getString(vertexShaderId, vertexShaderText);
-    resourceManager->getString(fragmentShaderId, fragmentShaderText);
+    resourceManager.getString(vertexShaderId, vertexShaderText);
+    resourceManager.getString(fragmentShaderId, fragmentShaderText);
     if (vertexShaderText.empty() || fragmentShaderText.empty())
     {
 		LOG_ERROR("Error on retrieving shader code from %s.", path.c_str());
@@ -53,19 +55,17 @@ bool loadShader(const std::string &path, std::shared_ptr<IResourceManager> &reso
         return false;
     }
 
-    resultShader.reset(
-        new CShaderProgram(&vertexShader, nullptr, nullptr, nullptr, &fragmentShader));
+    resultShader.reset(new CShaderProgram(&vertexShader, nullptr, nullptr, nullptr, &fragmentShader));
     return true;
 }
 
-CDebugInfoDisplay::CDebugInfoDisplay(std::shared_ptr<IResourceManager> resourceManager)
-    : m_resourceManager(resourceManager)
+CDebugInfoDisplay::CDebugInfoDisplay(IResourceManager& resourceManager)
 {
     // TODO move this to an init() method
 
     // TODO remove hardcoded paths here
-    loadShader("data/shader/shader_display_text.ini", m_resourceManager, m_textShader);
-    loadShader("data/shader/shader_display_overlay.ini", m_resourceManager, m_overlayShader);
+	loadShader("data/shader/shader_display_text.ini", resourceManager, m_textShader);
+	loadShader("data/shader/shader_display_overlay.ini", resourceManager, m_overlayShader);
 
     m_VAO.reset(new CVertexArrayObject());
     m_verticesBuffer.reset(new CVertexBuffer(GL_STATIC_DRAW));
@@ -73,23 +73,21 @@ CDebugInfoDisplay::CDebugInfoDisplay(std::shared_ptr<IResourceManager> resourceM
     m_overlaysBuffer.reset(new CVertexBuffer(GL_STATIC_DRAW));
 
     // TODO this should not be called in constructor / move to init() method
-    loadFont("data/image/font1.png");
+    loadFont("data/image/font1.png", resourceManager);
 }
 
-bool CDebugInfoDisplay::loadFont(const std::string &path)
+bool CDebugInfoDisplay::loadFont(const std::string &path, IResourceManager& resourceManager)
 {
-    ResourceId imageId = m_resourceManager->loadImage(path, EColorFormat::RGBA32);
+	ResourceId imageId = resourceManager.loadImage(path, EColorFormat::RGBA32);
     std::vector<unsigned char> data;
     unsigned int width, height;
     EColorFormat colorFormat;
-    if (!m_resourceManager->getImage(imageId, data, width, height, colorFormat))
+	if (!resourceManager.getImage(imageId, data, width, height, colorFormat))
     {
         LOG_ERROR("Error on retrieving data from image.");
         return false;
     }
-
     m_texture.reset(new CTexture(data, width, height, colorFormat, false));
-
     return true;
 }
 

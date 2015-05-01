@@ -10,6 +10,7 @@
 #include "debug/Profile.h"
 
 // Graphics
+#include "graphics/system/CGraphicsSystem.h"
 #include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/renderer/debug/RendererDebug.h"
 
@@ -44,6 +45,9 @@
 // Animation
 #include "animation/CAnimationWorld.h"
 
+// Game
+#include "game/CGameSystem.h"
+
 CEngine::CEngine() {}
 
 CEngine::~CEngine() 
@@ -60,15 +64,11 @@ bool CEngine::init(const char* configFile)
         LOG_WARNING("Failed to create log file at %s.", logFile.c_str());
     }
 
-	// Create debug info container and register as listener
-    m_debugInfo = std::make_shared<CDebugInfo>();
-    CLogger::addListener(m_debugInfo.get());
-
 	// Config data with default values
 	std::string modeType = "demo"; // Startup mode for the application
 	std::string sceneFile = "data/world/test_1.json"; // Scene file to load and render if mode is demo
 	std::string gameFile = "data/game/defenders_of_cthedra/game.json"; // Game file to load if mode is game
-	std::string rendererType = "forward"; // Renderer type to use
+	std::string rendererType = "deferred"; // Renderer type to use
 	
 	// Window parameters
 	unsigned int windowWidth = 800;
@@ -143,23 +143,20 @@ bool CEngine::init(const char* configFile)
         return false;
     }
 
+	// Create game system
+	m_gameSystem = std::make_shared<CGameSystem>();
+
 	// Create animation world
 	// TODO Move into gameworld or remove entirely? Only used for simple animations.
 	m_animationWorld = std::make_shared<CAnimationWorld>();
 
-	// TODO Everything graphics related shgould be managed/initialized by a graphics system object.
-    // Graphics resource manager, listens to resource manager
-    CGraphicsResourceManager* manager = new CGraphicsResourceManager;
-    m_resourceManager->addResourceListener(manager);
-    m_graphicsResourceManager.reset(manager);
-
-    // Create renderer
-	// TODO Move to graphics system, user should not create his own renderer.
-	if (!initRenderer(rendererType))
-    {
-        LOG_ERROR("Failed to initialize renderer.");
-        return false;
-    }
+	// Create and initialize graphics system
+	m_graphicsSystem = std::make_shared<CGraphicsSystem>();
+	if (!m_graphicsSystem->init(*m_resourceManager))
+	{
+		LOG_ERROR("Failed to initialize graphics system.");
+		return false;
+	}
 
 	// Initialize scene
 	// TODO Move to graphics system, scenes should not be managed by the user.
@@ -178,12 +175,12 @@ bool CEngine::init(const char* configFile)
     m_cameraController->setCamera(m_camera);
     m_cameraController->setInputProvider(m_inputProvider.get());
 
-	// TODO Debug info display is a simple text overlay which prints stats and logs, needs refactoring.
-    m_debugInfoDisplay = std::make_shared<CDebugInfoDisplay>(m_resourceManager);
+	// TODO Hacky, camera and scene should be created by the graphics system
+	m_graphicsSystem->setActiveCamera(m_camera.get());
+	m_graphicsSystem->setActiveScene(m_scene.get());
 
 	// Adds input listener
     m_window->addListener(m_cameraController.get());
-
     return true;
 }
 
@@ -196,12 +193,7 @@ void CEngine::run()
     double k1Cooldown = 0.0;
     double timeDiff = 0.0;
 
-    double fpsCoolDown = 1.f;
-    unsigned int lastFrameCount = 0;
-    unsigned int currentFrameCount = 0;
-
-    bool displayDebugInfo = false;
-
+	// Activate mouse capture as default
     m_window->toggleMouseCapture();
     
     do
@@ -214,62 +206,52 @@ void CEngine::run()
         f3Cooldown -= timeDiff;
         f5Cooldown -= timeDiff;
         k1Cooldown -= timeDiff;
-        fpsCoolDown -= timeDiff;
 
-        if (fpsCoolDown < 0)
-        {
-            fpsCoolDown += 1.f;
-            lastFrameCount = currentFrameCount;
-            currentFrameCount = 0;
-        }
-
+		// Key 1 turns debug overlay on/off
         if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_1) == GLFW_PRESS && k1Cooldown <= 0.f)
         {
             k1Cooldown = 0.3f;
-            displayDebugInfo = !displayDebugInfo;
+			m_graphicsSystem->toggleDebugOverlay();
         }
 
+		// Key F2 sets active rendering device to deferred renderer
         if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F2) == GLFW_PRESS && f2Cooldown <= 0.f)
         {
             f2Cooldown = 0.3f;
-            m_renderer = m_deferredRenderer;
+			m_graphicsSystem->setActiveRenderer("deferred");
         }
 
+		// Key F3 sets active rendering device to forward renderer
         if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F3) == GLFW_PRESS && f3Cooldown <= 0.f)
         {
             f3Cooldown = 0.3f;
-            m_renderer = m_forwardRenderer;
+			m_graphicsSystem->setActiveRenderer("forward");
         }
         
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F5) == GLFW_PRESS && f5Cooldown <= 0.f)
-        {
-            f5Cooldown = 0.3f;
-            m_cameraController->loadSequence("data/democam.json");
-        }
+		// Key F5 starts replay of camera movement
+		// Disabled and to be moved into game state
+        // if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F5) == GLFW_PRESS && f5Cooldown <= 0.f)
+        // {
+        //     f5Cooldown = 0.3f;
+        //     m_cameraController->loadSequence("data/democam.json");
+        // }
 
+		// Update camera movement
         m_cameraController->animate((float)timeDiff);
 
-        m_renderer->draw(*m_scene.get(), *m_camera.get(), *m_window.get(),
-                         *m_graphicsResourceManager.get());
-
-        if (displayDebugInfo)
-        {
-            m_debugInfo->setValue("TimeDiff", std::to_string(timeDiff));
-            m_debugInfo->setValue("Camera x", std::to_string(m_camera->getPosition().x));
-            m_debugInfo->setValue("Camera y", std::to_string(m_camera->getPosition().y));
-            m_debugInfo->setValue("Camera z", std::to_string(m_camera->getPosition().z));
-            m_debugInfo->setValue("FPS", std::to_string(lastFrameCount));
-
-            m_debugInfoDisplay->draw(*m_debugInfo.get());
-        }
+		// Draw active scene from active camera with active rendering device
+		m_graphicsSystem->draw(*m_window);
 
 		// Perform animation update
 		m_animationWorld->update((float) timeDiff);
 
+		// Swap buffers after draw
         m_window->swapBuffer();
+
 		// Update input
 		glfwPollEvents();
 
+		// Key F1 turns mouse capture on/off
         if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F1) == GLFW_PRESS && f1Cooldown <= 0.f)
         {
             // Reset cooldown
@@ -278,8 +260,8 @@ void CEngine::run()
             m_window->toggleMouseCapture();
         }
 
+		// Frame time
         timeDiff = glfwGetTime() - startTime;
-        ++currentFrameCount;
 
     } while (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_ESCAPE) != GLFW_PRESS &&
              glfwWindowShouldClose(m_window->getGlfwHandle()) == 0);
@@ -313,61 +295,6 @@ bool CEngine::initWindow(unsigned int width, unsigned int height, const std::str
 
     // Set pointer
     m_window.reset(window);
-    return true;
-}
-
-bool CEngine::initRenderer(const std::string& rendererType)
-{
-    if (m_renderer != nullptr || m_deferredRenderer != nullptr || m_forwardRenderer != nullptr)
-    {
-        LOG_INFO("Renderer already initialized and re-initialization is not supported.");
-        return true;
-    }
-
-    // Initialize deferred renderer
-    LOG_INFO("Initializing deferred renderer.");
-    m_deferredRenderer.reset(CDeferredRenderer::create(*m_resourceManager));
-    if (m_deferredRenderer == nullptr)
-    {
-        LOG_ERROR("Failed to initialize deferred renderer.");
-        return false;
-    }
-
-    // Initialize forward renderer
-    LOG_INFO("Initializing forward renderer.");
-    m_forwardRenderer.reset(CForwardRenderer::create(*m_resourceManager));
-    if (m_forwardRenderer == nullptr)
-    {
-        LOG_ERROR("Failed to initialize forward renderer.");
-        return false;
-    }
-
-    // Set renderer
-    LOG_INFO("Initial renderer type set to %s.", rendererType.c_str());
-
-    // Set renderer object
-    if (rendererType == "forward")
-    {
-        m_renderer = m_forwardRenderer;
-    }
-    else if (rendererType == "deferred")
-    {
-        m_renderer = m_deferredRenderer;
-    }
-    else
-    {
-        // Should not happen as default renderer is set to forward in config call
-        LOG_WARNING("Invalid renderer type %s specified. Fallback to forward renderer.",
-                    rendererType.c_str());
-        m_renderer = m_forwardRenderer;
-    }
-
-    // Initialize renderer resources
-    if (m_renderer == nullptr)
-    {
-        LOG_ERROR("Failed to initialize renderer.");
-        return false;
-    }
     return true;
 }
 

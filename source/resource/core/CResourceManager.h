@@ -19,8 +19,9 @@
 */
 class CResourceManager : public IResourceManager
 {
-   public:
-    CResourceManager();
+public:
+	CResourceManager();
+	~CResourceManager();
 
     ResourceId createMesh(const std::vector<float>& vertices,
                           const std::vector<unsigned int>& indices,
@@ -77,12 +78,12 @@ class CResourceManager : public IResourceManager
     void notifyResourceListeners(EResourceType type, ResourceId id, EListenerEvent event);
 
    private:
-    ResourceId m_nextMeshId;     /**< Next free mesh id. */
-    ResourceId m_nextImageId;    /**< Next free image id. */
-    ResourceId m_nextMaterialId; /**< Next free material id. */
-	ResourceId m_nextModelId;    /**< Next free model id. */
-    ResourceId m_nextStringId;   /**< Next free string id. */
-    ResourceId m_nextShaderId;   /**< Next free shader id. */
+    ResourceId m_nextMeshId = 0;     /**< Next free mesh id. */
+	ResourceId m_nextImageId = 0;    /**< Next free image id. */
+	ResourceId m_nextMaterialId = 0; /**< Next free material id. */
+	ResourceId m_nextModelId = 0;    /**< Next free model id. */
+	ResourceId m_nextStringId = 0;   /**< Next free string id. */
+	ResourceId m_nextShaderId = 0;   /**< Next free shader id. */
 
     // TODO Change to vector?
     std::unordered_map<ResourceId, SMesh> m_meshes;        /**< Loaded meshes. */

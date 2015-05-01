@@ -37,6 +37,15 @@ public:
 	virtual void setActiveCamera(const ICamera* camera) = 0;
 
 	/**
+	* \brief Toggles debug overlay on/off.
+	*
+	* Default is off.
+	* TODO This should actually be a separate parameter for the draw call
+	* or a parameter supplied by the camera.
+	*/
+	virtual void toggleDebugOverlay() = 0;
+
+	/**
 	* \brief Draws active scene.
 	*/
 	virtual void draw(IWindow& window) = 0;

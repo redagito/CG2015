@@ -14,14 +14,12 @@ class IResourceManager;
 class CDebugInfoDisplay
 {
    public:
-    CDebugInfoDisplay(std::shared_ptr<IResourceManager> resourceManager);
+    CDebugInfoDisplay(IResourceManager& resourceManager);
 
-    bool loadFont(const std::string& path);
+	bool loadFont(const std::string& path, IResourceManager& resourceManager);
     void draw(const CDebugInfo& info);
 
    private:
-    std::shared_ptr<IResourceManager> m_resourceManager;
-
     std::unique_ptr<CShaderProgram> m_textShader = nullptr;
     std::unique_ptr<CShaderProgram> m_overlayShader = nullptr;
     std::unique_ptr<CTexture> m_texture = nullptr;

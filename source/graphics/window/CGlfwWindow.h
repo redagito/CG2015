@@ -55,14 +55,12 @@ class CGlfwWindow : public IWindow
     static void resizeCallback(GLFWwindow* window, int width, int height);
     void handleResize(int width, int height);
 
-    static std::unordered_map<GLFWwindow*, CGlfwWindow*>
-        s_windows; /**< GLFW window to window object mapping. */
+    static std::unordered_map<GLFWwindow*, CGlfwWindow*> s_windows; /**< GLFW window to window object mapping. */
 
-    GLFWwindow* m_window;  /**< Window resource. */
-    unsigned int m_width;  /**< Current window width. */
-    unsigned int m_height; /**< Current window height. */
+    GLFWwindow* m_window = nullptr;  /**< Window resource. */
+    unsigned int m_width = 0;  /**< Current window width. */
+    unsigned int m_height = 0; /**< Current window height. */
 
-    bool m_mouseCaptured; /**< Current mouse capture state. */
-    
-    std::set<IGlfwWindowListener*> m_listeners;
+    bool m_mouseCaptured = false; /**< Current mouse capture state. */
+	std::set<IGlfwWindowListener*> m_listeners;
 };

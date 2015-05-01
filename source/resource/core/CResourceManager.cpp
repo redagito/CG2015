@@ -23,9 +23,16 @@
 #include "debug/Log.h"
 
 CResourceManager::CResourceManager()
-    : m_nextMeshId(0), m_nextImageId(0), m_nextMaterialId(0), m_nextStringId(0), m_nextShaderId(0)
 {
     return;
+}
+
+CResourceManager::~CResourceManager()
+{
+	for (auto listener : m_resourceListeners)
+	{
+		listener->onDetach(this);
+	}
 }
 
 ResourceId CResourceManager::createMesh(const std::vector<float>& vertices,
