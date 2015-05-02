@@ -44,10 +44,20 @@ bool CGameSystem::update(float dtime)
 	return true;
 }
 
-bool CGameSystem::init(const std::string& initialState)
+bool CGameSystem::init(const std::string& initialState, IGraphicsSystem* graphicsSystem)
 {
 	LOG_DEBUG("Initializing game system.");
 	LOG_DEBUG("Game system initial state set to %s.", initialState.c_str());
+
+	// Initialize game states
+	for (auto& entry : m_gameStates)
+	{
+		if (!entry.second->init(graphicsSystem))
+		{
+			LOG_ERROR("Failed to initialize game state %s.", entry.first.c_str());
+			return false;
+		}
+	}
 
 	// Set initial state active
 	assert(m_gameStates.count(initialState) != 0);
@@ -60,17 +70,14 @@ bool CGameSystem::init(const std::string& initialState)
 
 bool CGameSystem::addState(const std::string& name, IGameState* state)
 {
-	if (!state->init())
-	{
-		LOG_ERROR("Failed to initialize game state %s.", name.c_str());
-		return false;
-	}
+	// Check for duplicates
 	if (m_gameStates.count(name) != 0)
 	{
 		// State with name already exists
 		LOG_WARNING("Overwriting game state %s.", name.c_str());
 	}
 
+	// Add state
 	m_gameStates[name] = std::unique_ptr<IGameState>(state);
 	LOG_DEBUG("Added game state %s to game system.", name.c_str());
 	return true;

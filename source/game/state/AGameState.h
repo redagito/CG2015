@@ -16,7 +16,7 @@ public:
 	CGameWorld& getGameWorld();
 	const CGameWorld& getGameWorld() const;
 
-	virtual bool init();
+	virtual bool init(IGraphicsSystem* graphicsSystem);
 	virtual void onEnter();
 	virtual bool update(float dtime);
 	virtual void onExit();

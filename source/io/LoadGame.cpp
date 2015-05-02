@@ -13,7 +13,6 @@
 #include "resource/IResourceManager.h"
 #include "game/CGameSystem.h"
 
-#include "game/state/CStartupState.h"
 #include "game/state/CTitleState.h"
 #include "game/state/CGamePlayState.h"
 
@@ -129,11 +128,7 @@ bool loadGameState(const std::string& file, const std::string& name, IResourceMa
 
 	// Create specific game state type
 	IGameState* state = nullptr;
-	if (type == "startup")
-	{
-		state = new CStartupState;
-	}
-	else if (type == "title")
+	if (type == "title")
 	{
 		state = new CTitleState;
 	}

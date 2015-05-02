@@ -2,6 +2,8 @@
 
 #include <string>
 
+class IGraphicsSystem;
+
 /**
 * \brief Game state interface class.
 *
@@ -19,7 +21,7 @@ public:
 	/**
 	* \brief Explicit initialization.
 	*/
-	virtual bool init() = 0;
+	virtual bool init(IGraphicsSystem* graphicsSystem) = 0;
 
 	/**
 	* \brief Called on entering state.

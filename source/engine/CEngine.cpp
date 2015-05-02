@@ -47,11 +47,15 @@
 
 // Game
 #include "game/CGameSystem.h"
+#include "game/state/CTitleState.h"
+#include "game/state/CGamePlayState.h"
 
 CEngine::CEngine() {}
 
 CEngine::~CEngine() 
 {
+	m_gameSystem = nullptr;
+
 	LOG_DEBUG("Profiler info: %s", CProfiler::toString().c_str());
 }
 
@@ -143,9 +147,6 @@ bool CEngine::init(const char* configFile)
         return false;
     }
 
-	// Create game system
-	m_gameSystem = std::make_shared<CGameSystem>();
-
 	// Create animation world
 	// TODO Move into gameworld or remove entirely? Only used for simple animations.
 	m_animationWorld = std::make_shared<CAnimationWorld>();
@@ -155,6 +156,13 @@ bool CEngine::init(const char* configFile)
 	if (!m_graphicsSystem->init(*m_resourceManager))
 	{
 		LOG_ERROR("Failed to initialize graphics system.");
+		return false;
+	}
+
+	// Create and initialize game system
+	if (!initGameSystem(gameFile))
+	{
+		LOG_ERROR("Failed to initialize game system.");
 		return false;
 	}
 
@@ -192,6 +200,7 @@ void CEngine::run()
     double f5Cooldown = 0.0;
     double k1Cooldown = 0.0;
     double timeDiff = 0.0;
+	bool running = true;
 
 	// Activate mouse capture as default
     m_window->toggleMouseCapture();
@@ -213,6 +222,15 @@ void CEngine::run()
             k1Cooldown = 0.3f;
 			m_graphicsSystem->toggleDebugOverlay();
         }
+
+		// Key F1 turns mouse capture on/off
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F1) == GLFW_PRESS && f1Cooldown <= 0.f)
+		{
+			// Reset cooldown
+			f1Cooldown = 0.5f;
+			// Capure/uncapture mouse
+			m_window->toggleMouseCapture();
+		}
 
 		// Key F2 sets active rendering device to deferred renderer
         if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F2) == GLFW_PRESS && f2Cooldown <= 0.f)
@@ -236,14 +254,21 @@ void CEngine::run()
         //     m_cameraController->loadSequence("data/democam.json");
         // }
 
+		// Game system update
+		if (!m_gameSystem->update((float)timeDiff))
+		{
+			// On return false quit application
+			running = false;
+		}
+
 		// Update camera movement
-        m_cameraController->animate((float)timeDiff);
+        m_cameraController->animate((float) timeDiff);
 
 		// Draw active scene from active camera with active rendering device
 		m_graphicsSystem->draw(*m_window);
 
 		// Perform animation update
-		m_animationWorld->update((float) timeDiff);
+		// m_animationWorld->update((float) timeDiff);
 
 		// Swap buffers after draw
         m_window->swapBuffer();
@@ -251,23 +276,13 @@ void CEngine::run()
 		// Update input
 		glfwPollEvents();
 
-		// Key F1 turns mouse capture on/off
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F1) == GLFW_PRESS && f1Cooldown <= 0.f)
-        {
-            // Reset cooldown
-            f1Cooldown = 0.5f;
-            // Capure/uncapture mouse
-            m_window->toggleMouseCapture();
-        }
-
 		// Frame time
         timeDiff = glfwGetTime() - startTime;
 
     } while (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-             glfwWindowShouldClose(m_window->getGlfwHandle()) == 0);
+             glfwWindowShouldClose(m_window->getGlfwHandle()) == 0 && running);
 
     glfwTerminate();
-
     return;
 }
 
@@ -314,4 +329,22 @@ bool CEngine::initScene(const std::string& sceneFile)
         return false;
     }
     return true;
+}
+
+bool CEngine::initGameSystem(const std::string& gameFile)
+{
+	// Create and set game system
+	m_gameSystem = std::make_shared<CGameSystem>();
+
+	// TODO Load game file
+	// TODO Initialize states
+
+	m_gameSystem->addState("title", new CTitleState);
+	m_gameSystem->addState("gameplay", new CGamePlayState);
+	if (!m_gameSystem->init("title", m_graphicsSystem.get()))
+	{
+		LOG_ERROR("Failed to initialize game system.");
+		return false;
+	}
+	return true;
 }

@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "IGameState.h"
+#include "graphics/IGraphicsSystem.h"
 
 /**
 * \brief Manages game objects
@@ -33,7 +34,7 @@ public:
 	/**
 	* \brief Initialize game system with startup config file.
 	*/
-	bool init(const std::string& initialState);
+	bool init(const std::string& initialState, IGraphicsSystem* graphicsSystem);
 
 	/**
 	* \brief Add game state by name and initializes the state.

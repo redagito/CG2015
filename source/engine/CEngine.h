@@ -54,12 +54,13 @@ public:
 private:
     bool initWindow(unsigned int width, unsigned int height, const std::string& title);
 	bool initScene(const std::string& sceneFile);
+	bool initGameSystem(const std::string& gameFile);
 
 	void updateAnimation(float timeDiff);
 
 	// TODO Should use interface instead of concrete class.
-	std::shared_ptr<CGameSystem> m_gameSystem; /**< Game system. */
-	std::shared_ptr<IGraphicsSystem> m_graphicsSystem; /**< Graphics system. */
+	std::shared_ptr<CGameSystem> m_gameSystem = nullptr; /**< Game system. */
+	std::shared_ptr<IGraphicsSystem> m_graphicsSystem = nullptr; /**< Graphics system. */
     std::shared_ptr<IResourceManager> m_resourceManager = nullptr; /**< Resource loader and manager. */
     
 	std::shared_ptr<CGlfwWindow> m_window = nullptr;
