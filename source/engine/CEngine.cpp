@@ -297,6 +297,8 @@ bool CEngine::initGameSystem(const std::string& gameFile)
 		LOG_ERROR("Failed to initialize game system.");
 		return false;
 	}
+	
+	
 	return true;
 }
 
