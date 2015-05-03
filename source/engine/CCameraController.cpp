@@ -366,6 +366,5 @@ void CCameraController::handleMouseButtonEvent(EMouseButtonEventType type, int b
 
 void CCameraController::handleResizeEvent(int width, int height)
 {
-    m_camera->setProjection(m_camera->getFieldOfView(), (float)width / height, m_camera->getZNear(),
-                            m_camera->getZFar());
+    m_camera->setProjection(m_camera->getFieldOfView(), (float)width / height, m_camera->getZNear(), m_camera->getZFar());
 }
