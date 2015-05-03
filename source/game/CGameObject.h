@@ -43,6 +43,11 @@ public:
 	void setScale(const glm::vec3& scale);
 
 	/**
+	* \brief Adds controller to object.
+	*/
+	void addController(const std::shared_ptr<IController>& controller);
+
+	/**
 	* \brief Set scene object.
 	*/
 	void setSceneObject(CSceneObjectProxy* proxy);
@@ -93,4 +98,5 @@ protected:
 	bool m_transformationChanged = false; /**< Transformation dirty flag. */
 	bool m_deleteRequested = false; /**< Deletion of this object is requested. */
 	std::list<std::shared_ptr<IController>> m_controllers; /**< Controllers attached to the object. */
+	
 };

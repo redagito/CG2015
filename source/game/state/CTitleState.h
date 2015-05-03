@@ -7,6 +7,7 @@
 #include "graphics/ICamera.h"
 #include "resource/IResourceManager.h"
 #include "input/IInputProvider.h"
+#include "game\CGameSystem.h"
 
 /**
 * \brief Title state, similar to demo state with static camera.
@@ -31,5 +32,8 @@ private:
 	std::shared_ptr<ICamera> m_camera = nullptr;
 	IScene* m_scene = nullptr;
 	IGraphicsSystem* m_graphicsSystem = nullptr;
+	IResourceManager* m_resourceManager = nullptr;
 	CAnimationWorld m_animationWorld;
+	std::string m_nextState; /**< Next state. */
+	CGameSystem* m_gameSystem; /**< Game system. */
 };

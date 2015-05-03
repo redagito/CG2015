@@ -39,7 +39,7 @@ public:
 	/**
 	* \brief Racive state from other objects
 	*/
-	void reciveMessage(Message* msg);
+	void receiveMessage(Message msg);
 
 private:
 	CGameObject* m_object; /**< Controlled game object. */

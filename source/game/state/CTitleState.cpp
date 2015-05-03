@@ -23,6 +23,7 @@ bool CTitleState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputPro
 {
 	m_graphicsSystem = graphicsSystem;
 	m_inputProvider = inputProvider;
+	m_resourceManager = resourceManager;
 
 	// TODO Refactor, camera movement should be implemented with a single camera and camera controllers.
 	m_camera = std::make_shared<CFirstPersonCamera>(
@@ -31,6 +32,8 @@ bool CTitleState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputPro
 
 	// Create new scene object
 	m_scene = m_graphicsSystem->createScene();
+
+
 
 	// Load scene from file	
 	LOG_INFO("Loading scene from file %s.", m_sceneFile.c_str());
@@ -62,6 +65,7 @@ bool CTitleState::update(float dtime)
 		// Start game on enter key
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_ENTER))
 		{
+			
 			return false;
 		}
 	}

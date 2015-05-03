@@ -38,6 +38,13 @@ const glm::vec3& CGameObject::getRotation() const
 	return m_rotation;
 }
 
+void CGameObject::addController(const std::shared_ptr<IController>& controller)
+{
+	assert(controller != nullptr);
+	controller->attach(this);
+	m_controllers.push_back(controller);
+}
+
 const glm::vec3& CGameObject::getPosition() const
 {
 	return m_position;

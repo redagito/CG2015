@@ -148,4 +148,10 @@ void CPlayerMovementController::update(float mtime)
 		// Update translation
 		m_object->setPosition(m_object->getPosition() + dPos);
 	}
+
+}
+
+void CPlayerMovementController::receiveMessage(Message msg)
+{
+
 }

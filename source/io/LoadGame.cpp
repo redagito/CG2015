@@ -134,7 +134,7 @@ bool loadGameState(const std::string& file, const std::string& name, IResourceMa
 	}
 	else if (type == "game")
 	{
-		state = new CGamePlayState;
+		//state = new CGamePlayState;
 	}
 
 	// TODO Remove
