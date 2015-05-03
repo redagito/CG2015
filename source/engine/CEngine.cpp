@@ -49,6 +49,7 @@
 #include "game/CGameSystem.h"
 #include "game/state/CTitleState.h"
 #include "game/state/CGamePlayState.h"
+#include "game/state/CDemoState.h"
 
 CEngine::CEngine() {}
 
@@ -147,10 +148,6 @@ bool CEngine::init(const char* configFile)
         return false;
     }
 
-	// Create animation world
-	// TODO Move into gameworld or remove entirely? Only used for simple animations.
-	m_animationWorld = std::make_shared<CAnimationWorld>();
-
 	// Create and initialize graphics system
 	m_graphicsSystem = std::make_shared<CGraphicsSystem>();
 	if (!m_graphicsSystem->init(*m_resourceManager))
@@ -159,36 +156,24 @@ bool CEngine::init(const char* configFile)
 		return false;
 	}
 
-	// Create and initialize game system
-	if (!initGameSystem(gameFile))
+	// Legacy stuff to keep demo mode working
+	// TODO Should be removed
+	if (modeType == "demo")
 	{
-		LOG_ERROR("Failed to initialize game system.");
-		return false;
+		if (!initDemo(sceneFile))
+		{
+			LOG_ERROR("Failed to initialize demo mode.");
+			return false;
+		}
 	}
-
-	// Initialize scene
-	// TODO Move to graphics system, scenes should not be managed by the user.
-	if (!initScene(sceneFile))
-    {
-        LOG_ERROR("Failed to initialize scene.");
-        return false;
-    }
-
-	// TODO Refactor, camera movement should be implemented with a single camera and camera controllers.
-    m_camera = std::make_shared<CFirstPersonCamera>(
-        glm::vec3(0.5f, 0.f, 0.5f), glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
-        4.f / 3.f, 0.01f, 1000.f);
-
-    m_cameraController = std::make_shared<CCameraController>();
-    m_cameraController->setCamera(m_camera);
-    m_cameraController->setInputProvider(m_inputProvider.get());
-
-	// TODO Hacky, camera and scene should be created by the graphics system
-	m_graphicsSystem->setActiveCamera(m_camera.get());
-	m_graphicsSystem->setActiveScene(m_scene.get());
-
-	// Adds input listener
-    m_window->addListener(m_cameraController.get());
+	else // Create and initialize game system
+	{
+		if (!initGameSystem(gameFile))
+		{
+			LOG_ERROR("Failed to initialize game system.");
+			return false;
+		}
+	}
     return true;
 }
 
@@ -245,14 +230,6 @@ void CEngine::run()
             f3Cooldown = 0.3f;
 			m_graphicsSystem->setActiveRenderer("forward");
         }
-        
-		// Key F5 starts replay of camera movement
-		// Disabled and to be moved into game state
-        // if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F5) == GLFW_PRESS && f5Cooldown <= 0.f)
-        // {
-        //     f5Cooldown = 0.3f;
-        //     m_cameraController->loadSequence("data/democam.json");
-        // }
 
 		// Game system update
 		if (!m_gameSystem->update((float)timeDiff))
@@ -261,14 +238,8 @@ void CEngine::run()
 			running = false;
 		}
 
-		// Update camera movement
-        m_cameraController->animate((float) timeDiff);
-
 		// Draw active scene from active camera with active rendering device
 		m_graphicsSystem->draw(*m_window);
-
-		// Perform animation update
-		// m_animationWorld->update((float) timeDiff);
 
 		// Swap buffers after draw
         m_window->swapBuffer();
@@ -313,35 +284,31 @@ bool CEngine::initWindow(unsigned int width, unsigned int height, const std::str
     return true;
 }
 
-bool CEngine::initScene(const std::string& sceneFile)
-{
-	// Create new scene object
-	// TODO Should be done in graphics system
-    m_scene = std::make_shared<CScene>();
-    CSceneLoader loader(*m_resourceManager);
-
-    // Get startup scene from config
-    LOG_INFO("Loading initial scene from file %s.", sceneFile.c_str());
-    if (!loader.load(sceneFile, *m_scene, *m_animationWorld))
-    {
-        LOG_ERROR("Failed to load scene file %s.", sceneFile.c_str());
-        m_scene = nullptr;
-        return false;
-    }
-    return true;
-}
-
 bool CEngine::initGameSystem(const std::string& gameFile)
 {
 	// Create and set game system
 	m_gameSystem = std::make_shared<CGameSystem>();
 
 	// TODO Load game file
-	// TODO Initialize states
-
+	// m_gameSystem->addState("demo", new CDemoState("data/world/test_3.json"));
 	m_gameSystem->addState("title", new CTitleState);
 	m_gameSystem->addState("gameplay", new CGamePlayState);
-	if (!m_gameSystem->init("title", m_graphicsSystem.get()))
+	if (!m_gameSystem->init("title", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
+	{
+		LOG_ERROR("Failed to initialize game system.");
+		return false;
+	}
+	return true;
+}
+
+bool CEngine::initDemo(const std::string& sceneFile)
+{
+	// Create and set game system
+	m_gameSystem = std::make_shared<CGameSystem>();
+
+	// Create demo state from with scene file
+	m_gameSystem->addState("demo", new CDemoState(sceneFile));
+	if (!m_gameSystem->init("demo", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
 	{
 		LOG_ERROR("Failed to initialize game system.");
 		return false;

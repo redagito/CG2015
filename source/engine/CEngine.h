@@ -6,31 +6,18 @@
 
 #include "IEngine.h"
 
+// Resource
+class IResourceManager;
+
 // Game
 class CGameSystem;
-
-// GLFW
-struct GLFWwindow;
 
 // Graphics
 class IGraphicsSystem;
 class CGlfwWindow;
-class IRenderer;
-class IScene;
 
-// Resource
-class IResourceManager;
-
-// Animation
+// Input
 class IInputProvider;
-class IControllableCamera;
-class CCameraController;
-class IGraphicsResourceManager;
-class CAnimationWorld;
-
-// Debug
-class CDebugInfo;
-class CDebugInfoDisplay;
 
 /**
 * \brief Demo application class.
@@ -42,7 +29,7 @@ public:
 	~CEngine();
 
 	/**
-	* \brief nitialize demo with config file.
+	* \brief Initialize demo from config file.
 	*/
     bool init(const char* configFile);
 
@@ -52,24 +39,28 @@ public:
     void run();
 
 private:
+	/**
+	* \brief Creates and initializes the application window.
+	*/
     bool initWindow(unsigned int width, unsigned int height, const std::string& title);
-	bool initScene(const std::string& sceneFile);
+	
+	/**
+	* \brief Creates and initializes the game system.
+	*/
 	bool initGameSystem(const std::string& gameFile);
 
-	void updateAnimation(float timeDiff);
+	/**
+	* \brief Creates and initializes game system in demo mode.
+	* TODO Should be considered legacy and removed later.
+	*/
+	bool CEngine::initDemo(const std::string& sceneFile);
 
 	// TODO Should use interface instead of concrete class.
 	std::shared_ptr<CGameSystem> m_gameSystem = nullptr; /**< Game system. */
 	std::shared_ptr<IGraphicsSystem> m_graphicsSystem = nullptr; /**< Graphics system. */
     std::shared_ptr<IResourceManager> m_resourceManager = nullptr; /**< Resource loader and manager. */
     
-	std::shared_ptr<CGlfwWindow> m_window = nullptr;
-	std::shared_ptr<IInputProvider> m_inputProvider = nullptr;
-
-    std::shared_ptr<IScene> m_scene = nullptr;                       /**< Active scene. */
-    std::shared_ptr<IControllableCamera> m_camera = nullptr;         /**< Active camera. */
-    std::shared_ptr<CCameraController> m_cameraController = nullptr; /**< Camera controller. */
-
-	// Animation
-	std::shared_ptr<CAnimationWorld> m_animationWorld;
+	// TODO Should use interface instead of concrete class
+	std::shared_ptr<CGlfwWindow> m_window = nullptr; /**< Application window. */
+	std::shared_ptr<IInputProvider> m_inputProvider = nullptr; /**< User input provider. */
 };

@@ -2,7 +2,7 @@
 
 #include "graphics/IGraphicsSystem.h"
 
-bool CGamePlayState::init(IGraphicsSystem* graphicsSystem)
+bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
 {
 	m_scene = graphicsSystem->createScene();
 	return true;

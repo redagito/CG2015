@@ -22,6 +22,7 @@ bool CGameSystem::update(float dtime)
 	// Exit if state not set
 	if (m_activeState == nullptr)
 	{
+		LOG_ERROR("No active state is set.");
 		return false;
 	}
 
@@ -44,7 +45,7 @@ bool CGameSystem::update(float dtime)
 	return true;
 }
 
-bool CGameSystem::init(const std::string& initialState, IGraphicsSystem* graphicsSystem)
+bool CGameSystem::init(const std::string& initialState, IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
 {
 	LOG_DEBUG("Initializing game system.");
 	LOG_DEBUG("Game system initial state set to %s.", initialState.c_str());
@@ -52,7 +53,7 @@ bool CGameSystem::init(const std::string& initialState, IGraphicsSystem* graphic
 	// Initialize game states
 	for (auto& entry : m_gameStates)
 	{
-		if (!entry.second->init(graphicsSystem))
+		if (!entry.second->init(graphicsSystem, inputProvider, resourceManager))
 		{
 			LOG_ERROR("Failed to initialize game state %s.", entry.first.c_str());
 			return false;

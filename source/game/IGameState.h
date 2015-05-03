@@ -3,6 +3,8 @@
 #include <string>
 
 class IGraphicsSystem;
+class IInputProvider;
+class IResourceManager;
 
 /**
 * \brief Game state interface class.
@@ -21,7 +23,7 @@ public:
 	/**
 	* \brief Explicit initialization.
 	*/
-	virtual bool init(IGraphicsSystem* graphicsSystem) = 0;
+	virtual bool init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager) = 0;
 
 	/**
 	* \brief Called on entering state.

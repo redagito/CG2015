@@ -15,7 +15,7 @@ const CGameWorld& AGameState::getGameWorld() const
 	return m_gameWorld;
 }
 
-bool AGameState::init(IGraphicsSystem* graphicsSystem)
+bool AGameState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
 {
 	return true;
 }
