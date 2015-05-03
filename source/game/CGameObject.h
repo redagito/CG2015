@@ -50,17 +50,17 @@ public:
 	/**
 	* \brief Returns rotation.
 	*/
-	const glm::mat4& getRotation() const;
+	const glm::vec3& getRotation() const;
 
 	/**
 	* \brief Returns position.
 	*/
-	const glm::mat4& getPosition() const;
+	const glm::vec3& getPosition() const;
 
 	/**
 	* \brief Returns scale.
 	*/
-	const glm::mat4& getScale() const;
+	const glm::vec3& getScale() const;
 
 	/**
 	* \brief Updates object and returns state

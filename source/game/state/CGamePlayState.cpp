@@ -12,7 +12,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	m_scene = graphicsSystem->createScene();
 	CGameObject* o = new CGameObject;
 	o->setRotation(glm::vec3(0.f));
-	o->setTranslation(glm::vec3(0.f));
+	o->setPosition(glm::vec3(0.f));
 	o->setScale(glm::vec3(1.f));
 	getGameWorld().addObject(o);
 	return true;

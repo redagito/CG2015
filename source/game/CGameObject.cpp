@@ -15,35 +15,35 @@ CGameObject::~CGameObject()
 }
 
 
-void CGameObject::setRotation(const glm::mat4& rotation)
+void CGameObject::setRotation(const glm::vec3& rotation)
 {
 	m_rotation = rotation;
 	m_transformationChanged = true;
 }
 
-void CGameObject::setTranslation(const glm::mat4& translation)
+void CGameObject::setPosition(const glm::vec3& position)
 {
-	m_translation = translation;
+	m_position = position;
 	m_transformationChanged = true;
 }
 
-void CGameObject::setScale(const glm::mat4& scale)
+void CGameObject::setScale(const glm::vec3& scale)
 {
 	m_scale = scale;
 	m_transformationChanged = true;
 }
 
-const glm::mat4& CGameObject::getRotation() const
+const glm::vec3& CGameObject::getRotation() const
 {
 	return m_rotation;
 }
 
-const glm::mat4& CGameObject::getPosition() const
+const glm::vec3& CGameObject::getPosition() const
 {
 	return m_position;
 }
 
-const glm::mat4& CGameObject::getScale() const
+const glm::vec3& CGameObject::getScale() const
 {
 	return m_scale;
 }
