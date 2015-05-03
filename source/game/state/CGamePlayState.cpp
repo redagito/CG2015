@@ -3,11 +3,18 @@
 #include "graphics/IGraphicsSystem.h"
 #include "graphics/IScene.h"
 
+#include <glm/glm.hpp>
+
 const std::string exitStr = "exit";
 
 bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
 {
 	m_scene = graphicsSystem->createScene();
+	CGameObject* o = new CGameObject;
+	o->setRotation(glm::vec3(0.f));
+	o->setTranslation(glm::vec3(0.f));
+	o->setScale(glm::vec3(1.f));
+	getGameWorld().addObject(o);
 	return true;
 }
 

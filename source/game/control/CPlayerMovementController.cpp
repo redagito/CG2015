@@ -56,8 +56,7 @@ void CPlayerMovementController::update(float mtime)
 		float minY = 3.f;
 		float maxY = 20.f;
 
-		glm::vec4 temp = (m_object->getTranslation() * glm::vec4(0.f, 0.f, 0.f, 1.f));
-		glm::vec3 pos = glm::vec3(temp.x / temp.w, temp.y / temp.w, temp.z / temp.w);
+		glm::vec3 pos = m_object->getPosition();
 
 		// Movement vector
 		glm::vec3 dPos(0.f);

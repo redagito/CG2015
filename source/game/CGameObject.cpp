@@ -5,11 +5,6 @@
 
 // Constructor initializes drawable and matrices
 CGameObject::CGameObject()
-	:
-	m_translation(glm::mat4(1.f)), // Transformation matrices
-	m_rotation(glm::mat4(1.f)),
-	m_scale(glm::mat4(1.f)),
-	m_transformationChanged(false) // Dirty flag for lazy update
 {
 	return;
 }
@@ -43,9 +38,9 @@ const glm::mat4& CGameObject::getRotation() const
 	return m_rotation;
 }
 
-const glm::mat4& CGameObject::getTranslation() const
+const glm::mat4& CGameObject::getPosition() const
 {
-	return m_translation;
+	return m_position;
 }
 
 const glm::mat4& CGameObject::getScale() const

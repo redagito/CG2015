@@ -28,19 +28,19 @@ public:
 	~CGameObject();
 
 	/**
-	* \brief Sets rotation matrix.
+	* \brief Sets rotation.
 	*/
-	void setRotation(const glm::mat4& rotation);
+	void setRotation(const glm::vec3& rotation);
 
 	/**
-	* \brief Sets translation matrix.
+	* \brief Sets position.
 	*/
-	void setTranslation(const glm::mat4& translation);
+	void setPosition(const glm::vec3& translation);
 
 	/**
-	* \brief Sets scale matrix.
+	* \brief Sets scale.
 	*/
-	void setScale(const glm::mat4& scale);
+	void setScale(const glm::vec3& scale);
 
 	/**
 	* \brief Set scene object.
@@ -48,17 +48,17 @@ public:
 	void setSceneObject(CSceneObjectProxy* proxy);
 
 	/**
-	* \brief Returns rotation matrix
+	* \brief Returns rotation.
 	*/
 	const glm::mat4& getRotation() const;
 
 	/**
-	* \brief Returns translation matrix
+	* \brief Returns position.
 	*/
-	const glm::mat4& getTranslation() const;
+	const glm::mat4& getPosition() const;
 
 	/**
-	* \brief Returns scale matrix
+	* \brief Returns scale.
 	*/
 	const glm::mat4& getScale() const;
 
@@ -87,10 +87,10 @@ public:
 
 protected:
 	std::unique_ptr<CSceneObjectProxy> m_sceneObject; /**< Scene object. */
-	glm::mat4 m_rotation; /**< Rotation matrix. */
-	glm::mat4 m_translation; /**< Translation matrix. */
-	glm::mat4 m_scale; /**< Scale matrix. */
-	bool m_transformationChanged;
+	glm::vec3 m_rotation = glm::vec3(0.f); /**< Rotation. */
+	glm::vec3 m_position = glm::vec3(0.f); /**< Position. */
+	glm::vec3 m_scale = glm::vec3(1.f); /**< Scale. */
+	bool m_transformationChanged = false; /**< Transformation dirty flag. */
 	bool m_deleteRequested = false; /**< Deletion of this object is requested. */
-	std::list<std::shared_ptr<IController>> m_controllers; /**Controller objects. */
+	std::list<std::shared_ptr<IController>> m_controllers; /**< Controllers attached to the object. */
 };
