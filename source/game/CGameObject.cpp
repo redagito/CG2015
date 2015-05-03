@@ -1,14 +1,15 @@
 #include <cassert>
 
 #include "CGameObject.h"
+#include "IController.h"
 
 // Constructor initializes drawable and matrices
 CGameObject::CGameObject()
-:
-m_translation(glm::mat4(1.f)), // Transformation matrices
-m_rotation(glm::mat4(1.f)),
-m_scale(glm::mat4(1.f)),
-m_transformationChanged(false) // Dirty flag for lazy update
+	:
+	m_translation(glm::mat4(1.f)), // Transformation matrices
+	m_rotation(glm::mat4(1.f)),
+	m_scale(glm::mat4(1.f)),
+	m_transformationChanged(false) // Dirty flag for lazy update
 {
 	return;
 }
@@ -67,8 +68,9 @@ bool CGameObject::isDeleteRequested() const
 	return m_deleteRequested;
 }
 
-void CGameObject::sendMessage(Message* msg) {
-	for (auto contr: m_controllers) {
-		//contr->reciveMessage(msg);
+void CGameObject::sendMessage(Message message) {
+	for (auto& controller : m_controllers) 
+	{
+		controller->receiveMessage(message);
 	}
 }

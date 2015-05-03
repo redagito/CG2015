@@ -1,12 +1,15 @@
 #pragma once
 
-class IController;
-
-#include <glm/glm.hpp>
-#include "Message.h"
-
 #include <list>
 #include <memory>
+
+#include <glm/glm.hpp>
+
+#include "graphics/proxy/CSceneObjectProxy.h"
+
+#include "Message.h"
+
+class IController;
 
 /**
 * \brief Game object storing relevant data.
@@ -40,6 +43,11 @@ public:
 	void setScale(const glm::mat4& scale);
 
 	/**
+	* \brief Set scene object.
+	*/
+	void setSceneObject(CSceneObjectProxy* proxy);
+
+	/**
 	* \brief Returns rotation matrix
 	*/
 	const glm::mat4& getRotation() const;
@@ -61,7 +69,6 @@ public:
 	*/
 	void update(float dtime);
 
-
 	/**
 	* \brief Marks this object for deletion.
 	*/
@@ -76,10 +83,10 @@ public:
 	/**
 	* \brief Send state change messages to all controllers in Object
 	*/
-	void sendMessage(Message* msg);
-	
+	void sendMessage(Message msg);
 
 protected:
+	std::unique_ptr<CSceneObjectProxy> m_sceneObject; /**< Scene object. */
 	glm::mat4 m_rotation; /**< Rotation matrix. */
 	glm::mat4 m_translation; /**< Translation matrix. */
 	glm::mat4 m_scale; /**< Scale matrix. */

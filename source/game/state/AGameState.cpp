@@ -1,5 +1,7 @@
 #include "AGameState.h"
 
+const std::string errStr("Error");
+
 AGameState::~AGameState()
 {
 	// Empty
@@ -37,5 +39,5 @@ void AGameState::onExit()
 
 const std::string& AGameState::getNextState() const
 {
-	return "Error";
+	return errStr;
 }

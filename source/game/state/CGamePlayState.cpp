@@ -1,6 +1,9 @@
 #include "CGamePlayState.h"
 
 #include "graphics/IGraphicsSystem.h"
+#include "graphics/IScene.h"
+
+const std::string exitStr = "exit";
 
 bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
 {
@@ -28,5 +31,5 @@ void CGamePlayState::onExit()
 
 const std::string& CGamePlayState::getNextState() const
 {
-	return "exit";
+	return exitStr;
 }

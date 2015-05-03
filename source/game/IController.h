@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Message.h"
+
 class CGameObject; /**< Game object forward declare. */
 
 /**
@@ -35,4 +37,9 @@ public:
 	* Can enable/disable controller update.
 	*/
 	virtual void setActive(bool state) = 0;
+
+	/**
+	* \brief Receives message from game object.
+	*/
+	virtual void receiveMessage(Message message) = 0;
 };
