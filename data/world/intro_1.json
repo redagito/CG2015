@@ -2,15 +2,29 @@
     "scene_objects" :  [
         {
             "mesh" :  "data/mesh/ship_1.obj",
-            "material" : "data/material/silver.json",
-            "position" :  [ 0, -3, 0 ],
+            "material" : "data/material/metallic_galvanized.json",
+            "position" :  [ 0, 0, 0 ],
             "rotation" :  [ 0 , 0, 0 ],
-            "scale" :  [ 1, 1, 1 ]
+            "scale" :  [ 1, 1, 1 ],
+			"animations" : [
+				{
+					"type" : "sine_translation",
+					"translation" : [ 0, 1, 0 ],
+					"timescale" : 0.003
+				}
+			]
+        },
+		{
+        	"mesh" : "data/mesh/skybox.obj",
+        	"material" : "data/material/skybox.json",
+        	"position": [0, 0, 0],
+        	"rotation" :  [ 0, 0, 0 ],
+            "scale" :  [ 500, 500, 500 ]
         },
 		{
             "mesh" :  "data/mesh/platform_1.obj",
-            "material" : "data/material/silver.json",
-            "position" :  [ 0, -6, 0 ],
+            "material" : "data/material/stone_1.json",
+            "position" :  [ 0, -2, 0 ],
             "rotation" :  [ 0 , 0, 0 ],
             "scale" :  [ 1, 1, 1 ]
         }
@@ -26,14 +40,5 @@
             "intensity" :  5,
             "casts_shadow" : true
         }
-    ],
-	"point_lights" : [
-		{
-			"position" : [0.2925, -2.3666, -2.775],
-			"color" : [1, 1, 1],
-			"radius" : 3,
-			"intensity" : 10,
-			"casts_shadow" : true
-		}
-	]
+    ]
 }

@@ -130,7 +130,7 @@ bool loadGameState(const std::string& file, const std::string& name, IResourceMa
 	IGameState* state = nullptr;
 	if (type == "title")
 	{
-		state = new CTitleState;
+		//state = new CTitleState;
 	}
 	else if (type == "game")
 	{

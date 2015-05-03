@@ -289,9 +289,8 @@ bool CEngine::initGameSystem(const std::string& gameFile)
 	// Create and set game system
 	m_gameSystem = std::make_shared<CGameSystem>();
 
-	// TODO Load game file
-	// m_gameSystem->addState("demo", new CDemoState("data/world/test_3.json"));
-	m_gameSystem->addState("title", new CTitleState);
+	// TODO Load from game file
+	m_gameSystem->addState("title", new CTitleState("data/world/intro_1.json"));
 	m_gameSystem->addState("gameplay", new CGamePlayState);
 	if (!m_gameSystem->init("title", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
 	{

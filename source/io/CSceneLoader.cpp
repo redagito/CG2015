@@ -16,6 +16,7 @@
 #include "animation/CAnimationWorld.h"
 #include "animation/CRotationController.h"
 #include "animation/CMovementController.h"
+#include "animation/CSineTranslationController.h"
 
 CSceneLoader::CSceneLoader(IResourceManager& resourceManager) : m_resourceManager(resourceManager)
 {
@@ -373,6 +374,20 @@ bool CSceneLoader::loadAnimationController(const Json::Value& node, IScene& scen
         }
 		animationWorld.addAnimationController(std::make_shared<CMovementController>(id, type, scene, direction));
     }
+	else if (controllerType == "sine_translation")
+	{
+		glm::vec3 translation;
+		float timeScale;
+		if (!load(node, "translation", translation))
+		{
+			return false;
+		}
+		if (!load(node, "timescale", timeScale))
+		{
+			return false;
+		}
+		animationWorld.addAnimationController(std::make_shared<CSineTranslationController>(id, type, scene, translation, timeScale));
+	}
     else
     {
         // Unknown controller type
