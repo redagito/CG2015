@@ -35,15 +35,13 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	//Create player
 	m_player = new CGameObject();
 	m_player->addController(std::shared_ptr<IController>(new CPlayerMovementController(20.f)));
+	m_player->setPosition(glm::vec3(0.f));
+	m_player->setRotation(glm::vec3(0.f));
+	m_player->setScale(glm::vec3(1.f));
 
 	// Add player
 	m_world.addObject(m_player);
 
-	CGameObject* o = new CGameObject;
-	o->setRotation(glm::vec3(0.f));
-	o->setPosition(glm::vec3(0.f));
-	o->setScale(glm::vec3(1.f));
-	getGameWorld().addObject(o);
 	return true;
 }
 
@@ -56,8 +54,21 @@ void CGamePlayState::onEnter()
 
 bool CGamePlayState::update(float dtime)
 {
+	
+	if (m_player->getPosition().x > 20.f) {
+		m_player->setPosition(glm::vec3(5.f, m_player->getPosition().y, m_player->getPosition().z));
+	}
+	if (m_player->getPosition().y > 20.f) {
+		m_player->setPosition(glm::vec3(m_player->getPosition().x, 5.f, m_player->getPosition().z));
+	}
+	if (m_player->getPosition().x < 5.f) {
+		m_player->setPosition(glm::vec3(20.f, m_player->getPosition().y, m_player->getPosition().z));
+	}
+	if (m_player->getPosition().y < 5.f) {
+		m_player->setPosition(glm::vec3(m_player->getPosition().x, 20.f, m_player->getPosition().z));
+	}
 	// Update game world
-	getGameWorld().update(dtime);
+	m_world.update(dtime);
 	return true;
 }
 
