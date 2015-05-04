@@ -40,7 +40,7 @@
 #include "io/CIniFile.h"
 #include "io/JsonUtil.h"
 #include "io/CSceneLoader.h"
-#include "CCameraController.h"
+#include "CFreeFlightCameraController.h"
 
 // Animation
 #include "animation/CAnimationWorld.h"

@@ -8,6 +8,7 @@
 
 //Controller
 #include "game/control/CPlayerMovementController.h"
+#include "game/control/CCameraController.h"
 #include "graphics/camera/CFirstPersonCamera.h"
 
 #include <glm/glm.hpp>
@@ -40,6 +41,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	// Create player
 	m_player = new CGameObject();
 	m_player->addController(std::shared_ptr<IController>(new CPlayerMovementController(inputProvider, 20.f)));
+	m_player->addController(std::make_shared<CCameraController>(m_camera.get()));
 	m_player->setPosition(glm::vec3(0.f));
 	m_player->setRotation(glm::vec3(0.f));
 	m_player->setScale(glm::vec3(1.f));

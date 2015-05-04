@@ -5,7 +5,7 @@
 #include "graphics/IScene.h"
 #include "graphics/IGraphicsSystem.h"
 #include "graphics/camera/IControllableCamera.h"
-#include "engine/CCameraController.h"
+#include "engine/CFreeFlightCameraController.h"
 #include "resource/IResourceManager.h"
 
 /**
@@ -31,7 +31,7 @@ public:
 private:
 	std::string m_sceneFile;
 
-	std::shared_ptr<CCameraController> m_cameraController = nullptr;
+	std::shared_ptr<CFreeFlightCameraController> m_cameraController = nullptr;
 	std::shared_ptr<IControllableCamera> m_camera = nullptr;
 	IScene* m_scene = nullptr;
 	IGraphicsSystem* m_graphicsSystem = nullptr;

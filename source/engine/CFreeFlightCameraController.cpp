@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <fstream>
 
-#include "CCameraController.h"
+#include "CFreeFlightCameraController.h"
 
 #include <GLFW/glfw3.h>
 #include <json/json.h>
@@ -14,9 +14,9 @@
 #include "io/JsonUtil.h"
 #include "io/JsonDeserialize.h"
 
-CCameraController::CCameraController() {}
+CFreeFlightCameraController::CFreeFlightCameraController() {}
 
-CCameraController::~CCameraController()
+CFreeFlightCameraController::~CFreeFlightCameraController()
 {
     if (m_inputProvider != nullptr)
     {
@@ -24,12 +24,12 @@ CCameraController::~CCameraController()
     }
 }
 
-void CCameraController::setCamera(std::shared_ptr<IControllableCamera> camera)
+void CFreeFlightCameraController::setCamera(std::shared_ptr<IControllableCamera> camera)
 {
     m_camera = camera;
 }
 
-void CCameraController::setInputProvider(IInputProvider* provider)
+void CFreeFlightCameraController::setInputProvider(IInputProvider* provider)
 {
     if (m_inputProvider != nullptr)
     {
@@ -44,7 +44,7 @@ void CCameraController::setInputProvider(IInputProvider* provider)
     }
 }
 
-bool CCameraController::loadSequence(std::string file)
+bool CFreeFlightCameraController::loadSequence(std::string file)
 {
     m_sequenceTime = 0;
     m_sequencePoints.clear();
@@ -139,7 +139,7 @@ bool CCameraController::loadSequence(std::string file)
     return success;
 }
 
-void CCameraController::animate(float dt)
+void CFreeFlightCameraController::animate(float dt)
 {
     if (m_inputProvider != nullptr && m_camera != nullptr)
     {
@@ -156,11 +156,11 @@ void CCameraController::animate(float dt)
     }
 }
 
-void CCameraController::animateFeatures(float dt) {
+void CFreeFlightCameraController::animateFeatures(float dt) {
     // tODO
 }
 
-void CCameraController::animateSequence(float dt) {
+void CFreeFlightCameraController::animateSequence(float dt) {
     if (m_inputProvider->isKeyPressed(GLFW_KEY_C))
     {
         m_isRunningSequence = false;
@@ -213,7 +213,7 @@ void CCameraController::animateSequence(float dt) {
     m_camera->getFeatureInfoForWrite().fxaaActive = before.fxaaActive;
 }
 
-void CCameraController::animateManual(float dt) {
+void CFreeFlightCameraController::animateManual(float dt) {
     float walkingModifier = 1.0f;
     if (m_inputProvider->isKeyPressed(GLFW_KEY_SPACE))
     {
@@ -267,7 +267,7 @@ void CCameraController::animateManual(float dt) {
     }
 }
 
-void CCameraController::handleKeyEvent(EKeyEventType type, int keyCode)
+void CFreeFlightCameraController::handleKeyEvent(EKeyEventType type, int keyCode)
 {
     if (type != EKeyEventType::KEY_PRESSED) {
         return;
@@ -350,7 +350,7 @@ void CCameraController::handleKeyEvent(EKeyEventType type, int keyCode)
 	}
 }
 
-void CCameraController::handleMouseMovementEvent(int x, int y)
+void CFreeFlightCameraController::handleMouseMovementEvent(int x, int y)
 {
     m_camera->pitch((y - m_lastY) * m_speed / 1000);
     m_camera->yaw(-(x - m_lastX) * m_speed / 1000);
@@ -359,12 +359,12 @@ void CCameraController::handleMouseMovementEvent(int x, int y)
     m_lastY = y;
 }
 
-void CCameraController::handleMouseButtonEvent(EMouseButtonEventType type, int buttonCode)
+void CFreeFlightCameraController::handleMouseButtonEvent(EMouseButtonEventType type, int buttonCode)
 {
     // TODO
 }
 
-void CCameraController::handleResizeEvent(int width, int height)
+void CFreeFlightCameraController::handleResizeEvent(int width, int height)
 {
     m_camera->setProjection(m_camera->getFieldOfView(), (float) width / height, m_camera->getZNear(), m_camera->getZFar());
 }

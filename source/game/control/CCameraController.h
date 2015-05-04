@@ -1,9 +1,9 @@
 #pragma once
 
-class CCamera;
-
 #include "game/IController.h"
 #include "game/Message.h"
+
+#include "graphics/camera/IControllableCamera.h"
 
 /**
 * \brief Controls camera movement based on the attached game object.
@@ -14,7 +14,7 @@ public:
 	/**
 	* \brief Sets camera.
 	*/
-	CCameraController(CCamera* camera);
+	CCameraController(IControllableCamera* camera);
 
 	/**
 	* \brief Destructor for cleanup.
@@ -44,10 +44,10 @@ public:
 	/**
 	* \brief Racive state from other objects
 	*/
-	void reciveMessage(Message* msg);
+	void receiveMessage(Message msg);
 
 private:
-	CCamera* m_camera; /**< Controlled camera. */
-	CGameObject* m_object; /**< Controlled game object. */
-	bool m_active; /**< Active state flag. */
+	IControllableCamera* m_camera = nullptr; /**< Controlled camera. */
+	CGameObject* m_object = nullptr; /**< Controlled game object. */
+	bool m_active = true; /**< Active state flag. */
 };

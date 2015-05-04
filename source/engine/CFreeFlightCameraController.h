@@ -12,11 +12,11 @@
 class IControllableCamera;
 class IInputProvider;
 
-class CCameraController : public IInputListener, public IGlfwWindowListener
+class CFreeFlightCameraController : public IInputListener, public IGlfwWindowListener
 {
-   public:
-    CCameraController();
-    ~CCameraController();
+public:
+	CFreeFlightCameraController();
+	~CFreeFlightCameraController();
 
     void setCamera(std::shared_ptr<IControllableCamera> camera);
     void setInputProvider(IInputProvider* provider);
