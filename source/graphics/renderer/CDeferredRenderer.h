@@ -324,6 +324,9 @@ protected:
 	ResourceId m_bloomPass1ShaderId = invalidResource;
 	ResourceId m_bloomPass2ShaderId = invalidResource;
 
+	// Tonemapping pass
+	ResourceId m_toneMappingPassShaderId = invalidResource;
+
     // Fullscreen draw pass
     CScreenQuadPass m_screenQuadPass;
     std::list<SRenderRequest> m_customShaderMeshes; /**< Render requests with custom shaders. */

@@ -11,6 +11,9 @@
 #include "game/control/CCameraController.h"
 #include "graphics/camera/CFirstPersonCamera.h"
 
+#include "io/CSceneLoader.h"
+#include "animation/CAnimationWorld.h"
+
 #include <glm/glm.hpp>
 
 const std::string exitStr = "exit";
@@ -32,11 +35,16 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	m_resourceManager = resourceManager;
 	m_scene = m_graphicsSystem->createScene();
 
-	m_scene->setAmbientLight(glm::vec3(0.6, 0.6, 0.8), 2.f);
+	CAnimationWorld animWorld;
+	CSceneLoader loader(*resourceManager);
+	loader.load("data/world/game_1.json", *m_scene, animWorld);
 
 	m_camera = std::make_shared<CFirstPersonCamera>(
 		glm::vec3(90.f, 70.f, 90.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
 		4.f / 3.f, 0.01f, 1000.f);
+
+	// Disable god ray
+	m_camera->getFeatureInfoForWrite().godRayActive = false;
 
 	// Create player
 	m_player = new CGameObject();
@@ -55,14 +63,6 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Add player
 	getGameWorld().addObject(m_player);
-
-	// Create huge plane terrain
-	ResourceId planeMesh = m_resourceManager->loadMesh("data/mesh/huge_plane.obj");
-	ResourceId planeMaterial = m_resourceManager->loadMaterial("data/material/silver.json");
-	m_scene->createObject(planeMesh, planeMaterial, glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f));
-
-	// Create directional light
-	m_scene->createDirectionalLight(glm::vec3(0.5f, -1.1f, 0.1f), glm::vec3(0.6f, 0.6f, 1.f), 7, true);
 
 	return true;
 }
