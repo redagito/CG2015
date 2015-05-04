@@ -33,6 +33,10 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	m_camera = std::make_shared<CFirstPersonCamera>(
 		glm::vec3(90.f, 70.f, 90.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
 		4.f / 3.f, 0.01f, 1000.f);
+	
+	m_cameraController = std::make_shared<CCameraController>();
+	m_cameraController->setCamera(m_camera);
+	m_cameraController->setInputProvider(inputProvider);
 
 	// Create player
 	m_player = new CGameObject();
