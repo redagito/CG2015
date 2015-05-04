@@ -53,7 +53,7 @@ bool CGlfwWindow::init(unsigned int width, unsigned int height, const std::strin
     m_height = framebufferHeight;
 
     glfwMakeContextCurrent(m_window);
-    glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_FALSE);
 
 // Load OpenGL extensions
 #ifndef __APPLE__

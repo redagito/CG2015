@@ -2,6 +2,7 @@
 
 #include "game/IController.h"
 #include "game/Message.h"
+#include "input/IInputProvider.h"
 
 /**
 * \brief Player side movement.
@@ -9,7 +10,7 @@
 class CPlayerMovementController : public IController
 {
 public:
-	CPlayerMovementController(float speedSide);
+	CPlayerMovementController(IInputProvider* inputProvider, float speedSide);
 
 	/**
 	* \brief Destructor for cleanup.
@@ -42,6 +43,7 @@ public:
 	void receiveMessage(Message msg);
 
 private:
+	IInputProvider* m_inputProvider;
 	CGameObject* m_object; /**< Controlled game object. */
 	float m_speedSide; /**< Side movement speed. */
 	float m_rotationDegree; /**< Current rotation in degree. */

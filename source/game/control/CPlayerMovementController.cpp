@@ -9,12 +9,10 @@
 #include <glm/ext.hpp>
 
 
-CPlayerMovementController::CPlayerMovementController(float speedSide)
-:
-m_speedSide(speedSide),
-m_active(true),
-m_object(nullptr),
-m_rotationDegree(0.f)
+CPlayerMovementController::CPlayerMovementController(IInputProvider* inputProvider, float speedSide)
+	:
+	m_inputProvider(inputProvider),
+	m_speedSide(speedSide)
 {
 	return;
 }
@@ -62,7 +60,7 @@ void CPlayerMovementController::update(float mtime)
 		glm::vec3 dPos(0.f);
 
 		// Move up
-		if (glfwGetKey(Global::window, GLFW_KEY_UP))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_UP))
 		{
 			// Y new position
 			dPos.y = mtime * m_speedSide;
@@ -74,7 +72,7 @@ void CPlayerMovementController::update(float mtime)
 		}
 
 		// Move down
-		if (glfwGetKey(Global::window, GLFW_KEY_DOWN))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_DOWN))
 		{
 			// Y new position
 			dPos.y = -mtime * m_speedSide;
@@ -86,7 +84,7 @@ void CPlayerMovementController::update(float mtime)
 		}
 
 		// Rotate left
-		if (glfwGetKey(Global::window, GLFW_KEY_RIGHT))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_RIGHT))
 		{
 			m_rotationDegree += mtime * rateOfRotation;
 			if (m_rotationDegree > 90.f)
@@ -104,7 +102,7 @@ void CPlayerMovementController::update(float mtime)
 		}
 
 		// Rotate right
-		if (glfwGetKey(Global::window, GLFW_KEY_LEFT))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_LEFT))
 		{
 			m_rotationDegree -= mtime * rateOfRotation;
 			if (m_rotationDegree < -90.f)
@@ -148,7 +146,6 @@ void CPlayerMovementController::update(float mtime)
 		// Update translation
 		m_object->setPosition(m_object->getPosition() + dPos);
 	}
-
 }
 
 void CPlayerMovementController::receiveMessage(Message msg)

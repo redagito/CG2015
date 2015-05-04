@@ -7,6 +7,8 @@
 
 #include "debug/Log.h"
 
+const std::string gameStr = "game";
+
 CTitleState::CTitleState(const std::string& sceneFile)
 	:
 	m_sceneFile(sceneFile)
@@ -80,5 +82,5 @@ void CTitleState::onExit()
 
 const std::string& CTitleState::getNextState() const
 {
-	return "game";
+	return gameStr;
 }

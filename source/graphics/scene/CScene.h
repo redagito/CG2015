@@ -57,8 +57,8 @@ class CScene : public IScene
 	void getVisibleObjects(const ICamera& camera, ISceneQuery& query) const;
 
    private:
-    glm::vec3 m_ambientColor; /**< Global ambient light color. */
-    float m_ambientIntensity; /**< Global ambient light intensity. */
+    glm::vec3 m_ambientColor = glm::vec3(1.f); /**< Global ambient light color. */
+    float m_ambientIntensity = 0.f; /**< Global ambient light intensity. */
 
     std::vector<SSceneObject> m_objects;                     /**< Drawable scene objects. */
     std::vector<SScenePointLight> m_pointLights;             /**< Point lights. */

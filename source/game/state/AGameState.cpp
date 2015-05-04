@@ -29,6 +29,7 @@ void AGameState::onEnter()
 
 bool AGameState::update(float dtime)
 {
+	getGameWorld().update(dtime);
 	return true;
 }
 

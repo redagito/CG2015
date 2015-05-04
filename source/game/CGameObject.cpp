@@ -45,6 +45,12 @@ void CGameObject::addController(const std::shared_ptr<IController>& controller)
 	m_controllers.push_back(controller);
 }
 
+void CGameObject::setSceneObject(CSceneObjectProxy* proxy)
+{
+	assert(proxy != nullptr);
+	m_sceneObject.reset(proxy);
+}
+
 const glm::vec3& CGameObject::getPosition() const
 {
 	return m_position;
@@ -57,7 +63,19 @@ const glm::vec3& CGameObject::getScale() const
 
 void CGameObject::update(float dtime)
 {
-	return;
+	// Update object controllers
+	for (auto& controller : m_controllers)
+	{
+		controller->update(dtime);
+	}
+	// Update scene object
+	if (m_transformationChanged)
+	{
+		// TODO Slow?
+		m_sceneObject->setPosition(getPosition());
+		m_sceneObject->setRotation(getRotation());
+		m_sceneObject->setScale(getScale());
+	}
 }
 
 void CGameObject::markDeleted()
@@ -70,7 +88,8 @@ bool CGameObject::isDeleteRequested() const
 	return m_deleteRequested;
 }
 
-void CGameObject::sendMessage(Message message) {
+void CGameObject::sendMessage(Message message) 
+{
 	for (auto& controller : m_controllers) 
 	{
 		controller->receiveMessage(message);
