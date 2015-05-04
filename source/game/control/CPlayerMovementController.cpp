@@ -38,20 +38,17 @@ void CPlayerMovementController::setActive(bool state)
 	m_active = state;
 }
 
-void CPlayerMovementController::update(float mtime)
+void CPlayerMovementController::update(float dtime)
 {
 	if (m_active && m_object != nullptr)
 	{
-		// Rotation speed by degree / sec
-		float rateOfRotation = 300.f;
-		// Back rotation when no keys are pressed
+		// Rotation speed by deg / sec
+		float rateOfRotation = 200.f;
+		// Back rotation rate when no keys are pressed
 		float backRotation = 500.f;
 
-		// X axis boundary for movement
-		float minX = -20.f;
-		float maxX = 20.f;
 		// Y axis boundary for movement
-		float minY = 3.f;
+		float minY = 5.f;
 		float maxY = 20.f;
 
 		glm::vec3 pos = m_object->getPosition();
@@ -63,7 +60,7 @@ void CPlayerMovementController::update(float mtime)
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_UP))
 		{
 			// Y new position
-			dPos.y = mtime * m_speedSide;
+			dPos.y = dtime * m_speedSide;
 			if (dPos.y + pos.y > maxY)
 			{
 				// Move to limit
@@ -75,7 +72,7 @@ void CPlayerMovementController::update(float mtime)
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_DOWN))
 		{
 			// Y new position
-			dPos.y = -mtime * m_speedSide;
+			dPos.y = -dtime * m_speedSide;
 			if (dPos.y + pos.y < minY)
 			{
 				// Move to limit
@@ -86,7 +83,7 @@ void CPlayerMovementController::update(float mtime)
 		// Rotate left
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_RIGHT))
 		{
-			m_rotationDegree += mtime * rateOfRotation;
+			m_rotationDegree += dtime * rateOfRotation;
 			if (m_rotationDegree > 90.f)
 			{
 				m_rotationDegree = 90.f;
@@ -94,7 +91,7 @@ void CPlayerMovementController::update(float mtime)
 		}
 		else if (m_rotationDegree > 0.f)
 		{
-			m_rotationDegree -= mtime * backRotation;
+			m_rotationDegree -= dtime * backRotation;
 			if (m_rotationDegree < 0.f)
 			{
 				m_rotationDegree = 0.f;
@@ -104,7 +101,7 @@ void CPlayerMovementController::update(float mtime)
 		// Rotate right
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_LEFT))
 		{
-			m_rotationDegree -= mtime * rateOfRotation;
+			m_rotationDegree -= dtime * rateOfRotation;
 			if (m_rotationDegree < -90.f)
 			{
 				m_rotationDegree = -90.f;
@@ -112,7 +109,7 @@ void CPlayerMovementController::update(float mtime)
 		}
 		else if (m_rotationDegree < 0.f)
 		{
-			m_rotationDegree += mtime * backRotation;
+			m_rotationDegree += dtime * backRotation;
 			if (m_rotationDegree > 0.f)
 			{
 				m_rotationDegree = 0.f;
@@ -122,26 +119,19 @@ void CPlayerMovementController::update(float mtime)
 		// Movement speed based on angle
 		float dx = -m_rotationDegree * m_speedSide;
 
-		// Restrict movement
-		if (pos.x > minX && dx < 0.f)
+		if (dx < 0.f)
 		{
-			dPos.x = -std::sqrt(-dx) * mtime;
-			if (dPos.x + pos.x < minX)
-			{
-				dPos.x = minX - pos.x;
-			}
+			dPos.x = -std::sqrt(-dx) * dtime;
 		}
-		else if (pos.x < maxX && dx > 0.f)
+		else if (dx > 0.f)
 		{
-			dPos.x = std::sqrt(dx) * mtime;
-			if (dPos.x + pos.x > maxX)
-			{
-				dPos.x = maxX - pos.x;
-			}
+			dPos.x = std::sqrt(dx) * dtime;
 		}
 
+		float rotationRad = m_rotationDegree * glm::pi<float>() / 180.f;
+
 		// Update rotation
-		m_object->setRotation(glm::vec3(0.f, 0.f, m_rotationDegree));
+		m_object->setRotation(glm::vec3(0.f, 0.f, rotationRad));
 
 		// Update translation
 		m_object->setPosition(m_object->getPosition() + dPos);

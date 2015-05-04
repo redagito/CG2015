@@ -9,6 +9,7 @@
 
 #include "resource/IResourceManager.h"
 #include "input/IInputProvider.h"
+#include "engine/CCameraController.h"
 
 #include "game/CGameObject.h"
 #include "game/CGameWorld.h"
@@ -30,7 +31,6 @@ private:
 	IScene* m_scene = nullptr;
 	IResourceManager* m_resourceManager = nullptr;
 	IInputProvider* m_inputProvider = nullptr; 
-	std::shared_ptr<ICamera> m_camera = nullptr;
-
+	std::shared_ptr<IControllableCamera> m_camera = nullptr;
 	CGameObject* m_player; /**< Player object. */
 };

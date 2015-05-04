@@ -43,9 +43,9 @@ public:
 	void receiveMessage(Message msg);
 
 private:
-	IInputProvider* m_inputProvider;
-	CGameObject* m_object; /**< Controlled game object. */
-	float m_speedSide; /**< Side movement speed. */
-	float m_rotationDegree; /**< Current rotation in degree. */
-	bool m_active; /**< Active state flag. */
+	IInputProvider* m_inputProvider = nullptr;
+	CGameObject* m_object = nullptr; /**< Controlled game object. */
+	float m_speedSide = 0.f; /**< Side movement speed. */
+	float m_rotationDegree = 0.f; /**< Current rotation in degree. */
+	bool m_active = true; /**< Active state flag. */
 };
