@@ -40,7 +40,11 @@ void CPlayerMovementController::setActive(bool state)
 
 void CPlayerMovementController::update(float dtime)
 {
-	if (m_active && m_object != nullptr)
+	
+	//Moving forward
+	float m_forward = dtime * 80.f;
+	m_object->setPosition(glm::vec3(m_object->getPosition().x, m_object->getPosition().y, m_object->getPosition().z + m_forward));
+	/*if (m_active && m_object != nullptr)
 	{
 		// Rotation speed by deg / sec
 		float rateOfRotation = 200.f;
@@ -135,7 +139,7 @@ void CPlayerMovementController::update(float dtime)
 
 		// Update translation
 		m_object->setPosition(m_object->getPosition() + dPos);
-	}
+	}*/
 }
 
 void CPlayerMovementController::receiveMessage(Message msg)
