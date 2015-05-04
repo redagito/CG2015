@@ -41,13 +41,13 @@ void CPlayerMovementController::setActive(bool state)
 void CPlayerMovementController::update(float dtime)
 {
 	
-	//Moving forward
-	float m_forward = dtime * 40.f;
-	m_object->setPosition(glm::vec3(m_object->getPosition().x, m_object->getPosition().y, m_object->getPosition().z + m_forward));
-
-	
 	if (m_active && m_object != nullptr)
 	{
+
+		// Moving forward
+		float m_forward = dtime * 40.f;
+		m_object->setPosition(glm::vec3(m_object->getPosition().x, m_object->getPosition().y, m_object->getPosition().z + m_forward));
+	
 		// Rotation speed by deg / sec
 		float rateOfRotation = 200.f;
 		// Back rotation rate when no keys are pressed
@@ -77,7 +77,6 @@ void CPlayerMovementController::update(float dtime)
 		// Move down
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_S))
 		{
-			
 			// Y new position
 			dPos.y = -dtime * m_speedSide;
 			if (dPos.y + pos.y < minY)
@@ -90,7 +89,6 @@ void CPlayerMovementController::update(float dtime)
 		// Rotate left
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_D))
 		{
-			m_object->setPosition(glm::vec3(m_object->getPosition().x - m_forward, m_object->getPosition().y, m_object->getPosition().z - m_forward));
 			m_rotationDegree += dtime * rateOfRotation;
 			if (m_rotationDegree > 90.f)
 			{
@@ -110,7 +108,7 @@ void CPlayerMovementController::update(float dtime)
 		// Rotate right
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_A))
 		{
-			m_object->setPosition(glm::vec3(m_object->getPosition().x + m_forward, m_object->getPosition().y, m_object->getPosition().z - m_forward));
+			
 			m_rotationDegree -= dtime * rateOfRotation;
 			if (m_rotationDegree < -90.f)
 			{
@@ -138,7 +136,7 @@ void CPlayerMovementController::update(float dtime)
 			dPos.x = std::sqrt(dx) * dtime;
 		}
 
-		float rotationRad = m_rotationDegree * glm::pi<float>() / 180.f;
+		float rotationRad = m_rotationDegree * glm::pi<float>() / 275.f;
 
 		// Update rotation
 		m_object->setRotation(glm::vec3(m_object->getRotation().x, -rotationRad, m_object->getRotation().z));
