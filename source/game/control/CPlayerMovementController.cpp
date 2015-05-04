@@ -42,9 +42,11 @@ void CPlayerMovementController::update(float dtime)
 {
 	
 	//Moving forward
-	float m_forward = dtime * 80.f;
+	float m_forward = dtime * 40.f;
 	m_object->setPosition(glm::vec3(m_object->getPosition().x, m_object->getPosition().y, m_object->getPosition().z + m_forward));
-	/*if (m_active && m_object != nullptr)
+
+	
+	if (m_active && m_object != nullptr)
 	{
 		// Rotation speed by deg / sec
 		float rateOfRotation = 200.f;
@@ -61,7 +63,7 @@ void CPlayerMovementController::update(float dtime)
 		glm::vec3 dPos(0.f);
 
 		// Move up
-		if (m_inputProvider->isKeyPressed(GLFW_KEY_UP))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_W))
 		{
 			// Y new position
 			dPos.y = dtime * m_speedSide;
@@ -73,7 +75,7 @@ void CPlayerMovementController::update(float dtime)
 		}
 
 		// Move down
-		if (m_inputProvider->isKeyPressed(GLFW_KEY_DOWN))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_S))
 		{
 			// Y new position
 			dPos.y = -dtime * m_speedSide;
@@ -85,11 +87,13 @@ void CPlayerMovementController::update(float dtime)
 		}
 
 		// Rotate left
-		if (m_inputProvider->isKeyPressed(GLFW_KEY_RIGHT))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_D))
 		{
+			
 			m_rotationDegree += dtime * rateOfRotation;
 			if (m_rotationDegree > 90.f)
 			{
+				
 				m_rotationDegree = 90.f;
 			}
 		}
@@ -103,7 +107,7 @@ void CPlayerMovementController::update(float dtime)
 		}
 
 		// Rotate right
-		if (m_inputProvider->isKeyPressed(GLFW_KEY_LEFT))
+		if (m_inputProvider->isKeyPressed(GLFW_KEY_A))
 		{
 			m_rotationDegree -= dtime * rateOfRotation;
 			if (m_rotationDegree < -90.f)
@@ -135,11 +139,12 @@ void CPlayerMovementController::update(float dtime)
 		float rotationRad = m_rotationDegree * glm::pi<float>() / 180.f;
 
 		// Update rotation
-		m_object->setRotation(glm::vec3(0.f, 0.f, rotationRad));
+		m_object->setRotation(glm::vec3(m_object->getRotation().x, -rotationRad, m_object->getRotation().z));
+		/*m_object->setRotation(glm::vec3(0.f, 0.f, rotationRad));*/
 
 		// Update translation
 		m_object->setPosition(m_object->getPosition() + dPos);
-	}*/
+	}
 }
 
 void CPlayerMovementController::receiveMessage(Message msg)
