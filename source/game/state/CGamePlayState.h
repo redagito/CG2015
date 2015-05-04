@@ -31,6 +31,6 @@ private:
 	IScene* m_scene = nullptr;
 	IResourceManager* m_resourceManager = nullptr;
 	IInputProvider* m_inputProvider = nullptr; 
-	std::shared_ptr<IControllableCamera> m_camera = nullptr;
+	std::shared_ptr<ICamera> m_camera = nullptr;
 	CGameObject* m_player; /**< Player object. */
 };
