@@ -30,7 +30,7 @@ void main()
 	vec3 texel = texture(scene_texture, screen_coords).rgb;
 
 	// Should be uniform
-	float threshold = 0.8;
+	float threshold = 1.4f;
 	
 	// Apply advanced bloom
 	color = brightpass(texel, threshold) * texel;

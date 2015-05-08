@@ -8,7 +8,7 @@
 
 #include "CFrameBuffer.h"
 #include "SRenderRequest.h"
-#include "CTransformer.h"
+#include "math/CTransformer.h"
 
 #include "resource/ResourceConfig.h"
 
@@ -153,6 +153,14 @@ protected:
 					const std::shared_ptr<CTexture>& texture,
 					const std::shared_ptr<CTexture>& bloomTexture);
 
+	/**
+	* \brief Tone map pass for HDR to LDR conversion.
+	*
+	* This pass should be done at the end of the post porcessing pipeline.
+	*/
+	void toneMapPass(const IWindow& window, const IGraphicsResourceManager& manager,
+					const std::shared_ptr<CTexture>& texture);
+
     /**
     * \brief Initializes resources for geometry pass.
     */
@@ -235,6 +243,11 @@ protected:
 	*/
 	bool initBloomPass1(IResourceManager& manager);
 	bool initBloomPass2(IResourceManager& manager);
+
+	/**
+	* \brief Tone mapping pass.
+	*/
+	bool initToneMapPass(IResourceManager& manager);
 
     void draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
               const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager,
@@ -324,8 +337,8 @@ protected:
 	ResourceId m_bloomPass1ShaderId = invalidResource;
 	ResourceId m_bloomPass2ShaderId = invalidResource;
 
-	// Tonemapping pass
-	ResourceId m_toneMappingPassShaderId = invalidResource;
+	// Tonemap pass
+	ResourceId m_toneMapPassShaderId = invalidResource;
 
     // Fullscreen draw pass
     CScreenQuadPass m_screenQuadPass;

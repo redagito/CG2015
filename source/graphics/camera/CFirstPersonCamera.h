@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 
 #include "IControllableCamera.h"
-#include "TransformUtils.h"
+#include "math/TransformUtils.h"
 
 class CFirstPersonCamera : public IControllableCamera
 {

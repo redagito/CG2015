@@ -56,7 +56,15 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Get model resources
 	ResourceId playerShip = m_resourceManager->loadMesh("data/mesh/ship_1.obj");
+	if (playerShip == invalidResource)
+	{
+		return false;
+	}
 	ResourceId playerShipMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
+	if (playerShipMaterial == invalidResource)
+	{
+		return false;
+	}
 	// Create scene object
 	CSceneObjectProxy* playerSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(playerShip, playerShipMaterial, glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f)));
 	m_player->setSceneObject(playerSceneObject);
@@ -102,11 +110,11 @@ bool CGamePlayState::update(float dtime)
 	// Check Z
 	if (m_player->getPosition().z < -100.f)
 	{
-		m_player->setPosition(glm::vec3(m_player->getPosition().x, m_player->getPosition().y, 100));
+		m_player->setPosition(glm::vec3(m_player->getPosition().x, m_player->getPosition().y, 100.f));
 	}
 	else if (m_player->getPosition().z > 100.f)
 	{
-		m_player->setPosition(glm::vec3(m_player->getPosition().x, m_player->getPosition().y, -100));
+		m_player->setPosition(glm::vec3(m_player->getPosition().x, m_player->getPosition().y, -100.f));
 	}
 	return true;
 }

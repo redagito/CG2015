@@ -116,8 +116,8 @@ const GLint depthOfFieldPassDepthTextureUnit = 2;
 // Texture units for depth texture visualization pass
 const GLint visualizeDepthPassDepthTextureUnit = 0;
 
-// Texture unit for distortion pass
-const GLint distortionPassInputTextureUnit = 0;
+// Texture unit for vignette blur/distortion pass
+const GLint vignetteBlurPassInputTextureUnit = 0;
 
 // Texture units for bloom pass 1 (bloom texture generation)
 const GLint bloomPass1InputTextureUnit = 0;
@@ -125,6 +125,9 @@ const GLint bloomPass1InputTextureUnit = 0;
 // Texture units for bloom pass 2 (additive blending and clamp)
 const GLint bloomPass2SceneTextureUnit = 0;
 const GLint bloomPass2BloomTextureUnit = 1;
+
+// Texture unit for tone map pass
+const GLint toneMapPassInputTextureUnit = 0;
 
 // Texture sampler uniform names
 const std::string diffuseTextureUniformName = "diffuse_texture";

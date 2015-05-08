@@ -854,7 +854,6 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	// Godray technique, consists of 2 passes
 	if (camera.getFeatureInfo().godRayActive || camera.getFeatureInfo().renderMode == RenderMode::GodRay)
 	{
-		// TODO God ray pass disabled, not working as intended
 		// God ray pass 1
 		m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
 		godRayPass1(window, manager, m_postProcessPassTexture0);
@@ -892,6 +891,11 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	// Additive blend
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
 	bloomPass2(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
+	// Scene with bloom in texture 0
+
+	// Tone map
+	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+	toneMapPass(window, manager, m_postProcessPassTexture0);
 
     // Set output texture
     m_postProcessPassOutputTexture = m_postProcessPassTexture0;
@@ -1268,7 +1272,7 @@ void CDeferredRenderer::vignetteBlurPass(const IWindow& window, const IGraphicsR
 	CShaderProgram* shader = manager.getShaderProgram(m_vignetteBlurPassShaderId);
 	if (shader == nullptr)
 	{
-		LOG_ERROR("Shader program for distortion pass could not be retrieved.");
+		LOG_ERROR("Shader program for vignette blur pass could not be retrieved.");
 		return;
 	}
 
@@ -1276,13 +1280,13 @@ void CDeferredRenderer::vignetteBlurPass(const IWindow& window, const IGraphicsR
 	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
 	if (quadMesh == nullptr)
 	{
-		LOG_ERROR("Mesh object for distortion pass could not be retrieved.");
+		LOG_ERROR("Mesh object for vignette blur pass could not be retrieved.");
 		return;
 	}
 
 	// Set input texture
-	texture->setActive(distortionPassInputTextureUnit);
-	shader->setUniform(sceneTextureUniformName, distortionPassInputTextureUnit);
+	texture->setActive(vignetteBlurPassInputTextureUnit);
+	shader->setUniform(sceneTextureUniformName, vignetteBlurPassInputTextureUnit);
 
 	// Set screen size
 	shader->setUniform(screenWidthUniformName, (float) window.getWidth());
@@ -1358,9 +1362,38 @@ void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourc
 	::draw(*quadMesh);
 }
 
+void CDeferredRenderer::toneMapPass(const IWindow& window, const IGraphicsResourceManager& manager,
+	const std::shared_ptr<CTexture>& texture)
+{
+	// Get tone map shader
+	CShaderProgram* shader = manager.getShaderProgram(m_toneMapPassShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for tone map pass could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for tone map pass could not be retrieved.");
+		return;
+	}
+
+	// Set input texture
+	texture->setActive(toneMapPassInputTextureUnit);
+	shader->setUniform(sceneTextureUniformName, toneMapPassInputTextureUnit);
+
+	// Set screen size
+	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
+
+	::draw(*quadMesh);
+}
+
 void CDeferredRenderer::draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
-                             const glm::mat4& scale, CMaterial* material,
-                             const IGraphicsResourceManager& manager, CShaderProgram* shader)
+	const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager, CShaderProgram* shader)
 {
 	// TODO Only called from geometry pass, rename?
     std::string error;
@@ -1784,7 +1817,7 @@ bool CDeferredRenderer::initIlluminationPass(IResourceManager& manager)
 
     // FBO
     m_illuminationPassTexture = std::make_shared<CTexture>();
-    if (!m_illuminationPassTexture->init(800, 600, GL_RGB))
+    if (!m_illuminationPassTexture->init(800, 600, GL_RGB16F))
     {
         LOG_ERROR("Failed to initialize illumination pass texture.");
         return false;
@@ -1873,6 +1906,12 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 		return false;
 	}
 
+	// Tone map pass (non-adaptive)
+	if (!initToneMapPass(manager))
+	{
+		LOG_ERROR("Failed to initialize non-adaptive tonemap pass.");
+	}
+
     // Screen quad mesh
     std::string quadMesh = "data/mesh/screen_quad.obj";
     m_postProcessScreenQuadId = manager.loadMesh(quadMesh);
@@ -1885,7 +1924,7 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
     // Init post processing FBOs
     // Texture 0
     m_postProcessPassTexture0 = std::make_shared<CTexture>();
-    if (!m_postProcessPassTexture0->init(800, 600, GL_RGB))
+    if (!m_postProcessPassTexture0->init(800, 600, GL_RGB16F))
     {
         LOG_ERROR("Failed to initialize post process pass texture 0.");
         return false;
@@ -1893,7 +1932,7 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 
     // Texture 1
     m_postProcessPassTexture1 = std::make_shared<CTexture>();
-    if (!m_postProcessPassTexture1->init(800, 600, GL_RGB))
+    if (!m_postProcessPassTexture1->init(800, 600, GL_RGB16F))
     {
         LOG_ERROR("Failed to initialize post process pass texture 1.");
         return false;
@@ -1901,7 +1940,7 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 
     // Texture 2
     m_postProcessPassTexture2 = std::make_shared<CTexture>();
-    if (!m_postProcessPassTexture2->init(800, 600, GL_RGB))
+    if (!m_postProcessPassTexture2->init(800, 600, GL_RGB16F))
     {
         LOG_ERROR("Failed to initialize post process pass texture 2.");
         return false;
@@ -2077,6 +2116,20 @@ bool CDeferredRenderer::initBloomPass2(IResourceManager& manager)
 	m_bloomPass2ShaderId = manager.loadShader(shaderFile);
 	// Check if ok
 	if (m_bloomPass2ShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool CDeferredRenderer::initToneMapPass(IResourceManager& manager)
+{
+	// Get shader
+	std::string shaderFile = "data/shader/post/tonemap_pass.ini";
+	m_toneMapPassShaderId = manager.loadShader(shaderFile);
+	// Check if ok
+	if (m_toneMapPassShaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
 		return false;

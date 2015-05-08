@@ -10,6 +10,7 @@
 
 #include "util/Time.h"
 #include "debug/Log.h"
+#include "debug/CLogger.h"
 
 CGraphicsSystem::CGraphicsSystem()
 {

@@ -3,6 +3,7 @@
 #include "game/CGameObject.h"
 #include "input/IInputProvider.h"
 #include "util/Global.h"
+#include "math/TransformUtils.h"
 
 #include "glfw/glfw3.h"
 
@@ -45,8 +46,7 @@ void CPlayerMovementController::update(float dtime)
 	{
 
 		// Moving forward
-		float m_forward = dtime * 40.f;
-		m_object->setPosition(glm::vec3(m_object->getPosition().x, m_object->getPosition().y, m_object->getPosition().z + m_forward));
+		float forward = dtime * 10.f;
 	
 		// Rotation speed by deg / sec
 		float rateOfRotation = 200.f;
@@ -89,7 +89,7 @@ void CPlayerMovementController::update(float dtime)
 		// Rotate left
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_D))
 		{
-			m_object->setPosition(glm::vec3(m_object->getPosition().x - m_forward, m_object->getPosition().y, m_object->getPosition().z - m_forward));
+			m_object->setPosition(glm::vec3(m_object->getPosition().x - forward, m_object->getPosition().y, m_object->getPosition().z - forward));
 			m_rotationDegree += dtime * rateOfRotation;
 			if (m_rotationDegree > 90.f)
 			{
@@ -109,7 +109,7 @@ void CPlayerMovementController::update(float dtime)
 		// Rotate right
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_A))
 		{
-			m_object->setPosition(glm::vec3(m_object->getPosition().x + m_forward, m_object->getPosition().y, m_object->getPosition().z - m_forward));
+			m_object->setPosition(glm::vec3(m_object->getPosition().x + forward, m_object->getPosition().y, m_object->getPosition().z - forward));
 			m_rotationDegree -= dtime * rateOfRotation;
 			if (m_rotationDegree < -90.f)
 			{
@@ -145,11 +145,31 @@ void CPlayerMovementController::update(float dtime)
 		/*m_object->setRotation(glm::vec3(0.f, 0.f, rotationRad));*/
 
 		// Update translation
+		dPos.z += 10.f * dtime;
 		m_object->setPosition(m_object->getPosition() + dPos);
+
 	}
 }
 
 void CPlayerMovementController::receiveMessage(Message msg)
 {
 
+}
+
+void CPlayerMovementController::pitch(float amount)
+{
+	m_up = TransformUtils::rotate(m_right, amount, m_up);
+	m_forward = TransformUtils::rotate(m_right, amount, m_forward);
+}
+
+void CPlayerMovementController::roll(float amount)
+{
+	m_up = TransformUtils::rotate(m_forward, amount, m_up);
+	m_right = TransformUtils::rotate(m_forward, amount, m_right);
+}
+
+void CPlayerMovementController::yaw(float amount)
+{
+	m_right = TransformUtils::rotate(m_up, amount, m_right);
+	m_forward = TransformUtils::rotate(m_up, amount, m_forward);
 }

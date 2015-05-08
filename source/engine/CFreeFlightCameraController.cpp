@@ -156,7 +156,8 @@ void CFreeFlightCameraController::animate(float dt)
     }
 }
 
-void CFreeFlightCameraController::animateFeatures(float dt) {
+void CFreeFlightCameraController::animateFeatures(float dt) 
+{
     // tODO
 }
 

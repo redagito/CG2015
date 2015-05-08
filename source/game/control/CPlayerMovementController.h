@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include "game/IController.h"
 #include "game/Message.h"
 #include "input/IInputProvider.h"
@@ -42,10 +44,19 @@ public:
 	*/
 	void receiveMessage(Message msg);
 
+protected:
+	void pitch(float amount);
+	void roll(float amount);
+	void yaw(float amount);
+
 private:
 	IInputProvider* m_inputProvider = nullptr;
 	CGameObject* m_object = nullptr; /**< Controlled game object. */
 	float m_speedSide = 0.f; /**< Side movement speed. */
 	float m_rotationDegree = 0.f; /**< Current rotation in degree. */
 	bool m_active = true; /**< Active state flag. */
+
+	glm::vec3 m_up;
+	glm::vec3 m_right;
+	glm::vec3 m_forward;
 };

@@ -5,6 +5,8 @@
 
 #include "debug/Log.h"
 
+const std::string exitStr = "exit";
+
 CDemoState::CDemoState(const std::string& sceneFile)
 	:
 	m_sceneFile(sceneFile)
@@ -70,5 +72,5 @@ void CDemoState::onExit()
 
 const std::string& CDemoState::getNextState() const
 {
-	return "exit";
+	return exitStr;
 }
