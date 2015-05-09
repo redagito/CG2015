@@ -29,8 +29,10 @@ bool CTitleState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputPro
 
 	// TODO Refactor, camera movement should be implemented with a single camera and camera controllers.
 	m_camera = std::make_shared<CFirstPersonCamera>(
-		glm::vec3(-4.4f, 5.f, 20.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
+		glm::vec3(-4.4f, 5.f, 15.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
 		4.f / 3.f, 0.01f, 1000.f);
+
+	m_camera->getFeatureInfoForWrite().godRayActive = false;
 
 	// Create new scene object
 	m_scene = m_graphicsSystem->createScene();
