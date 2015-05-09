@@ -47,6 +47,19 @@
 					"rotation" : [ 0, 0.02, 0 ]
 				}
 			]
+        },
+		{
+            "mesh" :  "data/mesh/ring.obj",
+            "material" : "data/material/white_glowing.json",
+            "position" :  [ 0, 0, 0 ],
+            "rotation" :  [ 0.5 , 0, 0 ],
+            "scale" :  [ 4, 4, 4 ],
+			"animations" : [
+				{
+					"type" : "rotation",
+					"rotation" : [ 0.3, 0.5, 0.4 ]
+				}
+			]
         }
     ],
     "ambient_light" : {
@@ -57,7 +70,7 @@
         {
             "direction" :  [ 1, -1, 0],
             "color" :  [ 1, 1, 1 ],
-            "intensity" :  4,
+            "intensity" :  2,
             "casts_shadow" : true
         }
     ]
