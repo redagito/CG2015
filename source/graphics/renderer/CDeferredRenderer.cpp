@@ -852,7 +852,7 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
     // Processed scene in texture0
 
 	// Godray technique, consists of 2 passes
-	if (camera.getFeatureInfo().godRayActive || camera.getFeatureInfo().renderMode == RenderMode::GodRay)
+	if ((camera.getFeatureInfo().godRayActive || camera.getFeatureInfo().renderMode == RenderMode::GodRay) && false) // Disabled
 	{
 		// God ray pass 1
 		m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);

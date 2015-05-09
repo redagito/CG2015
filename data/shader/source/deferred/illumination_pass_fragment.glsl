@@ -32,5 +32,5 @@ void main(void)
 	vec3 light = texture(light_texture, normalized_screen_coordinates).rgb;
 
 	// Calculate fragment color based on incomming light or glow
-	fragmentColor = diffuseColor * max(light, glow);
+	fragmentColor = diffuseColor * max(light, glow * 4.f);
 }
