@@ -55,7 +55,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	m_player->setScale(glm::vec3(1.f));
 
 	// Get model resources
-	ResourceId playerShip = m_resourceManager->loadMesh("data/mesh/ship_1.obj");
+	ResourceId playerShip = m_resourceManager->loadMesh("data/mesh/ship_2.obj");
 	if (playerShip == invalidResource)
 	{
 		return false;
