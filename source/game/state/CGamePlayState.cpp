@@ -74,7 +74,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Create mothership
 	CGameObject* m_mothership = new CGameObject();
-	m_mothership->setPosition(glm::vec3(0.f, 40.f,0.f));
+	m_mothership->setPosition(glm::vec3(0.f, 65.f,0.f));
 	m_mothership->setRotation(glm::vec3(0.f));
 	m_mothership->setScale(glm::vec3(60.f));
 
@@ -90,7 +90,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 	// Create scene object
-	CSceneObjectProxy* motherSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 40.f, 0.f), glm::vec3(0.f), glm::vec3(60.f)));
+	CSceneObjectProxy* motherSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 65.f, 0.f), glm::vec3(0.f), glm::vec3(60.f)));
 	m_mothership->setSceneObject(motherSceneObject);
 
 	// Add player
