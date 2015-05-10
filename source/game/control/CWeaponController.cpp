@@ -47,7 +47,7 @@ void CWeaponController::update(float dtime)
 			
 			// Create game object
 			CGameObject* bullet = new CGameObject;
-			bullet->addController(std::make_shared<CLinearMovementController>(direction, 20.f));
+			bullet->addController(std::make_shared<CLinearMovementController>(direction, 50.f));
 			bullet->setPosition(position + direction * 2.f);
 			bullet->setRotation(m_object->getRotation());
 			
