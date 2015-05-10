@@ -1,5 +1,5 @@
 #include "CGamePlayState.h"
-
+#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
 #include "graphics/IGraphicsSystem.h"
@@ -20,7 +20,7 @@
 #include "io/CSceneLoader.h"
 #include "animation/CAnimationWorld.h"
 
-const std::string exitStr = "exit";
+const std::string exitStr = "lose";
 
 CGamePlayState::CGamePlayState() 
 :
@@ -190,6 +190,12 @@ bool CGamePlayState::update(float dtime)
 		getGameWorld().addObject(enemy);
 		m_enemyCount -= 1;
 		m_enemyXPosition += 25.f;
+	}
+
+	if (m_inputProvider->isKeyPressed(GLFW_KEY_P))
+	{
+
+		return false;
 	}
 	// Update gameworld
 	AGameState::update(dtime);
