@@ -83,9 +83,9 @@ void CPlayerMovementController::update(float dtime)
 		position += m_object->getForward() * dtime * m_speed;
 
 		// Restrict y
-		if (position.y < 5.f)
+		if (position.y < 20.f)
 		{
-			position.y = 5.f;
+			position.y = 20.f;
 		}
 		else if (position.y > 50.f)
 		{

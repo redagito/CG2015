@@ -33,7 +33,10 @@ private:
 	std::shared_ptr<IControllableCamera> m_camera = nullptr;
 	CGameObject* m_player; /**< Player object. */
 	CGameObject* m_mothership; /**< Mothership object. */
+	CGameObject* m_enemy; /**< Mothership object. */
 	int m_enemyCount; /**< Enemy spawn counter. */
 	float m_enemyTime; /**< Enemy spawn time. */
 	float m_enemyXPosition; // Hack
+	ResourceId enemyShip;
+	ResourceId enemyShipMaterial;
 };

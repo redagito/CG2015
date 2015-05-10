@@ -72,7 +72,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 	m_player->addController(std::make_shared<CWeaponController>(m_inputProvider, &getGameWorld(), m_scene, bulletMesh, bulletMaterial));
-	m_player->setPosition(glm::vec3(0.f, 5.f, -100.f));
+	m_player->setPosition(glm::vec3(0.f, 20.f, -100.f));
 	m_player->setRotation(glm::vec3(0.f));
 	m_player->setScale(glm::vec3(0.5f));
 
@@ -144,6 +144,19 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	getGameWorld().addObject(m_pyramide);
 
 
+	//LOAD ENEMY RESOURCE
+	// Get model resources
+	enemyShip = m_resourceManager->loadMesh("data/mesh/enemy.obj");
+	if (enemyShip == invalidResource)
+	{
+		return false;
+	}
+	enemyShipMaterial = m_resourceManager->loadMaterial("data/material/enemy.json");
+	if (enemyShipMaterial == invalidResource)
+	{
+		return false;
+	}
+
 	return true;
 }
 
@@ -166,19 +179,9 @@ bool CGamePlayState::update(float dtime)
 		enemy->setRotation(glm::vec3(0.f));
 		enemy->setScale(glm::vec3(0.4f));
 		enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-		enemy->addController(std::make_shared<CSimpleWaypointController>(enemy->getPosition(), glm::vec3(m_enemyXPosition, 25.f, -101.f), 10.f));
+		enemy->addController(std::make_shared<CSimpleWaypointController>(enemy->getPosition(), glm::vec3(m_enemyXPosition, 25.f, 101.f), 10.f));
 
-		// Get model resources
-		ResourceId enemyShip = m_resourceManager->loadMesh("data/mesh/enemy.obj");
-		if (enemyShip == invalidResource)
-		{
-			return false;
-		}
-		ResourceId enemyShipMaterial = m_resourceManager->loadMaterial("data/material/enemy.json");
-		if (enemyShipMaterial == invalidResource)
-		{
-			return false;
-		}
+
 		// Create scene object
 		CSceneObjectProxy* enemySceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(enemyShip, enemyShipMaterial, glm::vec3(m_enemyXPosition, 25.f, 0.f), glm::vec3(0.f), glm::vec3(0.4f)));
 		enemy->setSceneObject(enemySceneObject);
