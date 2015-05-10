@@ -36,7 +36,7 @@ struct SFeatureInfo
     float dofNearFocus = 0.5f;
     float dofNearBlur = 0.1f;
     float dofFarFocus = 10.f;
-    float dofFarBlur = 80.f;
+    float dofFarBlur = 150.f;
     
     bool fxaaActive = true;
 

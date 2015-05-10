@@ -88,7 +88,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 	ResourceId motherShipMaterial = m_resourceManager->loadMaterial("data/material/mothership.json");
-	if (playerShipMaterial == invalidResource)
+	if (motherShipMaterial == invalidResource)
 	{
 		return false;
 	}
@@ -98,6 +98,30 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Add player
 	getGameWorld().addObject(m_mothership);
+
+	// Create pyramide
+	CGameObject* m_pyramide = new CGameObject();
+	m_pyramide->setPosition(glm::vec3(0.f, 2.f, 0.f));
+	m_pyramide->setRotation(glm::vec3(0.f,-90.f,0.f));
+	m_pyramide->setScale(glm::vec3(3.f));
+
+	// Get model resources
+	ResourceId pyramide = m_resourceManager->loadMesh("data/mesh/piramyde.obj");
+	if (pyramide == invalidResource)
+	{
+		return false;
+	}
+	ResourceId pyramideMaterial = m_resourceManager->loadMaterial("data/material/sand.json");
+	if (pyramideMaterial == invalidResource)
+	{
+		return false;
+	}
+	// Create scene object
+	CSceneObjectProxy* pyramideSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(pyramide, pyramideMaterial, glm::vec3(0.f, 2.f, 0.f), glm::vec3(0.f, -90.f, 0.f), glm::vec3(3.f)));
+	m_pyramide->setSceneObject(pyramideSceneObject);
+
+	// Add player
+	getGameWorld().addObject(m_pyramide);
 
 
 	return true;
