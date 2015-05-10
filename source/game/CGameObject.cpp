@@ -3,6 +3,8 @@
 #include "CGameObject.h"
 #include "IController.h"
 
+#include "math/TransformUtils.h"
+
 // Constructor initializes drawable and matrices
 CGameObject::CGameObject()
 {
@@ -18,6 +20,8 @@ CGameObject::~CGameObject()
 void CGameObject::setRotation(const glm::vec3& rotation)
 {
 	m_rotation = rotation;
+	// Update forward vector
+	m_forward = TransformUtils::rotate(glm::vec3(0.f, 0.f, 1.f), m_rotation);
 	m_transformationChanged = true;
 }
 
@@ -59,6 +63,11 @@ const glm::vec3& CGameObject::getPosition() const
 const glm::vec3& CGameObject::getScale() const
 {
 	return m_scale;
+}
+
+const glm::vec3& CGameObject::getForward() const
+{
+	return m_forward;
 }
 
 void CGameObject::update(float dtime)

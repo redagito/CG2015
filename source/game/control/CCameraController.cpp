@@ -31,11 +31,13 @@ void CCameraController::update(float dtime)
 	{
 		// Update camera movement
 		glm::vec3 pos = m_object->getPosition();
+		glm::vec3 forward = m_object->getForward();
+
 		// Where the camera should be
-		glm::vec3 camPos(pos.x, pos.y * 0.7 + 5.f + std::sin(pos.z / 8.f) * 0.3, pos.z - 15.f);
-		pos.z += 5.f;
+		glm::vec3 camPos(pos.x - forward.x * 15.f, pos.y * 0.9f + 5.f, pos.z - forward.z * 15.f);
+
 		m_camera->setPosition(camPos);
-		m_camera->lookAt(pos, glm::vec3(0.f, 1.f, 0.f));
+		m_camera->lookAt(pos + forward * 5.f, glm::vec3(0.f, 1.f, 0.f));
 	}
 }
 

@@ -15,7 +15,7 @@
 class CRestrictPositionController : public IController
 {
 public:
-	CRestrictPositionController(const glm::vec2& minCoords, const glm::vec2& maxCoord);
+	CRestrictPositionController(const glm::vec2& minCoords, const glm::vec2& maxCoords);
 
 	/**
 	* \brief Destructor for cleanup.
@@ -49,7 +49,7 @@ public:
 
 private:
 	CGameObject* m_object = nullptr; /**< Controlled game object. */
-	glm::vec2 m_maxCoords;
 	glm::vec2 m_minCoords;
+	glm::vec2 m_maxCoords;
 	bool m_active = true; /**< Active state flag. */
 };

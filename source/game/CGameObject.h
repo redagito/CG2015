@@ -63,6 +63,11 @@ public:
 	const glm::vec3& getPosition() const;
 
 	/**
+	* \brief Returns forward direction.
+	*/
+	const glm::vec3& getForward() const;
+
+	/**
 	* \brief Returns scale.
 	*/
 	const glm::vec3& getScale() const;
@@ -92,6 +97,7 @@ public:
 
 protected:
 	std::unique_ptr<CSceneObjectProxy> m_sceneObject; /**< Scene object. */
+	glm::vec3 m_forward = glm::vec3(0.f, 0.f, 1.f); /**< Forward direction per default +z. */
 	glm::vec3 m_rotation = glm::vec3(0.f); /**< Rotation. */
 	glm::vec3 m_position = glm::vec3(0.f); /**< Position. */
 	glm::vec3 m_scale = glm::vec3(1.f); /**< Scale. */
