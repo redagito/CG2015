@@ -1,4 +1,4 @@
 {
-	"base" : "data/image/piramide_base.png",
-	"normal" : "data/image/piramide_normal.png"
+	"base" : "data/image/sand_base.png",
+	"normal" : "data/image/sand_normal.png"
 }

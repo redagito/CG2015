@@ -8,6 +8,13 @@
             "scale" :  [ 500, 500, 500 ]
         },
 		{
+        	"mesh" : "data/mesh/frame.obj",
+        	"material" : "data/material/sand.json",
+        	"position": [ -7, -2, 10],
+        	"rotation" :  [ 0, 0, 0 ],
+            "scale" :  [ 2.03, 0.5, 2.03 ]
+        },
+		{
             "mesh" :  "data/mesh/plane.obj",
             "material" : "data/material/stone_lava.json",
             "position" :  [ 0, 0, 0 ],
