@@ -12,6 +12,7 @@
 #include "game/control/CPlayerMovementController.h"
 #include "game/control/CCameraController.h"
 #include "game/control/CRestrictPositionController.h"
+#include "game/control/CWeaponController.h"
 
 #include "graphics/camera/CFirstPersonCamera.h"
 
@@ -53,6 +54,19 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	m_player->addController(std::make_shared<CPlayerMovementController>(inputProvider, 5.f));
 	m_player->addController(std::make_shared<CCameraController>(m_camera.get()));
 	m_player->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
+
+	// Load bullet
+	ResourceId bulletMesh = m_resourceManager->loadMesh("data/mesh/bullet.obj");
+	if (bulletMesh == invalidResource)
+	{
+		return false;
+	}
+	ResourceId bulletMaterial = m_resourceManager->loadMaterial("data/material/white_glowing.json");
+	if (bulletMaterial == invalidResource)
+	{
+		return false;
+	}
+	m_player->addController(std::make_shared<CWeaponController>(m_inputProvider, &getGameWorld(), m_scene, bulletMesh, bulletMaterial));
 	m_player->setPosition(glm::vec3(0.f, 5.f, -100.f));
 	m_player->setRotation(glm::vec3(0.f));
 	m_player->setScale(glm::vec3(0.5f));
