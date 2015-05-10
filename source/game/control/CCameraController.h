@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include "game/IController.h"
 #include "game/Message.h"
 
@@ -50,4 +52,7 @@ private:
 	IControllableCamera* m_camera = nullptr; /**< Controlled camera. */
 	CGameObject* m_object = nullptr; /**< Controlled game object. */
 	bool m_active = true; /**< Active state flag. */
+	glm::vec3 m_prevLookAt;
+	bool m_first = true;
+	float m_speed = 5.f;
 };

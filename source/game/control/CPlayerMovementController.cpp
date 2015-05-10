@@ -47,7 +47,7 @@ void CPlayerMovementController::update(float dtime)
 
 		const float pitchSpeed = 1.f;
 		const float rollSpeed = 1.f;
-		const float yawSpeed = 1.f;
+		const float yawSpeed = 2.f;
 
 		glm::vec3 rotation(0.f);
 		glm::vec3 position = m_object->getPosition();

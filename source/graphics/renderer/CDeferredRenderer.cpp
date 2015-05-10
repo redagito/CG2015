@@ -1011,7 +1011,7 @@ void CDeferredRenderer::gaussBlurVerticalPass(const IWindow& window,
     shader->setUniform(sceneTextureUniformName, gaussBlurVerticalPassInputTextureUnit);
 
     // Blur parameter
-    shader->setUniform(blurStrengthUniformName, 3.f);
+    shader->setUniform(blurStrengthUniformName, 2.f);
 
     // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());
