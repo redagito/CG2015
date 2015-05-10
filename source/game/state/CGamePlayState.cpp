@@ -14,6 +14,7 @@
 #include "game/control/CRestrictPositionController.h"
 #include "game/control/CWeaponController.h"
 #include "game/control/CSimpleWaypointController.h"
+#include "game/control/CLinearMovementController.h"
 
 #include "graphics/camera/CFirstPersonCamera.h"
 
@@ -99,7 +100,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	m_mothership->setPosition(glm::vec3(0.f, 68.f, 700.f));
 	m_mothership->setRotation(glm::vec3(0.f));
 	m_mothership->setScale(glm::vec3(60.f));
-	m_mothership->addController(std::make_shared<CSimpleWaypointController>(m_mothership->getPosition(), glm::vec3(0.f, 68.f, 0.f), 10.f));
+	m_mothership->addController(std::make_shared<CSimpleWaypointController>(glm::vec3(0.f, 68.f, 0.f), 10.f, this));
 
 	// Get model resources
 	ResourceId motherShip = m_resourceManager->loadMesh("data/mesh/mothership.obj");
@@ -179,7 +180,7 @@ bool CGamePlayState::update(float dtime)
 		enemy->setRotation(glm::vec3(0.f));
 		enemy->setScale(glm::vec3(0.4f));
 		enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-		enemy->addController(std::make_shared<CSimpleWaypointController>(enemy->getPosition(), glm::vec3(m_enemyXPosition, 25.f, 101.f), 10.f));
+		enemy->addController(std::make_shared<CLinearMovementController>(enemy->getForward(), 10.f));
 
 
 		// Create scene object
@@ -198,8 +199,7 @@ bool CGamePlayState::update(float dtime)
 		return false;
 	}
 	// Update gameworld
-	AGameState::update(dtime);
-	return true;
+	return AGameState::update(dtime);
 }
 
 void CGamePlayState::onExit()

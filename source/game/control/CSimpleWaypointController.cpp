@@ -3,16 +3,18 @@
 #include "game/CGameObject.h"
 #include "math/TransformUtils.h"
 
-#include "glfw/glfw3.h"
+#include "game/state/AGameState.h"
+
+#include <GLFW/glfw3.h>
 
 #include <glm/ext.hpp>
 
 
-CSimpleWaypointController::CSimpleWaypointController(const glm::vec3& start, const glm::vec3& end, float speed)
+CSimpleWaypointController::CSimpleWaypointController(const glm::vec3& end, float speed, AGameState* state)
 :
-m_start(start),
 m_end(end),
-m_speed(speed)
+m_speed(speed),
+m_gameState(state)
 {
 	return;
 }
@@ -40,31 +42,38 @@ void CSimpleWaypointController::setActive(bool state)
 
 void CSimpleWaypointController::update(float dtime)
 {
-	m_start = m_object->getPosition();
+	glm::vec3 position = m_object->getPosition();
 	if (m_active && m_object != nullptr)
 	{
-
-		if (m_start.x <= m_end.x) {
-			m_start.x += m_speed * dtime;
+		// Reached end
+		if (position == m_end)
+		{
+			// Countdown idle time
+			m_idleTimer -= dtime;
 		}
-		if (m_start.y <= m_end.y) {
-			m_start.y += m_speed * dtime;
-		}
-		if (m_start.z <= m_end.z) {
-			m_start.z += m_speed * dtime;
-		}
-
-		if (m_start.x >= m_end.x) {
-			m_start.x -= m_speed * dtime;
-		}
-		if (m_start.y >= m_end.y) {
-			m_start.y -= m_speed * dtime;
-		}
-		if (m_start.z >= m_end.z) {
-			m_start.z -= m_speed * dtime;
+		if (m_idleTimer <= 0.f)
+		{
+			// Idle time over, trigger lose condition
+			m_gameState->triggerStateTransition("lose");
 		}
 
-		m_object->setPosition(glm::vec3(m_start.x, m_start.y, m_start.z));
+		// Normalized direction vector
+		glm::vec3 direction = glm::normalize(m_end - position);
+		// Current distance to target
+		float distance = glm::distance(position, m_end);
+		// Next step over distance?
+		if (m_speed * dtime > distance)
+		{
+			// Reach end
+			position = m_end;
+		}
+		else
+		{
+			// Add step
+			position += direction * m_speed * dtime;
+		}
+
+		m_object->setPosition(position);
 	}
 	
 }

@@ -69,7 +69,6 @@ bool CLoseState::update(float dtime)
 		// Start game on enter key
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_ENTER))
 		{
-
 			return false;
 		}
 	}

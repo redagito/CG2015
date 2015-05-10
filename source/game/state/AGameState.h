@@ -22,6 +22,11 @@ public:
 	virtual void onExit();
 	virtual const std::string& getNextState() const;
 
+	void triggerStateTransition(const std::string& nextState);
+	bool isStateTransitionTriggered() const;
+
 private:
+	bool m_stateTransitionTriggered = false;
+	std::string m_nextStateId = "exit";
 	CGameWorld m_gameWorld;
 };

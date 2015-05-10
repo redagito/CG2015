@@ -30,7 +30,7 @@ void AGameState::onEnter()
 bool AGameState::update(float dtime)
 {
 	getGameWorld().update(dtime);
-	return true;
+	return !isStateTransitionTriggered();
 }
 
 void AGameState::onExit()
@@ -40,5 +40,16 @@ void AGameState::onExit()
 
 const std::string& AGameState::getNextState() const
 {
-	return errStr;
+	return m_nextStateId;
+}
+
+void AGameState::triggerStateTransition(const std::string& nextState)
+{
+	m_stateTransitionTriggered = true;
+	m_nextStateId = nextState;
+}
+
+bool AGameState::isStateTransitionTriggered() const
+{
+	return m_stateTransitionTriggered;
 }

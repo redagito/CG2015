@@ -5,13 +5,15 @@
 #include "game/IController.h"
 #include "game/Message.h"
 
+class AGameState;
+
 /**
 * \brief Point to point movement.
 */
 class CSimpleWaypointController : public IController
 {
 public:
-	CSimpleWaypointController(const glm::vec3& start, const glm::vec3& end, float speed);
+	CSimpleWaypointController(const glm::vec3& end, float speed, AGameState* gameState);
 
 	/**
 	* \brief Destructor for cleanup.
@@ -47,6 +49,7 @@ private:
 	CGameObject* m_object = nullptr; /**< Controlled game object. */
 	float m_speed = 0.f; /**< Side movement speed. */
 	bool m_active = true; /**< Active state flag. */
-    glm::vec3 m_start;
 	glm::vec3 m_end;
+	AGameState* m_gameState = nullptr;
+	float m_idleTimer = 5.f;
 };
