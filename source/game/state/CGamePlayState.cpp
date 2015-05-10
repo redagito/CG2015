@@ -13,6 +13,7 @@
 #include "game/control/CCameraController.h"
 #include "game/control/CRestrictPositionController.h"
 #include "game/control/CWeaponController.h"
+#include "game/control/CSimpleWaypointController.h"
 
 #include "graphics/camera/CFirstPersonCamera.h"
 
@@ -90,10 +91,11 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	getGameWorld().addObject(m_player);
 
 	// Create mothership
-	CGameObject* m_mothership = new CGameObject();
-	m_mothership->setPosition(glm::vec3(0.f, 68.f,0.f));
+	m_mothership = new CGameObject();
+	m_mothership->setPosition(glm::vec3(0.f, 68.f, 700.f));
 	m_mothership->setRotation(glm::vec3(0.f));
 	m_mothership->setScale(glm::vec3(60.f));
+	m_mothership->addController(std::make_shared<CSimpleWaypointController>(m_mothership->getPosition(), glm::vec3(0.f, 68.f, 0.f), 10.f));
 
 	// Get model resources
 	ResourceId motherShip = m_resourceManager->loadMesh("data/mesh/mothership.obj");
@@ -107,7 +109,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 	// Create scene object
-	CSceneObjectProxy* motherSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 65.f, 0.f), glm::vec3(0.f), glm::vec3(60.f)));
+	CSceneObjectProxy* motherSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 68.f, 700.f), glm::vec3(0.f), glm::vec3(60.f)));
 	m_mothership->setSceneObject(motherSceneObject);
 
 	// Add player

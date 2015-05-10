@@ -32,4 +32,5 @@ private:
 	IInputProvider* m_inputProvider = nullptr; 
 	std::shared_ptr<IControllableCamera> m_camera = nullptr;
 	CGameObject* m_player; /**< Player object. */
+	CGameObject* m_mothership; /**< Mothership object. */
 };
