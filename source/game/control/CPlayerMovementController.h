@@ -12,7 +12,7 @@
 class CPlayerMovementController : public IController
 {
 public:
-	CPlayerMovementController(IInputProvider* inputProvider, float speedSide);
+	CPlayerMovementController(IInputProvider* inputProvider, float speed);
 
 	/**
 	* \brief Destructor for cleanup.
@@ -47,7 +47,7 @@ public:
 private:
 	IInputProvider* m_inputProvider = nullptr;
 	CGameObject* m_object = nullptr; /**< Controlled game object. */
-	float m_speedSide = 0.f; /**< Side movement speed. */
+	float m_speed = 0.f; /**< Side movement speed. */
 	float m_rotationDegree = 0.f; /**< Current rotation in degree. */
 	bool m_active = true; /**< Active state flag. */
 };

@@ -10,10 +10,10 @@
 #include <glm/ext.hpp>
 
 
-CPlayerMovementController::CPlayerMovementController(IInputProvider* inputProvider, float speedSide)
+CPlayerMovementController::CPlayerMovementController(IInputProvider* inputProvider, float speed)
 	:
 	m_inputProvider(inputProvider),
-	m_speedSide(speedSide)
+	m_speed(speed)
 {
 	return;
 }
@@ -48,7 +48,6 @@ void CPlayerMovementController::update(float dtime)
 		const float pitchSpeed = 1.f;
 		const float rollSpeed = 1.f;
 		const float yawSpeed = 1.f;
-		const float thrustSpeed = 10.f;
 
 		glm::vec3 rotation(0.f);
 		glm::vec3 position = m_object->getPosition();
@@ -56,13 +55,13 @@ void CPlayerMovementController::update(float dtime)
 		// Move up
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_W))
 		{
-			position.y += thrustSpeed * dtime;
+			position.y += m_speed * dtime;
 		}
 
 		// Move down
 		if (m_inputProvider->isKeyPressed(GLFW_KEY_S))
 		{
-			position.y -= thrustSpeed * dtime;
+			position.y -= m_speed * dtime;
 		}
 
 		// Rotate left
@@ -81,7 +80,7 @@ void CPlayerMovementController::update(float dtime)
 		m_object->setRotation(m_object->getRotation() + rotation);
 
 		// Calculate final position
-		position += m_object->getForward() * dtime * thrustSpeed;
+		position += m_object->getForward() * dtime * m_speed;
 
 		// Restrict y
 		if (position.y < 5.f)

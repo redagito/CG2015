@@ -50,12 +50,12 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Create player
 	m_player = new CGameObject();
-	m_player->addController(std::make_shared<CPlayerMovementController>(inputProvider, 20.f));
+	m_player->addController(std::make_shared<CPlayerMovementController>(inputProvider, 5.f));
 	m_player->addController(std::make_shared<CCameraController>(m_camera.get()));
 	m_player->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-	m_player->setPosition(glm::vec3(0.f));
+	m_player->setPosition(glm::vec3(0.f, 5.f, -100.f));
 	m_player->setRotation(glm::vec3(0.f));
-	m_player->setScale(glm::vec3(1.f));
+	m_player->setScale(glm::vec3(0.5f));
 
 	// Get model resources
 	ResourceId playerShip = m_resourceManager->loadMesh("data/mesh/ship_2.obj");
