@@ -7,16 +7,16 @@
 #include "graphics/ICamera.h"
 #include "resource/IResourceManager.h"
 #include "input/IInputProvider.h"
-#include "game/CGameSystem.h"
+#include "game\CGameSystem.h"
 
 /**
-* \brief Title state, similar to demo state with static camera.
+* \brief Lose state, similar to demo state with static camera.
 */
-class CTitleState : public IGameState
+class CLoseState : public IGameState
 {
 public:
-	CTitleState(const std::string& sceneFile);
-	~CTitleState();
+	CLoseState(const std::string& sceneFile);
+	~CLoseState();
 
 	bool init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager);
 
