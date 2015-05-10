@@ -40,7 +40,7 @@ void CSimpleWaypointController::setActive(bool state)
 
 void CSimpleWaypointController::update(float dtime)
 {
-
+	m_start = m_object->getPosition();
 	if (m_active && m_object != nullptr)
 	{
 

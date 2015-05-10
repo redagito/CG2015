@@ -22,9 +22,13 @@
 
 const std::string exitStr = "exit";
 
-CGamePlayState::CGamePlayState()
+CGamePlayState::CGamePlayState() 
+:
+m_enemyCount(7),
+m_enemyTime(4.f),
+m_enemyXPosition(-75.f)
 {
-
+	
 }
 
 CGamePlayState::~CGamePlayState()
@@ -52,7 +56,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Create player
 	m_player = new CGameObject();
-	m_player->addController(std::make_shared<CPlayerMovementController>(inputProvider, 5.f));
+	m_player->addController(std::make_shared<CPlayerMovementController>(inputProvider, 10.f));
 	m_player->addController(std::make_shared<CCameraController>(m_camera.get()));
 	m_player->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
 
@@ -151,6 +155,39 @@ void CGamePlayState::onEnter()
 
 bool CGamePlayState::update(float dtime)
 {
+	
+	m_enemyTime -= dtime;
+	if (m_enemyCount > 0.f && m_enemyTime <= 0.f)
+	{
+		m_enemyTime = 2.f;
+		// Create new enemy
+		CGameObject* enemy = new CGameObject();
+		enemy->setPosition(glm::vec3(m_enemyXPosition, 25.f, 0.f));
+		enemy->setRotation(glm::vec3(0.f));
+		enemy->setScale(glm::vec3(0.4f));
+		enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
+		enemy->addController(std::make_shared<CSimpleWaypointController>(enemy->getPosition(), glm::vec3(m_enemyXPosition, 25.f, -101.f), 10.f));
+
+		// Get model resources
+		ResourceId enemyShip = m_resourceManager->loadMesh("data/mesh/enemy.obj");
+		if (enemyShip == invalidResource)
+		{
+			return false;
+		}
+		ResourceId enemyShipMaterial = m_resourceManager->loadMaterial("data/material/enemy.json");
+		if (enemyShipMaterial == invalidResource)
+		{
+			return false;
+		}
+		// Create scene object
+		CSceneObjectProxy* enemySceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(enemyShip, enemyShipMaterial, glm::vec3(m_enemyXPosition, 25.f, 0.f), glm::vec3(0.f), glm::vec3(0.4f)));
+		enemy->setSceneObject(enemySceneObject);
+
+        // Add enemy
+		getGameWorld().addObject(enemy);
+		m_enemyCount -= 1;
+		m_enemyXPosition += 25.f;
+	}
 	// Update gameworld
 	AGameState::update(dtime);
 	return true;
