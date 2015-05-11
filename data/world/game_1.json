@@ -15,6 +15,34 @@
             "scale" :  [ 2.03, 0.5, 2.03 ]
         },
 		{
+        	"mesh" : "data/mesh/post.obj",
+        	"material" : "data/material/sand.json",
+        	"position": [ -60, 1, 0],
+        	"rotation" :  [ 0, 0, 0 ],
+            "scale" :  [ 1, 1, 1 ]
+        },
+		{
+        	"mesh" : "data/mesh/post.obj",
+        	"material" : "data/material/sand.json",
+        	"position": [ 60, 1, 0],
+        	"rotation" :  [ 0, 0, 0 ],
+            "scale" :  [ 1, 1, 1 ]
+        },
+		{
+        	"mesh" : "data/mesh/post.obj",
+        	"material" : "data/material/sand.json",
+        	"position": [ 0, 1, -60],
+        	"rotation" :  [ 0, 0, 0 ],
+            "scale" :  [ 1, 1, 1 ]
+        },
+		{
+        	"mesh" : "data/mesh/post.obj",
+        	"material" : "data/material/sand.json",
+        	"position": [ 0, 1, 60],
+        	"rotation" :  [ 0, 0, 0 ],
+            "scale" :  [ 1, 1, 1 ]
+        },
+		{
             "mesh" :  "data/mesh/plane.obj",
             "material" : "data/material/stone_lava.json",
             "position" :  [ 0, 0, 0 ],
