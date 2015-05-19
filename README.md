@@ -2,6 +2,10 @@
 CG 2015 Project
 
 # Screenshots
+
+![](https://github.com/redagito/CG2015/wiki/screen_game_1.png)
+
+## Testscenes
 ![](https://github.com/redagito/CG2015/wiki/testscene_1.png)
 
 ![](https://github.com/redagito/CG2015/wiki/testscene_2.png)
