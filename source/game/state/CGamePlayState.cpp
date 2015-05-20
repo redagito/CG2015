@@ -83,7 +83,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	{
 		return false;
 	}
-	ResourceId playerShipMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
+	ResourceId playerShipMaterial = m_resourceManager->loadMaterial("data/material/line_metal.json");
 	if (playerShipMaterial == invalidResource)
 	{
 		return false;

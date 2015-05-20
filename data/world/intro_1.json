@@ -2,7 +2,7 @@
     "scene_objects" :  [
         {
             "mesh" :  "data/mesh/ship_2.obj",
-            "material" : "data/material/metallic_galvanized.json",
+            "material" : "data/material/line_metal.json",
             "position" :  [ 0, 0, 0 ],
             "rotation" :  [ 0 , 0.2, 0 ],
             "scale" :  [ 1, 1, 1 ],
