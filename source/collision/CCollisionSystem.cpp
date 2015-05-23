@@ -5,7 +5,6 @@
 
 #include <stdexcept>
 
-#include "util/mmgr.h"
 
 unsigned int CCollisionSystem::getNewGroupId()
 {
