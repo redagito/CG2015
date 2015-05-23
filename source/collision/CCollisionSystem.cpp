@@ -3,6 +3,10 @@
 #include "CCollidable.h"
 #include "debug/Log.h"
 
+#include <stdexcept>
+
+#include "util/mmgr.h"
+
 unsigned int CCollisionSystem::getNewGroupId()
 {
 	// Add new collision group
