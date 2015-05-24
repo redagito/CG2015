@@ -4,9 +4,12 @@
 #include "IController.h"
 
 #include "math/TransformUtils.h"
+#include "collision/CCollidable.h"
 
 // Constructor initializes drawable and matrices
 CGameObject::CGameObject()
+:
+m_collidable(nullptr) // Collidable
 {
 	return;
 }
@@ -103,4 +106,20 @@ void CGameObject::sendMessage(Message message)
 	{
 		controller->receiveMessage(message);
 	}
+}
+
+void CGameObject::setCollidable(CCollidable* entity)
+{
+	if (m_collidable != entity)
+	{
+		m_collidable = entity;
+		// Update
+		m_collidable->setScale(getScale());
+		m_collidable->setTranslation(getPosition());
+	}
+}
+
+CCollidable* CGameObject::getCollidable() const
+{
+	return m_collidable;
 }

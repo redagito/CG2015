@@ -53,12 +53,12 @@ public:
 	/**
 	* \brief Sets the translation matrix for the entity
 	*/
-	void setTranslation(const glm::mat4& translation);
+	void setTranslation(const glm::vec3& translation);
 
 	/**
 	* \brief Sets the scale matrix
 	*/
-	void setScale(const glm::mat4& scale);
+	void setScale(const glm::vec3& scale);
 
 	/**
 	* \brief Sets the collision status.

@@ -10,6 +10,7 @@
 #include "Message.h"
 
 class IController;
+class CCollidable;
 
 /**
 * \brief Game object storing relevant data.
@@ -95,6 +96,16 @@ public:
 	*/
 	void sendMessage(Message msg);
 
+	/**
+	* \brief Sets the collision entity for the object.
+	*/
+	void setCollidable(CCollidable* entity);
+
+	/**
+	* \brief Returns collidable entity.
+	*/
+	CCollidable* getCollidable() const;
+
 protected:
 	std::unique_ptr<CSceneObjectProxy> m_sceneObject; /**< Scene object. */
 	glm::vec3 m_forward = glm::vec3(0.f, 0.f, 1.f); /**< Forward direction per default +z. */
@@ -104,5 +115,7 @@ protected:
 	bool m_transformationChanged = false; /**< Transformation dirty flag. */
 	bool m_deleteRequested = false; /**< Deletion of this object is requested. */
 	std::list<std::shared_ptr<IController>> m_controllers; /**< Controllers attached to the object. */
+	CCollidable* m_collidable; /**< Collidable object. */
+	
 	
 };

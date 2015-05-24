@@ -49,15 +49,15 @@ const CAABBox& CCollidable::getAABBox() const
 	return m_boxTransformed;
 }
 
-void CCollidable::setScale(const glm::mat4& scale)
+void CCollidable::setScale(const glm::vec3& scale)
 {
-	m_boxTransformed.setHalfWidths(glm::vec3(scale * glm::vec4(m_box.getHalfWidths(), 1.f)));
+	m_boxTransformed.setHalfWidths(scale);
 	return;
 }
 
-void CCollidable::setTranslation(const glm::mat4& translate)
+void CCollidable::setTranslation(const glm::vec3& translate)
 {
-	m_boxTransformed.setMid(glm::vec3(translate * glm::vec4(m_box.getMid(), 1.f)));
+	m_boxTransformed.setMid(translate);
 	return;
 }
 
