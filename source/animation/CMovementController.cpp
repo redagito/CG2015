@@ -25,7 +25,7 @@ void CMovementController::update(float timeStep)
         ResourceId mesh;
         ResourceId material;
         glm::vec3 position;
-        glm::vec3 rotation;
+        glm::quat rotation;
         glm::vec3 scale;
         // Retrieve object
         if (!m_scene.getObject(m_objectId, mesh, material, position, rotation, scale))

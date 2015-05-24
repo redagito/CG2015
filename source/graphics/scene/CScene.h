@@ -21,16 +21,17 @@ class CScene : public IScene
     ~CScene();
 
 	SceneObjectId createObject(ResourceId model, const glm::vec3& position,
-							   const glm::vec3& rotation, const glm::vec3& scale);
+							   const glm::quat& rotation, const glm::vec3& scale);
 
     SceneObjectId createObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
-                               const glm::vec3& rotation, const glm::vec3& scale);
+							   const glm::quat& rotation, const glm::vec3& scale);
 
     bool getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material, glm::vec3& position,
-                   glm::vec3& rotation, glm::vec3& scale) const;
+                   glm::quat& rotation, glm::vec3& scale) const;
 
-	void setObject(SceneObjectId id, ResourceId mesh, ResourceId material, const glm::vec3& position,
-                   const glm::vec3& rotation, const glm::vec3& scale);
+	void setObject(SceneObjectId id, ResourceId mesh, ResourceId material,
+				   const glm::vec3& position, const glm::quat& rotation,
+				   const glm::vec3& scale);
 
     SceneObjectId createPointLight(const glm::vec3& position, float radius, const glm::vec3& color,
                                    float intensity, bool castsShadow);

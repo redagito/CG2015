@@ -10,21 +10,21 @@ CScene::CScene() {}
 CScene::~CScene() {}
 
 SceneObjectId CScene::createObject(ResourceId model, const glm::vec3& position,
-	const glm::vec3& rotation, const glm::vec3& scale)
+	const glm::quat& rotation, const glm::vec3& scale)
 {
 	m_objects.push_back(SSceneObject(model, position, rotation, scale));
 	return m_objects.size() - 1;
 }
 
 SceneObjectId CScene::createObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
-                                   const glm::vec3& rotation, const glm::vec3& scale)
+                                   const glm::quat& rotation, const glm::vec3& scale)
 {
     m_objects.push_back(SSceneObject(mesh, material, position, rotation, scale));
     return m_objects.size() - 1;
 }
 
 bool CScene::getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
-                       glm::vec3& position, glm::vec3& rotation, glm::vec3& scale) const
+                       glm::vec3& position, glm::quat& rotation, glm::vec3& scale) const
 {
     // TODO Needs to be changed for better data structures
     if (id < 0 || ((unsigned int)id) >= m_objects.size())
@@ -41,19 +41,19 @@ bool CScene::getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
     return true;
 }
 
-void CScene::setObject(SceneObjectId id, ResourceId mesh, ResourceId material,
-                       const glm::vec3& position, const glm::vec3& rotation, const glm::vec3& scale)
+void CScene::setObject(SceneObjectId id, ResourceId mesh, ResourceId material, const glm::vec3& position,
+	const glm::quat& rotation, const glm::vec3& scale)
 {
-    // TODO Needs to be changed for better data structures
-    assert(id >= 0 && ((unsigned int)id) < m_objects.size() && "Invalid scene object id");
-	unsigned int index = (unsigned int) id;
-    // Write data
+	// TODO Needs to be changed for better data structures
+	assert(id >= 0 && ((unsigned int)id) < m_objects.size() && "Invalid scene object id");
+	unsigned int index = (unsigned int)id;
+	// Write data
 	m_objects[index].m_mesh = mesh;
 	m_objects[index].m_material = material;
 	m_objects[index].m_position = position;
 	m_objects[index].m_rotation = rotation;
 	m_objects[index].m_scale = scale;
-    return;
+	return;
 }
 
 SceneObjectId CScene::createPointLight(const glm::vec3& position, float radius,

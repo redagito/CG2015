@@ -13,11 +13,12 @@ public:
 	bool init(IScene* scene, SceneObjectId id);
 
 	const glm::vec3& getPosition() const;
-	const glm::vec3& getRotation() const;
+	const glm::quat& getRotation() const;
 	const glm::vec3& getScale() const;
 
 	void setPosition(const glm::vec3& position);
 	void setRotation(const glm::vec3& rotation);
+	void setRotation(const glm::quat& rotation);
 	void setScale(const glm::vec3& scale);
 
 private:
@@ -27,7 +28,7 @@ private:
 	mutable ResourceId m_mesh;
 	mutable ResourceId m_material;
 	mutable glm::vec3 m_position;
-	mutable glm::vec3 m_rotation;
+	mutable glm::quat m_rotation;
 	mutable glm::vec3 m_scale;
 
 	bool m_init = false;

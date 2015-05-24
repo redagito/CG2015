@@ -30,7 +30,7 @@ const glm::vec3& CSceneObjectProxy::getPosition() const
 	return m_position;
 }
 
-const glm::vec3& CSceneObjectProxy::getRotation() const
+const glm::quat& CSceneObjectProxy::getRotation() const
 {
 	getUpdate();
 	return m_rotation;
@@ -50,6 +50,13 @@ void CSceneObjectProxy::setPosition(const glm::vec3& position)
 }
 
 void CSceneObjectProxy::setRotation(const glm::vec3& rotation)
+{
+	getUpdate();
+	m_rotation = glm::quat(rotation);
+	sendUpdate();
+}
+
+void CSceneObjectProxy::setRotation(const glm::quat& rotation)
 {
 	getUpdate();
 	m_rotation = rotation;

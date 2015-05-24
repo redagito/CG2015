@@ -16,9 +16,9 @@ void CTransformer::setPosition(const glm::vec3& position)
     m_modelViewProjection.m_inverseDirty = true;
 }
 
-void CTransformer::setRotation(const glm::vec3& rotation)
+void CTransformer::setRotation(const glm::quat& rotation)
 {
-    m_rotationVector = rotation;
+    m_rotationQuat = rotation;
 
     m_rotation.m_matrixDirty = true;
     m_rotation.m_inverseDirty = true;
@@ -74,7 +74,7 @@ void CTransformer::setProjectionMatrix(const glm::mat4& projection)
 
 const glm::vec3& CTransformer::getPosition() const { return m_positionVector; }
 
-const glm::vec3& CTransformer::getRotation() const { return m_rotationVector; }
+const glm::quat& CTransformer::getRotation() const { return m_rotationQuat; }
 
 const glm::vec3& CTransformer::getScale() const { return m_scaleVector; }
 
@@ -102,9 +102,10 @@ const glm::mat4& CTransformer::getRotationMatrix() const
 {
     if (m_rotation.m_matrixDirty)
     {
-        m_rotation.m_matrix = glm::rotate(m_rotationVector.x, glm::vec3(1.f, 0.f, 0.f)) *
-                              glm::rotate(m_rotationVector.y, glm::vec3(0.f, 1.f, 0.f)) *
-                              glm::rotate(m_rotationVector.z, glm::vec3(0.f, 0.f, 1.f));
+        // m_rotation.m_matrix = glm::rotate(m_rotationVector.x, glm::vec3(1.f, 0.f, 0.f)) *
+        //                       glm::rotate(m_rotationVector.y, glm::vec3(0.f, 1.f, 0.f)) *
+        //                       glm::rotate(m_rotationVector.z, glm::vec3(0.f, 0.f, 1.f));
+		m_rotation.m_matrix = glm::toMat4(m_rotationQuat);
         m_rotation.m_matrixDirty = false;
     }
     return m_rotation.m_matrix;
@@ -114,9 +115,10 @@ const glm::mat4& CTransformer::getInverseRotationMatrix() const
 {
     if (m_rotation.m_inverseDirty)
     {
-        m_rotation.m_inverse = glm::rotate(-m_rotationVector.x, glm::vec3(1.f, 0.f, 0.f)) *
-                               glm::rotate(-m_rotationVector.y, glm::vec3(0.f, 1.f, 0.f)) *
-                               glm::rotate(-m_rotationVector.z, glm::vec3(0.f, 0.f, 1.f));
+		m_rotation.m_inverse = glm::toMat4(glm::inverse(m_rotationQuat));
+        // m_rotation.m_inverse = glm::rotate(-m_rotationVector.x, glm::vec3(1.f, 0.f, 0.f)) *
+		//                        glm::rotate(-m_rotationVector.y, glm::vec3(0.f, 1.f, 0.f)) *
+		//                        glm::rotate(-m_rotationVector.z, glm::vec3(0.f, 0.f, 1.f));
         m_rotation.m_inverseDirty = false;
     }
     return m_rotation.m_inverse;

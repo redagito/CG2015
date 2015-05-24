@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 #include "SceneConfig.h"
 #include "resource/ResourceConfig.h"
@@ -24,27 +25,27 @@ public:
 	* \brief Creates scene object from model and returns scene object id..
 	*/
 	virtual SceneObjectId createObject(ResourceId model, const glm::vec3& position,
-									   const glm::vec3& rotation, const glm::vec3& scale) = 0;
+									   const glm::quat& rotation, const glm::vec3& scale) = 0;
 
     /**
      * \brief Creates object in scene and returns id.
      */
     virtual SceneObjectId createObject(ResourceId mesh, ResourceId material,
-                                       const glm::vec3& position, const glm::vec3& rotation,
+                                       const glm::vec3& position, const glm::quat& rotation,
                                        const glm::vec3& scale) = 0;
 
     /**
      * \brief Returns scene object data.
      */
     virtual bool getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
-                           glm::vec3& position, glm::vec3& rotation, glm::vec3& scale) const = 0;
+                           glm::vec3& position, glm::quat& rotation, glm::vec3& scale) const = 0;
 
     /**
     * \brief Set scene object parameters.
     */
-    virtual void setObject(SceneObjectId id, ResourceId mesh, ResourceId material,
-                           const glm::vec3& position, const glm::vec3& rotation,
-                           const glm::vec3& scale) = 0;
+	virtual void setObject(SceneObjectId id, ResourceId mesh, ResourceId material,
+						   const glm::vec3& position, const glm::quat& rotation,
+						   const glm::vec3& scale) = 0;
 
     /**
      * \brief Creates point light in scene and returns id.

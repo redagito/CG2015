@@ -100,7 +100,7 @@ void CForwardRenderer::draw(const IScene& scene, const ICamera& camera, const IW
 		ResourceId meshId = -1;
 		ResourceId materialId = -1;
 		glm::vec3 position;
-		glm::vec3 rotation;
+		glm::quat rotation;
 		glm::vec3 scale;
 
 		// Retrieve object data

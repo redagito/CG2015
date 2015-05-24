@@ -19,7 +19,7 @@ void CRotationController::update(float timeStep)
 		ResourceId mesh;
 		ResourceId material;
 		glm::vec3 position;
-		glm::vec3 rotation;
+		glm::quat rotation;
 		glm::vec3 scale;
 		// Retrieve object
 		if (!m_scene.getObject(m_objectId, mesh, material, position, rotation, scale))
@@ -27,7 +27,7 @@ void CRotationController::update(float timeStep)
 			// Invalid id?
 			return;
 		}
-		rotation += m_rotation * timeStep;
+		rotation = glm::quat(timeStep, m_rotation) * rotation;
 		m_scene.setObject(m_objectId, mesh, material, position, rotation, scale);
 	}
 	else if (m_type == AnimationObjectType::PointLight)

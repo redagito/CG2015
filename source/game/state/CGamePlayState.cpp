@@ -89,7 +89,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 	// Create scene object
-	CSceneObjectProxy* playerSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(playerShip, playerShipMaterial, glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f)));
+	CSceneObjectProxy* playerSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(playerShip, playerShipMaterial, glm::vec3(0.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(1.f)));
 	m_player->setSceneObject(playerSceneObject);
 
 	// Add player
@@ -114,7 +114,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 	// Create scene object
-	CSceneObjectProxy* motherSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 68.f, 700.f), glm::vec3(0.f), glm::vec3(60.f)));
+	CSceneObjectProxy* motherSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 68.f, 700.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(60.f)));
 	m_mothership->setSceneObject(motherSceneObject);
 
 	// Add player
@@ -138,7 +138,8 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 	// Create scene object
-	CSceneObjectProxy* pyramideSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(pyramide, pyramideMaterial, glm::vec3(0.f, 2.f, 0.f), glm::vec3(0.f, -90.f, 0.f), glm::vec3(3.f)));
+	// glm::vec3(0.f, -90.f, 0.f)
+	CSceneObjectProxy* pyramideSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(pyramide, pyramideMaterial, glm::vec3(0.f, 2.f, 0.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(3.f)));
 	m_pyramide->setSceneObject(pyramideSceneObject);
 
 	// Add player
@@ -184,7 +185,7 @@ bool CGamePlayState::update(float dtime)
 
 
 		// Create scene object
-		CSceneObjectProxy* enemySceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(enemyShip, enemyShipMaterial, glm::vec3(m_enemyXPosition, 25.f, 0.f), glm::vec3(0.f), glm::vec3(0.4f)));
+		CSceneObjectProxy* enemySceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(enemyShip, enemyShipMaterial, glm::vec3(m_enemyXPosition, 25.f, 0.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(0.4f)));
 		enemy->setSceneObject(enemySceneObject);
 
         // Add enemy

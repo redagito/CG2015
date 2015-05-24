@@ -143,7 +143,7 @@ bool CSceneLoader::loadSceneObject(const Json::Value& node, IScene& scene,
     }
 
     // Create object in scene
-    SceneObjectId objectId = scene.createObject(meshId, materialId, position, rotation, scale);
+    SceneObjectId objectId = scene.createObject(meshId, materialId, position, glm::quat(rotation), scale);
 
     // Load optional animation controllers
 	if (!loadAnimationControllers(node["animations"], scene, animationWorld, objectId,

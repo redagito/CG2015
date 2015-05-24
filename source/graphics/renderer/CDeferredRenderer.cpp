@@ -241,7 +241,7 @@ void CDeferredRenderer::geometryPass(const IScene& scene, const ICamera& camera,
         ResourceId meshId = -1;
         ResourceId materialId = -1;
         glm::vec3 position;
-        glm::vec3 rotation;
+        glm::quat rotation;
         glm::vec3 scale;
 
         // Retrieve object data
@@ -332,7 +332,7 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
         ResourceId meshId = -1;
         ResourceId materialId = -1;
         glm::vec3 position;
-        glm::vec3 rotation;
+        glm::quat rotation;
         glm::vec3 scale;
 
         // Retrieve object data
@@ -447,7 +447,7 @@ void CDeferredRenderer::shadowCubePass(const IScene& scene, const ICamera& camer
             ResourceId meshId = -1;
             ResourceId materialId = -1;
             glm::vec3 position;
-            glm::vec3 rotation;
+            glm::quat rotation;
             glm::vec3 scale;
 
             // Retrieve object data
@@ -615,7 +615,7 @@ void CDeferredRenderer::pointLightPass(const IScene& scene, const ICamera& camer
             // Sphere model has radius 1.f
             m_transformer.setScale(glm::vec3(radius));
             // Point lights do not have rotation
-            m_transformer.setRotation(glm::vec3(0.f));
+            m_transformer.setRotation(glm::quat(0.f, 0.f, 0.f, 0.f));
 
             // Light volume transformation for vertex shader
             pointLightPassShader->setUniform(modelViewProjectionMatrixUniformName,
@@ -839,7 +839,18 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
         gaussBlurHorizontalPass(window, manager, m_postProcessPassTexture0);
         // Blurred in texture2
 
-        // TODO DOF parameter
+		for (unsigned int i = 0; i < 3; ++i)
+		{
+			m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+			gaussBlurVerticalPass(window, manager, m_postProcessPassTexture2);
+			// Blurred in texture0
+
+			m_postProcessPassFrameBuffer2.setActive(GL_FRAMEBUFFER);
+			gaussBlurHorizontalPass(window, manager, m_postProcessPassTexture0);
+			// Blurred in texture2
+		}
+        
+		// TODO DOF parameter
         m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
         depthOfFieldPass(camera, window, manager, m_postProcessPassTexture1,
                          m_postProcessPassTexture2);
@@ -1046,7 +1057,7 @@ void CDeferredRenderer::gaussBlurHorizontalPass(const IWindow& window,
     shader->setUniform(sceneTextureUniformName, gaussBlurHoriontalPassInputTextureUnit);
 
     // Blur parameter
-    shader->setUniform(blurStrengthUniformName, 3.f);
+    shader->setUniform(blurStrengthUniformName, 2.f);
 
     // Screen size
     shader->setUniform(screenWidthUniformName, (float)window.getWidth());

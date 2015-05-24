@@ -52,7 +52,7 @@ void CWeaponController::update(float dtime)
 			bullet->setRotation(m_object->getRotation());
 			
 			// Create scene proxy
-			CSceneObjectProxy* proxy = new CSceneObjectProxy(m_scene, m_scene->createObject(m_mesh, m_material, glm::vec3(0.f), glm::vec3(0.f), glm::vec3(1.f)));
+			CSceneObjectProxy* proxy = new CSceneObjectProxy(m_scene, m_scene->createObject(m_mesh, m_material, glm::vec3(0.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(1.f)));
 			bullet->setSceneObject(proxy);
 			
 			// Add to world

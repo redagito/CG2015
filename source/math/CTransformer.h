@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 
 /**
 * \brief Transformer class calculates and stores all necessary transformations.
@@ -9,14 +10,14 @@ class CTransformer
 {
 public:
 	void setPosition(const glm::vec3& position);
-	void setRotation(const glm::vec3& rotation);
+	void setRotation(const glm::quat& rotation);
 	void setScale(const glm::vec3& scale);
 
 	void setViewMatrix(const glm::mat4& view);
 	void setProjectionMatrix(const glm::mat4& projection);
 
 	const glm::vec3& getPosition() const;
-	const glm::vec3& getRotation() const;
+	const glm::quat& getRotation() const;
 	const glm::vec3& getScale() const;
 
 	const glm::mat4& getTranslationMatrix() const;
@@ -45,7 +46,7 @@ public:
 
 private:
 	glm::vec3 m_positionVector = glm::vec3(0.f);
-	glm::vec3 m_rotationVector = glm::vec3(0.f);
+	glm::quat m_rotationQuat = glm::quat(0.f, 0.f, 0.f, 0.f);
 	glm::vec3 m_scaleVector = glm::vec3(1.f);
 
 	struct STransfrom
