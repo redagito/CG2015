@@ -27,7 +27,7 @@ void CRotationController::update(float timeStep)
 			// Invalid id?
 			return;
 		}
-		rotation = glm::quat(timeStep, m_rotation) * rotation;
+		rotation = rotation * glm::quat(m_rotation * timeStep);
 		m_scene.setObject(m_objectId, mesh, material, position, rotation, scale);
 	}
 	else if (m_type == AnimationObjectType::PointLight)

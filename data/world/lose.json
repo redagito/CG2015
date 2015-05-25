@@ -50,7 +50,7 @@
 			"animations" : [
 				{
 					"type" : "rotation",
-					"rotation" : [ 0.3, 0.5, 0.4 ]
+					"rotation" : [ 0.8, 0.5, 0.0 ]
 				}
 			]
         }
