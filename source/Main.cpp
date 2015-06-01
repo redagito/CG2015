@@ -1,4 +1,5 @@
 #include <memory>
+
 #include "engine/Engine.h"
 
 int main(int argc, const char** argv)
@@ -15,4 +16,5 @@ int main(int argc, const char** argv)
 	}
 	// Run engine
     engine->run();
+	return 0;
 }

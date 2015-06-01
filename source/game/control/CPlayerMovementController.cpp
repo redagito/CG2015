@@ -2,7 +2,6 @@
 
 #include "game/CGameObject.h"
 #include "input/IInputProvider.h"
-#include "util/Global.h"
 #include "math/TransformUtils.h"
 
 #include "glfw/glfw3.h"
