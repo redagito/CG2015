@@ -52,12 +52,12 @@ void CFrustum::setFromCameraParameters(float angle, float ratio, float nearD, fl
 	glm::vec3 fbr = fc - y * fh + x * fw;
 
 	// Compute the six planes
-	m_planes[TOP].set3Points(ntr, ntl, ftl);
-	m_planes[BOTTOM].set3Points(nbl, nbr, fbr);
-	m_planes[LEFT].set3Points(ntl, nbl, fbl);
-	m_planes[RIGHT].set3Points(nbr, ntr, fbr);
-	m_planes[NEARP].set3Points(ntl, ntr, nbr);
-	m_planes[FARP].set3Points(ftr, ftl, fbl);
+	m_planes[Top].set3Points(ntr, ntl, ftl);
+	m_planes[Bottom].set3Points(nbl, nbr, fbr);
+	m_planes[Left].set3Points(ntl, nbl, fbl);
+	m_planes[Right].set3Points(nbr, ntr, fbr);
+	m_planes[Near].set3Points(ntl, ntr, nbr);
+	m_planes[Far].set3Points(ftr, ftl, fbl);
 }
 
 
@@ -78,7 +78,7 @@ bool CFrustum::isInsideOrIntersects(const CBoundingSphere& sphere) const
 	for (unsigned int i = 0; i < 6; i++) 
 	{
 		float distance = m_planes[i].distance(sphere.getPosition());
-		if (distance < -sphere.getRadius())
+		if (distance < -sphere.getRadius()) // Is this really correct??
 		{
 			// Outside
 			return false;

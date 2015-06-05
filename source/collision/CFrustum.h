@@ -5,6 +5,11 @@
 #include "CPlane.h"
 #include "CBoundingSphere.h"
 
+/**
+* \brief Represents a frustum for view frustum culling.
+*
+* Based on http://www.lighthouse3d.com/tutorials/view-frustum-culling.
+*/
 class CFrustum 
 {
 public:
@@ -34,16 +39,17 @@ public:
 	bool isInsideOrIntersects(const CBoundingSphere& sphere) const;
 
 private:
-
 	enum PlanePosition
 	{
-		TOP = 0,
-		BOTTOM,
-		LEFT,
-		RIGHT,
-		NEARP,
-		FARP
+		Top = 0,
+		Bottom,
+		Left,
+		Right,
+		Near,
+		Far,
+
+		NumPlanes
 	};
 
-	CPlane m_planes[6];
+	CPlane m_planes[NumPlanes]; /**< Frustum planes. */
 };
