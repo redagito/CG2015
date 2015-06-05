@@ -5,21 +5,26 @@
 #include "SScenePointLight.h"
 #include "SSceneDirectionalLight.h"
 
-CScene::CScene() {}
+#include "graphics/IGraphicsResourceManager.h"
+#include "graphics/resource/CMesh.h"
+
+CScene::CScene(const IGraphicsResourceManager* manager) : m_resourceManager(manager) {}
 
 CScene::~CScene() {}
 
 SceneObjectId CScene::createObject(ResourceId model, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale)
 {
-	m_objects.push_back(SSceneObject(model, position, rotation, scale));
+	//const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
+	m_objects.push_back(SSceneObject(model, position, rotation, scale, CBoundingSphere()));
 	return m_objects.size() - 1;
 }
 
-SceneObjectId CScene::createObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
+SceneObjectId CScene::createObject(ResourceId meshId, ResourceId material, const glm::vec3& position,
                                    const glm::quat& rotation, const glm::vec3& scale)
 {
-    m_objects.push_back(SSceneObject(mesh, material, position, rotation, scale));
+	const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
+	m_objects.push_back(SSceneObject(meshId, material, position, rotation, scale, meshPtr->getBoundingSphere()));
     return m_objects.size() - 1;
 }
 
@@ -41,18 +46,15 @@ bool CScene::getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
     return true;
 }
 
-void CScene::setObject(SceneObjectId id, ResourceId mesh, ResourceId material, const glm::vec3& position,
+void CScene::setObject(SceneObjectId id, ResourceId meshId, ResourceId material, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale)
 {
 	// TODO Needs to be changed for better data structures
 	assert(id >= 0 && ((unsigned int)id) < m_objects.size() && "Invalid scene object id");
 	unsigned int index = (unsigned int)id;
 	// Write data
-	m_objects[index].m_mesh = mesh;
-	m_objects[index].m_material = material;
-	m_objects[index].m_position = position;
-	m_objects[index].m_rotation = rotation;
-	m_objects[index].m_scale = scale;
+	const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
+	m_objects[index] = SSceneObject(meshId, material, position, rotation, scale, meshPtr->getBoundingSphere());
 	return;
 }
 

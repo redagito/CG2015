@@ -11,13 +11,15 @@ struct SSceneObject;
 struct SScenePointLight;
 struct SSceneDirectionalLight;
 
+class IGraphicsResourceManager;
+
 /**
 * \brief Simple scene implementation.
 */
 class CScene : public IScene
 {
    public:
-    CScene();
+    CScene(const IGraphicsResourceManager* resourceManager);
     ~CScene();
 
 	SceneObjectId createObject(ResourceId model, const glm::vec3& position,
@@ -64,4 +66,6 @@ class CScene : public IScene
     std::vector<SSceneObject> m_objects;                     /**< Drawable scene objects. */
     std::vector<SScenePointLight> m_pointLights;             /**< Point lights. */
     std::vector<SSceneDirectionalLight> m_directionalLights; /**< Directional lights. */
+
+	const IGraphicsResourceManager* m_resourceManager = nullptr;
 };

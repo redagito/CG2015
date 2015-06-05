@@ -1,28 +1,30 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
 #include <glm/glm.hpp>
 
-class CPlane {
-	
-private:
-	glm::vec3 normal;
-	glm::vec3 point;
-	float d;
-
+/**
+* \brief Represents a 3d plane.
+*/
+class CPlane 
+{
 public:
-	CPlane(glm::vec3 &v1, glm::vec3 &v2, glm::vec3 &v3);
 	CPlane();
+	CPlane(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);
 	~CPlane();
 
 	// Ordering of points defines normal vector
 	// Clockwise/Counterclockwise ordering rule is used to calculate normal vector
-	void set3Points(const glm::vec3 &v1, const glm::vec3 &v2, const glm::vec3 &v3);
+	void set3Points(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);
 
-	void setNormalAndPoint(glm::vec3 &normal, glm::vec3 &point);
+	void setNormalAndPoint(const glm::vec3& normal, const glm::vec3& point);
 	void setCoefficients(float a, float b, float c, float d);
-	float distance(glm::vec3 &p);
 
+	/**
+	* \brief Calculate distance from plane and point.
+	*/
+	float distance(const glm::vec3& point) const;
+
+private:
+	glm::vec3 m_normal = glm::vec3(0.f, 1.f, 0.f); /**< Stores the plane normal. */
+	float m_d = 0.f; /**< Represents the regular euclidean distance from the origin. */
 };

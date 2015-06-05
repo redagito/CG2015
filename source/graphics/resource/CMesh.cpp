@@ -102,6 +102,9 @@ bool CMesh::init(const std::vector<float>& vertices, const std::vector<unsigned 
         LOG_ERROR("GL Error: %s", error.c_str());
     }
 
+	// Build bounding sphere
+	m_boundingSphere = CBoundingSphere::create(vertices);
+
     return true;
 }
 
@@ -118,6 +121,8 @@ const std::unique_ptr<CVertexBuffer>& CMesh::getUVBuffer() const { return m_uvs;
 const EPrimitiveType CMesh::getPrimitiveType() const { return m_type; }
 
 const std::unique_ptr<CVertexArrayObject>& CMesh::getVertexArray() const { return m_vao; }
+
+const CBoundingSphere& CMesh::getBoundingSphere() const { return m_boundingSphere; }
 
 GLenum CMesh::toGLPrimitive(EPrimitiveType type)
 {

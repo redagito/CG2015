@@ -22,7 +22,7 @@ public:
     /**
     * \brief Create scene.
     */
-    virtual IScene* createScene() = 0;
+	virtual IScene* createScene() = 0;
 
 	/**
 	* \brief Set active scene.

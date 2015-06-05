@@ -9,6 +9,8 @@
 #include "graphics/renderer/core/CIndexBuffer.h"
 #include "graphics/renderer/core/CVertexArrayObject.h"
 
+#include "collision/CBoundingSphere.h"
+
 /**
 * \brief Contains mesh data (vertices, faces, normals and uv data).
 *
@@ -72,6 +74,11 @@ class CMesh
     */
     const std::unique_ptr<CVertexArrayObject>& getVertexArray() const;
 
+	/**
+	* \brief Returns bounding sphere for view frustum culling.
+	*/
+	const CBoundingSphere& getBoundingSphere() const;
+
     /**
     * \brief Maps primitive type to GL type.
     * Example: Maps EPrimitiveType::Triangle to GL_TRIANGLES.
@@ -91,4 +98,7 @@ class CMesh
     std::unique_ptr<CVertexBuffer> m_uvs;      /**< Texture coordinates. */
     std::unique_ptr<CVertexArrayObject> m_vao; /**< Vertex array object. */
     EPrimitiveType m_type;                     /**< Mesh primitive type. */
+	// For frustum culling
+	// TODO Should be stored separately?
+	CBoundingSphere m_boundingSphere; /**< Bounding sphere calculated from vertices. */
 };

@@ -24,8 +24,25 @@ float CBoundingSphere::getRadius() const
 
 CBoundingSphere CBoundingSphere::create(const std::vector<float>& vertices)
 {
-	// TODO Implement
+	// Simple algorithm: Assume 0/0/0 is mid point of the mesh.
+	// Radius is distance from mid point to furthest vertex
+	float radius = 0.f;
+
+	// Retrieve furthest vertex
+	for (unsigned int i = 0; i < vertices.size(); i += 3)
+	{
+		float distance = std::sqrt(vertices.at(i) * vertices.at(i) + vertices.at(i + 1) * vertices.at(i + 1) + vertices.at(i + 2) * vertices.at(i + 2));
+		if (distance > radius)
+		{
+			radius = distance;
+		}
+	}
+
 	CBoundingSphere sphere;
+	// Default position is mid
+	sphere.setPosition(glm::vec3(0.f));
+	// Set to calculated radius
+	sphere.setRadius(radius);
 	return sphere;
 }
 
