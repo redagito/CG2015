@@ -46,5 +46,4 @@ private:
 	void testCollision(CCollidable* entity, unsigned int groupId);
 
 	std::vector<std::list<CCollidable*>> m_entities; /**< Stores entities by group id (vector index) in lists. */
-
 };

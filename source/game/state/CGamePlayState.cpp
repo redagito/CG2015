@@ -27,7 +27,9 @@ CGamePlayState::CGamePlayState()
 :
 m_enemyCount(7),
 m_enemyTime(4.f),
-m_enemyXPosition(-75.f)
+m_enemyXPosition(-75.f),
+m_playerGroup(0),
+m_enemyGroup(0)
 {
 	
 }
@@ -44,6 +46,10 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	m_resourceManager = resourceManager;
 	m_scene = m_graphicsSystem->createScene();
 
+	// Collision group ids for static entities, enemy objects and the player model
+	m_playerGroup = m_collisionSystem.getNewGroupId();
+	m_enemyGroup = m_collisionSystem.getNewGroupId();
+
 	CAnimationWorld animWorld;
 	CSceneLoader loader(*resourceManager);
 	loader.load("data/world/game_1.json", *m_scene, animWorld);
@@ -57,6 +63,8 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Create player
 	m_player = new CGameObject();
+
+	
 	m_player->addController(std::make_shared<CPlayerMovementController>(inputProvider, 10.f));
 	m_player->addController(std::make_shared<CCameraController>(m_camera.get()));
 	m_player->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
@@ -83,6 +91,16 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	{
 		return false;
 	}
+
+	// Player collidable added to player collision group
+	std::vector<float> playerVertices;
+	std::vector<unsigned int> playerIndices;
+	std::vector<float> playerNormals;
+	std::vector<float> playerUvs;
+	EPrimitiveType playerType;
+	m_resourceManager->getMesh(playerShip, playerVertices, playerIndices, playerNormals, playerUvs, playerType);
+	m_player->setCollidable(m_collisionSystem.add(CAABBox::create(playerVertices), m_playerGroup));
+	
 	ResourceId playerShipMaterial = m_resourceManager->loadMaterial("data/material/line_metal.json");
 	if (playerShipMaterial == invalidResource)
 	{
