@@ -5,7 +5,10 @@
 #include "SScenePointLight.h"
 #include "SSceneDirectionalLight.h"
 
+#include "collision/CFrustum.h"
+
 #include "graphics/IGraphicsResourceManager.h"
+#include "graphics/ICamera.h"
 #include "graphics/resource/CMesh.h"
 
 CScene::CScene(const IGraphicsResourceManager* manager) : m_resourceManager(manager) {}
@@ -151,22 +154,34 @@ bool CScene::getAmbientLight(glm::vec3& color, float& intensity) const
 
 void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 {
-    // TODO Extract frustum planes from camera
+    // Create frustum from camera matrices
+	CFrustum viewFrustum;
+	viewFrustum.setFromViewProjection(camera.getView(), camera.getProjection());
 
-    // TODO Frustum culling, occlusion culling, better data structure for objects
-    // For now add all objects
+	// TODO Should be set from camera
+	bool cullingEnabled = false;
+
+    // TODO Occlusion culling, better data structure for objects
     for (unsigned int i = 0; i < m_objects.size(); ++i)
     {
-        // Counter variable is object id
-        query.addObject(i);
+		// Check the objects bounding sphere against the view frustum
+		if (!cullingEnabled || viewFrustum.isInsideOrIntersects(m_objects.at(i).boundingSphere))
+		{
+			// Object is (at least partially) visible, add to query result
+			// Counter variable is object id
+			query.addObject(i);
+		}
     }
 
-    // TODO Light culling
-    // For now add all point lights
+    // Add visible point Lights
     for (unsigned int i = 0; i < m_pointLights.size(); ++i)
     {
-        // Counter variable is light id
-        query.addPointLight(i);
+        // Check light volume against view frustum for point light culling
+		if (!cullingEnabled || viewFrustum.isInsideOrIntersects(CBoundingSphere(m_pointLights.at(i).m_position, m_pointLights.at(i).m_radius)))
+		{
+			// Counter variable is light id
+			query.addPointLight(i);
+		}
     }
 
     // TODO Directional light culling?

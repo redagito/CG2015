@@ -2,6 +2,19 @@
 
 #include "CBoundingSphere.h"
 
+CBoundingSphere::CBoundingSphere()
+{
+	// Empty
+}
+
+CBoundingSphere::CBoundingSphere(const glm::vec3& position, float radius)
+	:
+	m_position(position),
+	m_radius(radius)
+{
+	// Empty
+}
+
 void CBoundingSphere::setPosition(const glm::vec3& position)
 {
 	m_position = position;

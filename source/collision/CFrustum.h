@@ -28,6 +28,13 @@ public:
 	void setFromInverseViewProjection(const glm::mat4& invViewProj);
 
 	/**
+	* \brief Calculates frustum from view and projection matrix.
+	*
+	* Wrappes the setFromInverseViewProjection function by calculating inverse matrices and calling the function.
+	*/
+	void setFromViewProjection(const glm::mat4& view, const glm::mat4& proj);
+
+	/**
 	* \brief Checks if a point is in the Frustum.
 	*/
 	bool isInside(glm::vec3& point) const;

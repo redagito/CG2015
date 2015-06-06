@@ -6,6 +6,9 @@
 class CBoundingSphere
 {
 public:
+	CBoundingSphere();
+	CBoundingSphere(const glm::vec3& position, float radius);
+
 	void setPosition(const glm::vec3& position);
 	void setRadius(float radius);
 

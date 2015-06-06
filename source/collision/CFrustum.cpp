@@ -1,8 +1,10 @@
-#include "CFrustum.h"
-
 #include <math.h>
 
+#include "CFrustum.h"
+
 #include <glm/ext.hpp>
+
+#include "math/CTransformer.h"
 
 const float gradToRad = glm::pi<float>() / 180.0f;
 
@@ -60,6 +62,57 @@ void CFrustum::setFromCameraParameters(float angle, float ratio, float nearD, fl
 	m_planes[Far].set3Points(ftr, ftl, fbl);
 }
 
+void CFrustum::setFromInverseViewProjection(const glm::mat4& invViewProj)
+{
+	// Setup frustum from invViewProj matrix (transform from projection space
+	// into world space).
+
+	// Point positions
+	const unsigned int topLeftFar = 0;
+	const unsigned int topRightFar = 1;
+	const unsigned int bottomLeftFar = 2;
+	const unsigned int bottomRightFar = 3;
+	const unsigned int topLeftNear = 4;
+	const unsigned int topRightNear = 5;
+	const unsigned int bottomLeftNear = 6;
+	const unsigned int bottomRightNear = 7;
+
+	// Frustum corners in projection space
+	glm::vec4 points[8];
+	points[topLeftFar] = glm::vec4(-1.0f, 1.0f, 1.0f, 1.f);
+	points[topRightFar] = glm::vec4(1.0f, 1.0f, 1.0f, 1.f);
+	points[bottomLeftFar] = glm::vec4(-1.0f, -1.0f, 1.0f, 1.f);
+	points[bottomRightFar] = glm::vec4(1.0f, -1.0f, 1.0f, 1.f);
+	points[topLeftNear] = glm::vec4(-1.0f, 1.0f, -1.0f, 1.f);
+	points[topRightNear] = glm::vec4(1.0f, 1.0f, -1.0f, 1.f);
+	points[bottomLeftNear] = glm::vec4(-1.0f, -1.0f, -1.0f, 1.f);
+	points[bottomRightNear] = glm::vec4(1.0f, -1.0f, -1.0, 1.f);
+
+	// Calculate frustum corners in world space
+	for (unsigned int i = 0; i < 8; i++)
+	{
+		// Transform to world space
+		points[i] = points[i] * invViewProj;
+		points[i] /= points[i].w;
+	}
+
+	// Set frustum planes
+	m_planes[Near].set3Points(glm::vec3(points[topRightNear]), glm::vec3(points[topLeftNear]), glm::vec3(points[bottomLeftNear]));
+	m_planes[Far].set3Points(glm::vec3(points[topLeftFar]), glm::vec3(points[topRightFar]), glm::vec3(points[bottomRightFar]));
+	m_planes[Left].set3Points(glm::vec3(points[bottomLeftFar]), glm::vec3(points[bottomLeftNear]), glm::vec3(points[topLeftNear]));
+	m_planes[Right].set3Points(glm::vec3(points[topRightFar]), glm::vec3(points[topRightNear]), glm::vec3(points[bottomRightNear]));
+	m_planes[Top].set3Points(glm::vec3(points[topLeftNear]), glm::vec3(points[topRightNear]), glm::vec3(points[topRightFar]));
+	m_planes[Bottom].set3Points(glm::vec3(points[bottomLeftFar]), glm::vec3(points[bottomRightFar]), glm::vec3(points[bottomRightNear]));
+}
+
+void CFrustum::setFromViewProjection(const glm::mat4& view, const glm::mat4& proj)
+{
+	// Handles transformation calculations
+	CTransformer transformer;
+	transformer.setViewMatrix(view);
+	transformer.setProjectionMatrix(proj);
+	setFromInverseViewProjection(transformer.getInverseViewProjectionMatrix());
+}
 
 bool CFrustum::isInside(glm::vec3 &p) const
 {

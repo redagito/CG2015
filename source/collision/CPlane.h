@@ -20,7 +20,7 @@ public:
 	void setCoefficients(float a, float b, float c, float d);
 
 	/**
-	* \brief Calculate distance from plane and point.
+	* \brief Calculates the shortest, signed distance from the plane to the point.
 	*/
 	float distance(const glm::vec3& point) const;
 
