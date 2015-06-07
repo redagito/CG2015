@@ -11,6 +11,8 @@
 #include "graphics/ICamera.h"
 #include "graphics/resource/CMesh.h"
 
+#include "debug/Log.h"
+
 CScene::CScene(const IGraphicsResourceManager* manager) : m_resourceManager(manager) {}
 
 CScene::~CScene() {}
@@ -156,10 +158,11 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 {
     // Create frustum from camera matrices
 	CFrustum viewFrustum;
-	viewFrustum.setFromViewProjection(camera.getView(), camera.getProjection());
+	//viewFrustum.setFromViewProjection(camera.getView(), camera.getProjection());
+	viewFrustum.setFromViewProjectionClipSpaceApproach(camera.getView(), camera.getProjection());
 
 	// TODO Should be set from camera
-	bool cullingEnabled = false;
+	bool cullingEnabled = true;
 
     // TODO Occlusion culling, better data structure for objects
     for (unsigned int i = 0; i < m_objects.size(); ++i)

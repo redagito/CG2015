@@ -17,6 +17,7 @@ public:
 	void set3Points(const glm::vec3& v1, const glm::vec3& v2, const glm::vec3& v3);
 
 	void setNormalAndPoint(const glm::vec3& normal, const glm::vec3& point);
+	void setCoefficients(const glm::vec4& v);
 	void setCoefficients(float a, float b, float c, float d);
 
 	/**

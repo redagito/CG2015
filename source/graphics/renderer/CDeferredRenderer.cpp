@@ -303,8 +303,8 @@ void CDeferredRenderer::shadowMapPass(const IScene& scene, const ICamera& camera
     glFrontFace(GL_CCW);
 
     // Reset viewport
-    glViewport(0, 0, 4000, 4000);
-    m_shadowMapBuffer.resize(4000, 4000);
+	glViewport(0, 0, 4096, 4096);
+	m_shadowMapBuffer.resize(4096, 4096);
 
     // Stores active transformations
     CTransformer transformer;
@@ -1665,7 +1665,7 @@ bool CDeferredRenderer::initShadowMapPass(IResourceManager& manager)
 
     // Depth texture
     m_shadowDepthTexture = std::make_shared<CTexture>();
-    m_shadowDepthTexture->init(4000, 4000, GL_DEPTH_COMPONENT24);
+	m_shadowDepthTexture->init(4096, 4096, GL_DEPTH_COMPONENT24);
 
     glBindTexture(GL_TEXTURE_2D, m_shadowDepthTexture->getId());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

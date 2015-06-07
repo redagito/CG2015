@@ -23,6 +23,13 @@ public:
 	void setFromCameraParameters(float viewAngle, float screenRatio, float nearZ, float farZ, glm::vec3 &position, glm::vec3 &look, glm::vec3 &up);
 
 	/**
+	* \brief Extracts frustum planes from model-view-projection matrix.
+	*
+	* Clipspace approach based on http://www.lighthouse3d.com/tutorials/view-frustum-culling/clip-space-approach-extracting-the-planes/
+	*/
+	void setFromViewProjectionClipSpaceApproach(const glm::mat4& view, const glm::mat4& proj);
+
+	/**
 	* \brief Calculates frustum planes from inverse view projection matrix.
 	*/
 	void setFromInverseViewProjection(const glm::mat4& invViewProj);

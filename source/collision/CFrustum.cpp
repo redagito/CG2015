@@ -62,6 +62,27 @@ void CFrustum::setFromCameraParameters(float angle, float ratio, float nearD, fl
 	m_planes[Far].set3Points(ftr, ftl, fbl);
 }
 
+void CFrustum::setFromViewProjectionClipSpaceApproach(const glm::mat4& view, const glm::mat4& proj)
+{
+	CTransformer transformer;
+	transformer.setViewMatrix(view);
+	transformer.setProjectionMatrix(proj);
+	glm::mat4 matrix = transformer.getViewProjectionMatrix();
+	// Extract rows
+	glm::vec4 rowX = glm::row(matrix, 0);
+	glm::vec4 rowY = glm::row(matrix, 1);
+	glm::vec4 rowZ = glm::row(matrix, 2);
+	glm::vec4 rowW = glm::row(matrix, 3);
+
+	// Create planes
+	m_planes[Top].setCoefficients(glm::normalize(rowW + rowX));
+	m_planes[Bottom].setCoefficients(glm::normalize(rowW - rowX));
+	m_planes[Left].setCoefficients(glm::normalize(rowW + rowY));
+	m_planes[Right].setCoefficients(glm::normalize(rowW - rowY));
+	m_planes[Near].setCoefficients(glm::normalize(rowW + rowZ));
+	m_planes[Far].setCoefficients(glm::normalize(rowW - rowZ));
+}
+
 void CFrustum::setFromInverseViewProjection(const glm::mat4& invViewProj)
 {
 	// Setup frustum from invViewProj matrix (transform from projection space
@@ -128,10 +149,11 @@ bool CFrustum::isInside(glm::vec3 &p) const
 
 bool CFrustum::isInsideOrIntersects(const CBoundingSphere& sphere) const
 {
-	for (unsigned int i = 0; i < 6; i++) 
+	for (unsigned int i = 0; i < 6; ++i) 
 	{
+		// Distance to sphere center
 		float distance = m_planes[i].distance(sphere.getPosition());
-		if (distance < -sphere.getRadius()) // Is this really correct??
+		if (distance < -sphere.getRadius())
 		{
 			// Outside
 			return false;
