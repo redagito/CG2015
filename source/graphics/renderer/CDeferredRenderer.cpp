@@ -1395,6 +1395,10 @@ void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsReso
 		return;
 	}
 
+	// Scene texture
+	texture->setActive(lensFlareSceneTextureUnit);
+	shader->setUniform(sceneTextureUniformName, lensFlareSceneTextureUnit);
+
 	// Screen size
 	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
 	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
