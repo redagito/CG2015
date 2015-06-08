@@ -148,7 +148,7 @@ const std::string sceneTextureUniformName = "scene_texture";
 const std::string blurTextureUniformName = "blur_texture";
 const std::string godRayTextureUniformName = "godray_texture";
 const std::string bloomTextureUniformName = "bloom_texture";
-const std::string lensFlareTextureUniformName = "lensflare_texture";
+const std::string lensFlareTextureUniformName = "lenscolor_texture";
 
 // Generic texture names
 const std::string texture0UniformName = "texture0";

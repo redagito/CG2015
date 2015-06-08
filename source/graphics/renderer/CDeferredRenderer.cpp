@@ -1378,7 +1378,7 @@ void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourc
 }
 
 void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
-	const std::shared_ptr<CTexture>& texture) {
+	const std::shared_ptr<CTexture>& sceneTexture) {
 	//TODO: 
 	CShaderProgram* shader = manager.getShaderProgram(m_lensFlarePassShaderId);
 	if (shader == nullptr)
@@ -1396,8 +1396,9 @@ void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsReso
 	}
 
 	// Scene texture
-	texture->setActive(lensFlareSceneTextureUnit);
+	sceneTexture->setActive(lensFlareSceneTextureUnit);
 	shader->setUniform(sceneTextureUniformName, lensFlareSceneTextureUnit);
+
 
 	// Screen size
 	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
