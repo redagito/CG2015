@@ -251,6 +251,12 @@ protected:
 	bool initBloomPass2(IResourceManager& manager);
 
 	/**
+	* \brief Lens flare technique.
+	*/
+	bool initLensFlarePass(IResourceManager& manager);
+
+
+	/**
 	* \brief Tone mapping pass.
 	*/
 	bool initToneMapPass(IResourceManager& manager);
@@ -342,6 +348,9 @@ protected:
 	// Bloom pass
 	ResourceId m_bloomPass1ShaderId = invalidResource;
 	ResourceId m_bloomPass2ShaderId = invalidResource;
+
+	// Lens flare Pass
+	ResourceId m_lensFlarePassShaderId = invalidResource;
 
 	// Tonemap pass
 	ResourceId m_toneMapPassShaderId = invalidResource;

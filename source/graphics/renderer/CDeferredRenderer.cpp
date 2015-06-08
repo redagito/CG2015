@@ -1380,6 +1380,28 @@ void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourc
 void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
 	const std::shared_ptr<CTexture>& texture) {
 	//TODO: 
+	CShaderProgram* shader = manager.getShaderProgram(m_lensFlarePassShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for lens flare could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for lens flare could not be retrieved.");
+		return;
+	}
+
+	// Screen size
+	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
+
+	// Perform pass
+	::draw(*quadMesh);
+
 }
 
 void CDeferredRenderer::toneMapPass(const IWindow& window, const IGraphicsResourceManager& manager,
@@ -1925,6 +1947,10 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 		LOG_ERROR("Failed to initialize bloom pass 2.");
 		return false;
 	}
+	if (!initLensFlarePass(manager)) {
+		LOG_ERROR("Failed to initialize lens flare pass.");
+		return false;
+	}
 
 	// Tone map pass (non-adaptive)
 	if (!initToneMapPass(manager))
@@ -2136,6 +2162,20 @@ bool CDeferredRenderer::initBloomPass2(IResourceManager& manager)
 	m_bloomPass2ShaderId = manager.loadShader(shaderFile);
 	// Check if ok
 	if (m_bloomPass2ShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool CDeferredRenderer::initLensFlarePass(IResourceManager& manager)
+{
+	//Get shader
+	std::string shaderFile = "data/shader/post/lens_flare_pass.ini";
+	m_lensFlarePassShaderId = manager.loadShader(shaderFile);
+	// Check if ok
+	if (m_lensFlarePassShaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
 		return false;
