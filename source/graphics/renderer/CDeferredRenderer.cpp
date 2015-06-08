@@ -904,6 +904,10 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	bloomPass2(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
 	// Scene with bloom in texture 0
 
+	//Lens flare pass
+	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
+	lensFlarePass(window, manager, m_postProcessPassTexture0);
+
 	// Tone map
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
 	toneMapPass(window, manager, m_postProcessPassTexture0);
@@ -1371,6 +1375,11 @@ void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourc
 
 	// Perform pass
 	::draw(*quadMesh);
+}
+
+void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
+	const std::shared_ptr<CTexture>& texture) {
+	//TODO: 
 }
 
 void CDeferredRenderer::toneMapPass(const IWindow& window, const IGraphicsResourceManager& manager,

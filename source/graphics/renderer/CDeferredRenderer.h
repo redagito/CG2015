@@ -154,6 +154,12 @@ protected:
 					const std::shared_ptr<CTexture>& bloomTexture);
 
 	/**
+	* \brief Lens flare pass, blends lens flare texture on scene texture.
+	*/
+	void lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
+				    const std::shared_ptr<CTexture>& texture);
+
+	/**
 	* \brief Tone map pass for HDR to LDR conversion.
 	*
 	* This pass should be done at the end of the post porcessing pipeline.
