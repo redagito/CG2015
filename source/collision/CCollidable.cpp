@@ -1,5 +1,6 @@
 #include "CCollidable.h"
 
+
 CCollidable::CCollidable(unsigned int group, const CAABBox& box)
 :
 m_groupId(group),
