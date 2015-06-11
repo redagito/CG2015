@@ -15,11 +15,17 @@
 #include "game/control/CWeaponController.h"
 #include "game/control/CSimpleWaypointController.h"
 #include "game/control/CLinearMovementController.h"
+#include "game/control/CHealthController.h"
+#include "game/control/CRemoveOnDeathController.h"
 
 #include "graphics/camera/CFirstPersonCamera.h"
 
 #include "io/CSceneLoader.h"
 #include "animation/CAnimationWorld.h"
+
+//Collision
+#include "collision/CCollisionSystem.h"
+#include "collision/CCollidable.h"
 
 const std::string exitStr = "lose";
 
@@ -100,6 +106,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	EPrimitiveType playerType;
 	m_resourceManager->getMesh(playerShip, playerVertices, playerIndices, playerNormals, playerUvs, playerType);
 	m_player->setCollidable(m_collisionSystem.add(CAABBox::create(playerVertices), m_playerGroup));
+	m_player->getCollidable()->setDamage(50.f);
 	
 	ResourceId playerShipMaterial = m_resourceManager->loadMaterial("data/material/line_metal.json");
 	if (playerShipMaterial == invalidResource)
@@ -150,6 +157,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	{
 		return false;
 	}
+	
 	ResourceId pyramideMaterial = m_resourceManager->loadMaterial("data/material/sand.json");
 	if (pyramideMaterial == invalidResource)
 	{
@@ -171,6 +179,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	{
 		return false;
 	}
+	
 	enemyShipMaterial = m_resourceManager->loadMaterial("data/material/enemy.json");
 	if (enemyShipMaterial == invalidResource)
 	{
@@ -200,7 +209,17 @@ bool CGamePlayState::update(float dtime)
 		enemy->setScale(glm::vec3(0.4f));
 		enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
 		enemy->addController(std::make_shared<CLinearMovementController>(enemy->getForward(), 10.f));
-
+		enemy->addController(std::make_shared<CHealthController>(100.f));
+		enemy->addController(std::make_shared<CRemoveOnDeathController>());
+		
+		// Player collidable added to player collision group
+		std::vector<float> enemyVertices;
+		std::vector<unsigned int> enemyIndices;
+		std::vector<float> enemyNormals;
+		std::vector<float> enemyUvs;
+		EPrimitiveType enemyType;
+		m_resourceManager->getMesh(enemyShip, enemyVertices, enemyIndices, enemyNormals, enemyUvs, enemyType);
+		enemy->setCollidable(m_collisionSystem.add(CAABBox::create(enemyVertices), m_enemyGroup));
 
 		// Create scene object
 		CSceneObjectProxy* enemySceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(enemyShip, enemyShipMaterial, glm::vec3(m_enemyXPosition, 25.f, 0.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(0.4f)));
@@ -214,9 +233,11 @@ bool CGamePlayState::update(float dtime)
 
 	if (m_inputProvider->isKeyPressed(GLFW_KEY_P))
 	{
-
 		return false;
 	}
+
+	// Update collision system
+	m_collisionSystem.update();
 	// Update gameworld
 	return AGameState::update(dtime);
 }

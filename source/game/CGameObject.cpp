@@ -80,19 +80,40 @@ void CGameObject::update(float dtime)
 	{
 		controller->update(dtime);
 	}
-	// Update scene object
+
+	// Update attached objects if tranformation of the game object has changed
 	if (m_transformationChanged)
 	{
-		// TODO Slow?
-		m_sceneObject->setPosition(getPosition());
-		m_sceneObject->setRotation(getRotation());
-		m_sceneObject->setScale(getScale());
+		
+		// Update scene object
+		if (m_sceneObject != nullptr)
+		{
+			// TODO Slow?
+			m_sceneObject->setPosition(getPosition());
+			m_sceneObject->setRotation(getRotation());
+			m_sceneObject->setScale(getScale());
+		}
+		// Update collidable
+		if (hasCollidable())
+		{
+			m_collidable->setTranslation(getPosition());
+			m_collidable->setScale(getScale());
+		}
+
 	}
 }
 
 void CGameObject::markDeleted()
 {
 	m_deleteRequested = true;
+	if (m_sceneObject != nullptr) {
+		//m_sceneObject->setInvisible();  ship to Agito..
+	}
+	if (hasCollidable())
+	{
+		m_collidable->markDeleted();
+	}
+
 }
 
 bool CGameObject::isDeleteRequested() const
@@ -110,6 +131,7 @@ void CGameObject::sendMessage(Message message)
 
 void CGameObject::setCollidable(CCollidable* entity)
 {
+	assert(entity != nullptr);
 	if (m_collidable != entity)
 	{
 		m_collidable = entity;
@@ -121,5 +143,21 @@ void CGameObject::setCollidable(CCollidable* entity)
 
 CCollidable* CGameObject::getCollidable() const
 {
+	assert(m_collidable != nullptr);
 	return m_collidable;
+}
+
+bool CGameObject::hasCollidable() const
+{
+	return m_collidable != nullptr;
+}
+
+bool CGameObject::isDead() const
+{
+	return m_dead;
+}
+
+void CGameObject::setDead()
+{
+	m_dead = true;
 }

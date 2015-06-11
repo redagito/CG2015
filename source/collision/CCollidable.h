@@ -86,12 +86,12 @@ public:
 protected:
 	CAABBox m_boxTransformed; /**< Transformed collision volume, recalculated on setTranslation call. */
 	CAABBox m_box;  /**< The untransformed collision volume. */
-	unsigned int m_groupId; /**< Collision group id. */
+	unsigned int m_groupId = 0; /**< Collision group id. */
 
-	float m_damageReceived; /**< Accumulated damage that was received since the last call to getDamageReceived. */
-	float m_damageDealt; /**< Amount of damage this entity deals on collision to the other entity. */
+	float m_damageReceived = 0.f; /**< Accumulated damage that was received since the last call to getDamageReceived. */
+	float m_damageDealt = 0.f; /**< Amount of damage this entity deals on collision to the other entity. */
 
-	bool m_deleteMe; /**< Stores deletion state. */
-	bool m_collidable; /**< Stores whether or not the collision entity is active. */
+	bool m_deleteMe = false; /**< Stores deletion state. */
+	bool m_collidable = true; /**< Stores whether or not the collision entity is active. */
 
 };
