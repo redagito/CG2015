@@ -905,8 +905,8 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	// Scene with bloom in texture 0
 
 	//Lens flare pass
-	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
-	lensFlarePass(window, manager, m_postProcessPassTexture0);
+	/*m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
+	lensFlarePass(window, manager, m_postProcessPassTexture0);*/
 
 	// Tone map
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
@@ -1378,7 +1378,7 @@ void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourc
 }
 
 void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
-	const std::shared_ptr<CTexture>& texture) {
+	const std::shared_ptr<CTexture>& sceneTexture) {
 	//TODO: 
 	CShaderProgram* shader = manager.getShaderProgram(m_lensFlarePassShaderId);
 	if (shader == nullptr)
@@ -1394,6 +1394,11 @@ void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsReso
 		LOG_ERROR("Mesh object for lens flare could not be retrieved.");
 		return;
 	}
+
+	// Scene texture
+	sceneTexture->setActive(lensFlareSceneTextureUnit);
+	shader->setUniform(sceneTextureUniformName, lensFlareSceneTextureUnit);
+
 
 	// Screen size
 	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
