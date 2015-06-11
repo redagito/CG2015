@@ -27,14 +27,16 @@ void CMovementController::update(float timeStep)
         glm::vec3 position;
         glm::quat rotation;
         glm::vec3 scale;
+		bool visible;
+
         // Retrieve object
-        if (!m_scene.getObject(m_objectId, mesh, material, position, rotation, scale))
+        if (!m_scene.getObject(m_objectId, mesh, material, position, rotation, scale, visible))
         {
             // Invalid id?
             return;
         }
         position += diff;
-        m_scene.setObject(m_objectId, mesh, material, position, rotation, scale);
+        m_scene.setObject(m_objectId, mesh, material, position, rotation, scale, visible);
     }
     else if (m_type == AnimationObjectType::PointLight)
     {

@@ -102,9 +102,10 @@ void CForwardRenderer::draw(const IScene& scene, const ICamera& camera, const IW
 		glm::vec3 position;
 		glm::quat rotation;
 		glm::vec3 scale;
+		bool visible;
 
 		// Retrieve object data
-		if (!scene.getObject(id, meshId, materialId, position, rotation, scale))
+		if (!scene.getObject(id, meshId, materialId, position, rotation, scale, visible))
 		{
 			// Invalid id
 			LOG_ERROR("Invalid scene object id %l.", id);

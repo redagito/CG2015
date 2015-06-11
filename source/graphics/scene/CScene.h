@@ -23,41 +23,41 @@ class CScene : public IScene
     ~CScene();
 
 	SceneObjectId createObject(ResourceId model, const glm::vec3& position,
-							   const glm::quat& rotation, const glm::vec3& scale);
+							   const glm::quat& rotation, const glm::vec3& scale) override;
 
     SceneObjectId createObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
-							   const glm::quat& rotation, const glm::vec3& scale);
+		const glm::quat& rotation, const glm::vec3& scale) override;
 
     bool getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material, glm::vec3& position,
-                   glm::quat& rotation, glm::vec3& scale) const;
+		glm::quat& rotation, glm::vec3& scale, bool& visible) const override;
 
 	void setObject(SceneObjectId id, ResourceId mesh, ResourceId material,
 				   const glm::vec3& position, const glm::quat& rotation,
-				   const glm::vec3& scale);
+				   const glm::vec3& scale, bool visible) override;
 
     SceneObjectId createPointLight(const glm::vec3& position, float radius, const glm::vec3& color,
-                                   float intensity, bool castsShadow);
+		float intensity, bool castsShadow) override;
 
     bool getPointLight(SceneObjectId id, glm::vec3& position, float& radius, glm::vec3& color,
-                       float& intensity, bool& castsShadow) const;
+		float& intensity, bool& castsShadow) const override;
 
     void setPointLight(SceneObjectId id, const glm::vec3& position, float radius,
-                       const glm::vec3& color, float intensity, bool castsShadow);
+		const glm::vec3& color, float intensity, bool castsShadow) override;
 
     SceneObjectId createDirectionalLight(const glm::vec3& direction, const glm::vec3& color,
-                                         float intensity, bool castsShadow);
+		float intensity, bool castsShadow) override;
 
     bool getDirectionalLight(SceneObjectId id, glm::vec3& direction, glm::vec3& color,
-                             float& intensity, bool& castsShadow) const;
+		float& intensity, bool& castsShadow) const override;
 
     void setDirectionalLight(SceneObjectId id, const glm::vec3& direction, const glm::vec3& color,
-                             float intensity, bool castsShadow);
+		float intensity, bool castsShadow) override;
 
-    void setAmbientLight(const glm::vec3& color, float intensity);
+	void setAmbientLight(const glm::vec3& color, float intensity) override;
 
-    bool getAmbientLight(glm::vec3& color, float& intensity) const;
+	bool getAmbientLight(glm::vec3& color, float& intensity) const override;
 
-	void getVisibleObjects(const ICamera& camera, ISceneQuery& query) const;
+	void getVisibleObjects(const ICamera& camera, ISceneQuery& query) const override;
 
    private:
     glm::vec3 m_ambientColor = glm::vec3(1.f); /**< Global ambient light color. */

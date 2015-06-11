@@ -21,15 +21,23 @@ public:
 	void setRotation(const glm::quat& rotation);
 	void setScale(const glm::vec3& scale);
 
+	/**
+	* \brief Sets visibility of the object.
+	*
+	* Set to false to make scene object invisible.
+	*/
+	void setVisibility(bool visible);
+
 private:
 	void getUpdate() const;
 	void sendUpdate();
 
-	mutable ResourceId m_mesh;
-	mutable ResourceId m_material;
+	mutable ResourceId m_mesh = invalidResource;
+	mutable ResourceId m_material = invalidResource;
 	mutable glm::vec3 m_position;
 	mutable glm::quat m_rotation;
 	mutable glm::vec3 m_scale;
+	mutable bool m_visible = true;
 
 	bool m_init = false;
 	IScene* m_scene = nullptr;

@@ -31,6 +31,7 @@ struct SFeatureInfo
     RenderMode renderMode = RenderMode::Final;
 
     bool shadowsActive = true;
+	bool frustumCullingActive = true; /**< View frustum culling enabled flag. */
     
     bool dofActive = true;
     float dofNearFocus = 0.5f;

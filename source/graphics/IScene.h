@@ -29,6 +29,8 @@ public:
 
     /**
      * \brief Creates object in scene and returns id.
+	 *
+	 * Object visibility is per default set to visible.
      */
     virtual SceneObjectId createObject(ResourceId mesh, ResourceId material,
                                        const glm::vec3& position, const glm::quat& rotation,
@@ -38,14 +40,14 @@ public:
      * \brief Returns scene object data.
      */
     virtual bool getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
-                           glm::vec3& position, glm::quat& rotation, glm::vec3& scale) const = 0;
+                           glm::vec3& position, glm::quat& rotation, glm::vec3& scale, bool& visible) const = 0;
 
     /**
     * \brief Set scene object parameters.
     */
 	virtual void setObject(SceneObjectId id, ResourceId mesh, ResourceId material,
 						   const glm::vec3& position, const glm::quat& rotation,
-						   const glm::vec3& scale) = 0;
+						   const glm::vec3& scale, bool visible) = 0;
 
     /**
      * \brief Creates point light in scene and returns id.

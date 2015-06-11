@@ -21,7 +21,7 @@ SceneObjectId CScene::createObject(ResourceId model, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale)
 {
 	//const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
-	m_objects.push_back(SSceneObject(model, position, rotation, scale, CBoundingSphere()));
+	m_objects.push_back(SSceneObject(model, position, rotation, scale, true, CBoundingSphere()));
 	return m_objects.size() - 1;
 }
 
@@ -29,12 +29,12 @@ SceneObjectId CScene::createObject(ResourceId meshId, ResourceId material, const
                                    const glm::quat& rotation, const glm::vec3& scale)
 {
 	const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
-	m_objects.push_back(SSceneObject(meshId, material, position, rotation, scale, meshPtr->getBoundingSphere()));
+	m_objects.push_back(SSceneObject(meshId, material, position, rotation, scale, true, meshPtr->getBoundingSphere()));
     return m_objects.size() - 1;
 }
 
 bool CScene::getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
-                       glm::vec3& position, glm::quat& rotation, glm::vec3& scale) const
+                       glm::vec3& position, glm::quat& rotation, glm::vec3& scale, bool& visible) const
 {
     // TODO Needs to be changed for better data structures
     if (id < 0 || ((unsigned int)id) >= m_objects.size())
@@ -48,18 +48,19 @@ bool CScene::getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
     position = m_objects.at(id).m_position;
     rotation = m_objects.at(id).m_rotation;
     scale = m_objects.at(id).m_scale;
+	visible = m_objects.at(id).m_visible;
     return true;
 }
 
 void CScene::setObject(SceneObjectId id, ResourceId meshId, ResourceId material, const glm::vec3& position,
-	const glm::quat& rotation, const glm::vec3& scale)
+	const glm::quat& rotation, const glm::vec3& scale, bool visible)
 {
 	// TODO Needs to be changed for better data structures
 	assert(id >= 0 && ((unsigned int)id) < m_objects.size() && "Invalid scene object id");
 	unsigned int index = (unsigned int)id;
 	// Write data
 	const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
-	m_objects[index] = SSceneObject(meshId, material, position, rotation, scale, meshPtr->getBoundingSphere());
+	m_objects[index] = SSceneObject(meshId, material, position, rotation, scale, visible, meshPtr->getBoundingSphere());
 	return;
 }
 
@@ -162,17 +163,21 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 	viewFrustum.setFromViewProjectionClipSpaceApproach(camera.getView(), camera.getProjection());
 
 	// TODO Should be set from camera
-	bool cullingEnabled = true;
+	bool cullingEnabled = camera.getFeatureInfo().frustumCullingActive;
 
     // TODO Occlusion culling, better data structure for objects
     for (unsigned int i = 0; i < m_objects.size(); ++i)
     {
-		// Check the objects bounding sphere against the view frustum
-		if (!cullingEnabled || viewFrustum.isInsideOrIntersects(m_objects.at(i).boundingSphere))
+		// Return only objects with visibility flag set
+		if (m_objects.at(i).m_visible)
 		{
-			// Object is (at least partially) visible, add to query result
-			// Counter variable is object id
-			query.addObject(i);
+			// Check the objects bounding sphere against the view frustum or do not cull if disabled
+			if (!cullingEnabled || viewFrustum.isInsideOrIntersects(m_objects.at(i).boundingSphere))
+			{
+				// Object is (at least partially) visible, add to query result
+				// Counter variable is object id
+				query.addObject(i);
+			}
 		}
     }
 

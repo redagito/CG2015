@@ -70,13 +70,20 @@ void CSceneObjectProxy::setScale(const glm::vec3& scale)
 	sendUpdate();
 }
 
+void CSceneObjectProxy::setVisibility(bool visible)
+{
+	getUpdate();
+	m_visible = visible;
+	sendUpdate();
+}
+
 void CSceneObjectProxy::getUpdate() const
 {
 	if (!m_init)
 	{
 		return;
 	}
-	m_scene->getObject(m_objectId, m_mesh, m_material, m_position, m_rotation, m_scale);
+	m_scene->getObject(m_objectId, m_mesh, m_material, m_position, m_rotation, m_scale, m_visible);
 }
 
 void CSceneObjectProxy::sendUpdate()
@@ -85,5 +92,5 @@ void CSceneObjectProxy::sendUpdate()
 	{
 		return;
 	}
-	m_scene->setObject(m_objectId, m_mesh, m_material, m_position, m_rotation, m_scale);
+	m_scene->setObject(m_objectId, m_mesh, m_material, m_position, m_rotation, m_scale, m_visible);
 }
