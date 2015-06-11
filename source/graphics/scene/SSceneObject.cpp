@@ -9,7 +9,7 @@ SSceneObject::SSceneObject()
 
 SSceneObject::SSceneObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale, bool visible, const CBoundingSphere& sphere)
-	: m_mesh(mesh), m_material(material), m_position(position), m_rotation(rotation), m_scale(scale), boundingSphere(sphere)
+	: m_mesh(mesh), m_material(material), m_position(position), m_rotation(rotation), m_scale(scale), m_visible(visible), boundingSphere(sphere)
 {
 	updateBoundingSphere();
 	return;
@@ -17,7 +17,7 @@ SSceneObject::SSceneObject(ResourceId mesh, ResourceId material, const glm::vec3
 
 SSceneObject::SSceneObject(ResourceId model, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale, bool visible, const CBoundingSphere& sphere)
-	: m_model(model), m_position(position), m_rotation(rotation), m_scale(scale), boundingSphere(sphere)
+	: m_model(model), m_position(position), m_rotation(rotation), m_scale(scale), m_visible(visible), boundingSphere(sphere)
 {
 	updateBoundingSphere();
 	return;

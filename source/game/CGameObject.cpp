@@ -107,7 +107,7 @@ void CGameObject::markDeleted()
 {
 	m_deleteRequested = true;
 	if (m_sceneObject != nullptr) {
-		//m_sceneObject->setInvisible();  ship to Agito..
+		m_sceneObject->setVisibility(false);
 	}
 	if (hasCollidable())
 	{

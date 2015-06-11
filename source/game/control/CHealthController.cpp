@@ -31,12 +31,7 @@ void CHealthController::update(float dtime)
 	if (m_active && m_object != nullptr && m_object->hasCollidable())
 	{
 		// Set health
-		float dmg = m_object->getCollidable()->getDamageReceived();
-		if (dmg != 0.f)
-		{
-			int i = 0;
-		}
-		m_health -= dmg;
+		m_health -= m_object->getCollidable()->getDamageReceived();
 		if (m_health <= 0.f)
 		{
 			// Set object into death state
