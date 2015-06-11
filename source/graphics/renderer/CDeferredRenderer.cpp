@@ -1363,11 +1363,11 @@ void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourc
 
 	// Scene texture
 	sceneTexture->setActive(bloomPass2SceneTextureUnit);
-	shader->setUniform(sceneTextureUniformName, godRayPass2SceneTextureUnit);
+	shader->setUniform(sceneTextureUniformName, bloomPass2SceneTextureUnit);
 
 	// Bloom texture
 	bloomTexture->setActive(bloomPass2BloomTextureUnit);
-	shader->setUniform(bloomTextureUniformName, godRayPass2GodRayTextureUnit);
+	shader->setUniform(bloomTextureUniformName, bloomPass2BloomTextureUnit);
 
 	// Screen size
 	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
