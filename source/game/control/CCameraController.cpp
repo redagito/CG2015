@@ -51,11 +51,11 @@ void CCameraController::update(float dtime)
 		
 		if (distance > 5.f)
 		{
-			m_speed = 16.f;
+			m_speed = 26.f;
 		}
 		if (distance < 2.f)
 		{
-			m_speed = 10.f;
+			m_speed = 20.f;
 		}
 		float move = m_speed * dtime;
 		if (move >= distance || distance > 8.f)

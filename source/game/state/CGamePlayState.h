@@ -35,15 +35,14 @@ private:
 	IResourceManager* m_resourceManager = nullptr;
 	IInputProvider* m_inputProvider = nullptr; 
 	std::shared_ptr<IControllableCamera> m_camera = nullptr;
-	CCollisionSystem m_collisionSystem; /**< Collision system. */
-	//CAABBox* m_box = nullptr; // ja das is auch irgendwas, wozu brauchst du hier ne bounding box? na ich rufe m_box.create(vertices) auf
-	
+	CCollisionSystem* m_collisionSystem = nullptr; /**< Collision system. */
 
 	CGameObject* m_player; /**< Player object. */
 	CGameObject* m_mothership; /**< Mothership object. */
 	CGameObject* m_enemy; /**< Mothership object. */
 	
 	int m_enemyCount; /**< Enemy spawn counter. */
+	int m_enemyId;
 	float m_enemyTime; /**< Enemy spawn time. */
 	float m_enemyXPosition; // Hack
 	unsigned int m_playerGroup; /**< Player collision group. */
