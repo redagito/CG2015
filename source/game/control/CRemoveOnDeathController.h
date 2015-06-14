@@ -4,6 +4,8 @@
 
 #include <string>
 
+class CGamePlayState;
+
 /**
 * \brief Checks the object state for death state and trigger explosion effect.
 * TODO This should actually react to an onDeath event.
@@ -15,7 +17,7 @@ public:
 	/**
 	* \brief Sets sound system and sound name.
 	*/
-	CRemoveOnDeathController();
+	CRemoveOnDeathController(CGamePlayState* state);
 
 	/**
 	* \brief Destructor for cleanup.
@@ -44,4 +46,5 @@ public:
 private:
 	CGameObject* m_object; /**< Controlled game object. */
 	bool m_active;
+	CGamePlayState* m_gameState = nullptr;
 };

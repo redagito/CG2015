@@ -17,6 +17,7 @@
 #include "collision/CCollisionSystem.h"
 #include "collision/CAABBox.h"
 
+
 class CGamePlayState : public AGameState
 {
 public:
@@ -28,6 +29,7 @@ public:
 	bool update(float dtime);
 	void onExit();
 	const std::string& getNextState() const;
+	void winCount();
 
 private:
 	IGraphicsSystem* m_graphicsSystem = nullptr;
@@ -50,5 +52,6 @@ private:
 
 	ResourceId enemyShip;
 	ResourceId enemyShipMaterial;
-	
+
+	int m_winCounter = 0;
 };

@@ -12,11 +12,11 @@
 /**
 * \brief Lose state, similar to demo state with static camera.
 */
-class CLoseState : public IGameState
+class CWinState : public IGameState
 {
 public:
-	CLoseState(const std::string& sceneFile);
-	~CLoseState();
+	CWinState(const std::string& sceneFile);
+	~CWinState();
 
 	bool init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager);
 

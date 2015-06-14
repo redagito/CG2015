@@ -2,11 +2,12 @@
 
 #include "game/CGameObject.h"
 
+#include "game/state/CGamePlayState.h"
 
-
-CRemoveOnDeathController::CRemoveOnDeathController()
+CRemoveOnDeathController::CRemoveOnDeathController(CGamePlayState* state)
 :
 m_object(nullptr),
+m_gameState(state),
 m_active(true)
 {
 	return;
@@ -32,6 +33,7 @@ void CRemoveOnDeathController::update(float dtime)
 	if (m_object != nullptr && m_active && m_object->isDead())
 	{
 		// Mark for deletion
+		m_gameState->winCount();
 		m_object->markDeleted();
 	}
 }

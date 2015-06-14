@@ -51,6 +51,7 @@
 #include "game/state/CGamePlayState.h"
 #include "game/state/CDemoState.h"
 #include "game/state/CLoseState.h"
+#include "game/state/CWinState.h"
 
 CEngine::CEngine() {}
 
@@ -373,6 +374,7 @@ bool CEngine::initGameSystem(const std::string& gameFile)
 	m_gameSystem->addState("title", new CTitleState("data/world/intro_1.json"));
 	m_gameSystem->addState("game", new CGamePlayState());
 	m_gameSystem->addState("lose", new CLoseState("data/world/lose.json"));
+	m_gameSystem->addState("win", new CWinState("data/world/win.json"));
 	if (!m_gameSystem->init("title", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
 	{
 		LOG_ERROR("Failed to initialize game system.");

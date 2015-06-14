@@ -1,6 +1,6 @@
 #include <GLFW/glfw3.h>
 
-#include "CLoseState.h"
+#include "CWinState.h"
 
 #include "graphics/camera/CFirstPersonCamera.h"
 #include "io/CSceneLoader.h"
@@ -9,19 +9,19 @@
 
 const std::string gameStr = "game";
 
-CLoseState::CLoseState(const std::string& sceneFile)
+CWinState::CWinState(const std::string& sceneFile)
 :
 m_sceneFile(sceneFile)
 {
 
 }
 
-CLoseState::~CLoseState()
+CWinState::~CWinState()
 {
 	// Empty
 }
 
-bool CLoseState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
+bool CWinState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
 {
 	m_graphicsSystem = graphicsSystem;
 	m_inputProvider = inputProvider;
@@ -50,31 +50,31 @@ bool CLoseState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProv
 	return true;
 }
 
-void CLoseState::onEnter()
+void CWinState::onEnter()
 {
 	m_fadeInTime = 3.f;
 	m_graphicsSystem->setActiveCamera(m_camera.get());
 	m_graphicsSystem->setActiveScene(m_scene);
 }
 
-bool CLoseState::update(float dtime)
+bool CWinState::update(float dtime)
 {
 	// Ignore user input for some time
 	if (m_fadeInTime > 0.0f)
 	{
 		m_fadeInTime -= dtime;
 	}
-
+	
 	m_animationWorld.update(dtime);
 	return true;
 }
 
-void CLoseState::onExit()
+void CWinState::onExit()
 {
 	// Nothing
 }
 
-const std::string& CLoseState::getNextState() const
+const std::string& CWinState::getNextState() const
 {
 	return gameStr;
 }

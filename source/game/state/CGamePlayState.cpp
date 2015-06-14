@@ -28,11 +28,12 @@
 #include "collision/CCollidable.h"
 
 const std::string exitStr = "lose";
+const std::string exitStrW = "win";
 
 CGamePlayState::CGamePlayState() 
 :
-m_enemyCount(3),
-m_enemyTime(3.f),
+m_enemyCount(6),
+m_enemyTime(4.f),
 m_enemyXPosition(-75.f),
 m_playerGroup(0),
 m_enemyGroup(0),
@@ -209,23 +210,23 @@ bool CGamePlayState::update(float dtime)
 		// Create new enemy
 		CGameObject* enemy = new CGameObject();
 		if (m_enemyId == 1) {
-			enemy->setPosition(glm::vec3(-50.f, 30.f, 0.f));
+			enemy->setPosition(glm::vec3(-50.f, 30.f, 50.f));
 			enemy->setRotation(glm::vec3(0.f));
 			enemy->setScale(glm::vec3(0.5f));
 			enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
 			enemy->addController(std::make_shared<CLinearMovementController>(enemy->getForward(), 15.f));
 			enemy->addController(std::make_shared<CHealthController>(100.f));
-			enemy->addController(std::make_shared<CRemoveOnDeathController>());
+			enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
 		}
 
 		if (m_enemyId == 2) {
-			enemy->setPosition(glm::vec3(0.f, 45.f, 0.f));
+			enemy->setPosition(glm::vec3(0.f, 45.f, -50.f));
 			enemy->setRotation(glm::vec3(0.f));
 			enemy->setScale(glm::vec3(0.5f));
 			enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
 			enemy->addController(std::make_shared<CLinearMovementController>(enemy->getForward(), 15.f));
 			enemy->addController(std::make_shared<CHealthController>(100.f));
-			enemy->addController(std::make_shared<CRemoveOnDeathController>());
+			enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
 		}
 
 		if (m_enemyId == 3) {
@@ -235,16 +236,38 @@ bool CGamePlayState::update(float dtime)
 			enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
 			enemy->addController(std::make_shared<CLinearMovementController>(enemy->getForward(), 15.f));
 			enemy->addController(std::make_shared<CHealthController>(100.f));
-			enemy->addController(std::make_shared<CRemoveOnDeathController>());
+			enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
 		}
 
-		/*enemy->setPosition(glm::vec3(m_enemyXPosition, 25.f, 0.f));
-		enemy->setRotation(glm::vec3(0.f));
-		enemy->setScale(glm::vec3(0.4f));
-		enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-		enemy->addController(std::make_shared<CLinearMovementController>(enemy->getForward(), 10.f));
-		enemy->addController(std::make_shared<CHealthController>(100.f));
-		enemy->addController(std::make_shared<CRemoveOnDeathController>());*/
+		if (m_enemyId == 4) {
+			enemy->setPosition(glm::vec3(50.f, 25.f, 0.f));
+			enemy->setRotation(glm::vec3(0.f, 92.6,0.f));
+			enemy->setScale(glm::vec3(0.5f));
+			enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
+			enemy->addController(std::make_shared<CSimpleWaypointController>(glm::vec3(-101.f, 25.f, 0.f), 15.f, this));
+			enemy->addController(std::make_shared<CHealthController>(100.f));
+			enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
+		}
+		
+		if (m_enemyId == 5) {
+			enemy->setPosition(glm::vec3(0.f, 40.f, -50.f));
+			enemy->setRotation(glm::vec3(0.f, 92.6, 0.f));
+			enemy->setScale(glm::vec3(0.5f));
+			enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
+			enemy->addController(std::make_shared<CSimpleWaypointController>(glm::vec3(-101.f, 40.f, -50.f), 15.f, this));
+			enemy->addController(std::make_shared<CHealthController>(100.f));
+			enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
+		}
+		
+		if (m_enemyId == 6) {
+			enemy->setPosition(glm::vec3(-50.f, 50.f, 50.f));
+			enemy->setRotation(glm::vec3(0.f, 92.6, 0.f));
+			enemy->setScale(glm::vec3(0.5f));
+			enemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
+			enemy->addController(std::make_shared<CSimpleWaypointController>(glm::vec3(-101.f, 50.f, 50.f), 15.f, this));
+			enemy->addController(std::make_shared<CHealthController>(100.f));
+			enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
+		}
 		
 		// Player collidable added to player collision group
 		std::vector<float> enemyVertices;
@@ -269,6 +292,14 @@ bool CGamePlayState::update(float dtime)
 	{
 		return false;
 	}
+	if (m_inputProvider->isKeyPressed(GLFW_KEY_O))
+	{
+		m_winCounter = 6;
+		return false;
+	}
+	if (m_winCounter == 6) {
+		return false;
+	}
 
 	// Update collision system
 	m_collisionSystem->update();
@@ -283,5 +314,14 @@ void CGamePlayState::onExit()
 
 const std::string& CGamePlayState::getNextState() const
 {
-	return exitStr;
+	if (m_winCounter == 6) {
+		return exitStrW;
+	}
+	else {
+		return exitStr;
+	}
+}
+
+void CGamePlayState::winCount() {
+	m_winCounter++;
 }
