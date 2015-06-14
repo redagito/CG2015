@@ -13,6 +13,18 @@
 
 #include "debug/Log.h"
 
+bool CScene::getViewFrustumCulling()
+{
+	return s_useViewFrustumCulling;
+}
+
+void CScene::setViewFrustumCulling(bool enable)
+{
+	s_useViewFrustumCulling = enable;
+}
+
+bool CScene::s_useViewFrustumCulling = true;
+
 CScene::CScene(const IGraphicsResourceManager* manager) : m_resourceManager(manager) {}
 
 CScene::~CScene() {}
@@ -159,11 +171,7 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 {
     // Create frustum from camera matrices
 	CFrustum viewFrustum;
-	//viewFrustum.setFromViewProjection(camera.getView(), camera.getProjection());
 	viewFrustum.setFromViewProjectionClipSpaceApproach(camera.getView(), camera.getProjection());
-
-	// TODO Should be set from camera
-	bool cullingEnabled = camera.getFeatureInfo().frustumCullingActive;
 
     // TODO Occlusion culling, better data structure for objects
     for (unsigned int i = 0; i < m_objects.size(); ++i)
@@ -172,7 +180,7 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 		if (m_objects.at(i).m_visible)
 		{
 			// Check the objects bounding sphere against the view frustum or do not cull if disabled
-			if (!cullingEnabled || viewFrustum.isInsideOrIntersects(m_objects.at(i).boundingSphere))
+			if (!s_useViewFrustumCulling || viewFrustum.isInsideOrIntersects(m_objects.at(i).boundingSphere))
 			{
 				// Object is (at least partially) visible, add to query result
 				// Counter variable is object id
@@ -185,7 +193,7 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
     for (unsigned int i = 0; i < m_pointLights.size(); ++i)
     {
         // Check light volume against view frustum for point light culling
-		if (!cullingEnabled || viewFrustum.isInsideOrIntersects(CBoundingSphere(m_pointLights.at(i).m_position, m_pointLights.at(i).m_radius)))
+		if (!s_useViewFrustumCulling || viewFrustum.isInsideOrIntersects(CBoundingSphere(m_pointLights.at(i).m_position, m_pointLights.at(i).m_radius)))
 		{
 			// Counter variable is light id
 			query.addPointLight(i);

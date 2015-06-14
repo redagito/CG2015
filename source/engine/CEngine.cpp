@@ -180,11 +180,24 @@ bool CEngine::init(const char* configFile)
 
 void CEngine::run()
 {
+	// Fn key cooldown values
     double f1Cooldown = 0.0;
-    double f2Cooldown = 0.0;
-    double f3Cooldown = 0.0;
-    double f5Cooldown = 0.0;
-    double k1Cooldown = 0.0;
+	double f2Cooldown = 0.0;
+	double f3Cooldown = 0.0;
+	double f4Cooldown = 0.0;
+	double f5Cooldown = 0.0;
+	double f6Cooldown = 0.0;
+	double f7Cooldown = 0.0;
+	double f8Cooldown = 0.0;
+	double f9Cooldown = 0.0;
+
+	// Numeric key cooldown values
+	double k1Cooldown = 0.0;
+	double k2Cooldown = 0.0;
+	double k3Cooldown = 0.0;
+	double k4Cooldown = 0.0;
+	double k5Cooldown = 0.0;
+
     double timeDiff = 0.0;
 	bool running = true;
 
@@ -195,26 +208,90 @@ void CEngine::run()
     {
         double startTime = glfwGetTime();
 
-        // Cooldowns
+        // Cooldown calculations
         f1Cooldown -= timeDiff;
-        f2Cooldown -= timeDiff;
-        f3Cooldown -= timeDiff;
-        f5Cooldown -= timeDiff;
-        k1Cooldown -= timeDiff;
+		f2Cooldown -= timeDiff;
+		f3Cooldown -= timeDiff;
+		f4Cooldown -= timeDiff;
+		f5Cooldown -= timeDiff;
+		f6Cooldown -= timeDiff;
+		f7Cooldown -= timeDiff;
+		f8Cooldown -= timeDiff;
+		f9Cooldown -= timeDiff;
 
-		// Key 1 turns debug overlay on/off
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_1) == GLFW_PRESS && k1Cooldown <= 0.f)
-        {
-            k1Cooldown = 0.3f;
-			m_graphicsSystem->toggleDebugOverlay();
-        }
+		k1Cooldown -= timeDiff;
+		k2Cooldown -= timeDiff;
+		k3Cooldown -= timeDiff;
+		k4Cooldown -= timeDiff;
+		k5Cooldown -= timeDiff;
 
-		// Key F1 turns mouse capture on/off
+		// Global key mappings
+		// Key F1
 		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F1) == GLFW_PRESS && f1Cooldown <= 0.f)
 		{
-			// Reset cooldown
-			f1Cooldown = 0.5f;
-			// Capure/uncapture mouse
+			f1Cooldown = 0.3f;
+			// Not implemented
+		}
+
+		// Key F2
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F2) == GLFW_PRESS && f2Cooldown <= 0.f)
+		{
+			f2Cooldown = 0.3f;
+			// Turns debug overlay on / off
+			m_graphicsSystem->toggleDebugOverlay();
+		}
+
+		// Key F3
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F3) == GLFW_PRESS && f3Cooldown <= 0.f)
+		{
+			f3Cooldown = 0.3f;
+			// Turns wireframe mode on / off
+			m_graphicsSystem->toggleWireframeMode();
+		}
+
+		// Key F4
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F4) == GLFW_PRESS && f4Cooldown <= 0.f)
+		{
+			f4Cooldown = 0.3f;
+			// Toggles global texture filtering between nearest neighbor and bilinear
+			// TODO Implement
+		}
+
+		// Key F5
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F5) == GLFW_PRESS && f5Cooldown <= 0.f)
+		{
+			f5Cooldown = 0.3f;
+			// Toggles global texture mip map filtering between off, nearest neighbor and bilinear
+			// TODO Implement
+		}
+
+		// Key F6
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F6) == GLFW_PRESS && f6Cooldown <= 0.f)
+		{
+			f6Cooldown = 0.3f;
+			// Unused
+		}
+
+		// Key F7
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F7) == GLFW_PRESS && f7Cooldown <= 0.f)
+		{
+			f7Cooldown = 0.3f;
+			// Unused
+		}
+
+		// Key F8
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F8) == GLFW_PRESS && f8Cooldown <= 0.f)
+		{
+			f8Cooldown = 0.3f;
+			// Toggles view frustum culling on/off
+			m_graphicsSystem->toggleViewFrustumCulling();
+		}
+
+		// Key 1
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_1) == GLFW_PRESS && k1Cooldown <= 0.f)
+		{
+			k1Cooldown = 0.5f;
+			// Turns mouse capture on/off
 			m_window->toggleMouseCapture();
 		}
 

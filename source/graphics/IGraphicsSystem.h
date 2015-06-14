@@ -40,10 +40,17 @@ public:
 	* \brief Toggles debug overlay on/off.
 	*
 	* Default is off.
-	* TODO This should actually be a separate parameter for the draw call
-	* or a parameter supplied by the camera.
 	*/
 	virtual void toggleDebugOverlay() = 0;
+
+	/**
+	* \brief Toggles wireframe mode on/off.
+	*
+	* Default is off.
+	*/
+	virtual void toggleWireframeMode() = 0;
+
+	virtual void toggleViewFrustumCulling() = 0;
 
 	/**
 	* \brief Draws active scene.

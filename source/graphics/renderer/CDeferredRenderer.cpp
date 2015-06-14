@@ -907,13 +907,15 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	bloomPass2(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
 	// Scene with bloom in texture 0
 
-	//Lens flare pass
+	// Lens flare pass
 	/*m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
 	lensFlarePass(window, manager, m_postProcessPassTexture0);*/
+	// Flare texture in texture 0
 
 	// Tone map
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
 	toneMapPass(window, manager, m_postProcessPassTexture0);
+	// Tone mapped scene in texture 0
 
     // Set output texture
     m_postProcessPassOutputTexture = m_postProcessPassTexture0;
@@ -1381,8 +1383,8 @@ void CDeferredRenderer::bloomPass2(const IWindow& window, const IGraphicsResourc
 }
 
 void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
-	const std::shared_ptr<CTexture>& sceneTexture) {
-	//TODO: 
+	const std::shared_ptr<CTexture>& sceneTexture) 
+{
 	CShaderProgram* shader = manager.getShaderProgram(m_lensFlarePassShaderId);
 	if (shader == nullptr)
 	{
@@ -1402,14 +1404,12 @@ void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsReso
 	sceneTexture->setActive(lensFlareSceneTextureUnit);
 	shader->setUniform(sceneTextureUniformName, lensFlareSceneTextureUnit);
 
-
 	// Screen size
 	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
 	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
 
 	// Perform pass
 	::draw(*quadMesh);
-
 }
 
 void CDeferredRenderer::toneMapPass(const IWindow& window, const IGraphicsResourceManager& manager,

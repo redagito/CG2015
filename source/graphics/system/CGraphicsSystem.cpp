@@ -1,5 +1,6 @@
 #include "CGraphicsSystem.h"
 
+#include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/scene/CScene.h"
 #include "graphics/resource/CGraphicsResourceManager.h"
 #include "graphics/camera/CCamera.h"
@@ -104,6 +105,32 @@ void CGraphicsSystem::setActiveCamera(const ICamera* camera)
 void CGraphicsSystem::toggleDebugOverlay()
 {
 	m_drawDebugOverlay = !m_drawDebugOverlay;
+}
+
+void CGraphicsSystem::toggleWireframeMode()
+{
+	m_wireframeMode = !m_wireframeMode;
+	if (m_wireframeMode)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+}
+
+void CGraphicsSystem::toggleViewFrustumCulling()
+{
+	CScene::setViewFrustumCulling(!CScene::getViewFrustumCulling());
+	if (CScene::getViewFrustumCulling())
+	{
+		LOG_INFO("View frustum culling enabled.");
+	}
+	else
+	{
+		LOG_INFO("View frustum culling disabled.");
+	}
 }
 
 void CGraphicsSystem::draw(IWindow& window)

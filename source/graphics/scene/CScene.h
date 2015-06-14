@@ -59,7 +59,15 @@ class CScene : public IScene
 
 	void getVisibleObjects(const ICamera& camera, ISceneQuery& query) const override;
 
-   private:
+	static bool getViewFrustumCulling();
+
+	// Hacky way to set global culling parameter
+	static void setViewFrustumCulling(bool enable);
+
+private:
+	// Hacky
+	static bool s_useViewFrustumCulling;	
+
     glm::vec3 m_ambientColor = glm::vec3(1.f); /**< Global ambient light color. */
     float m_ambientIntensity = 0.f; /**< Global ambient light intensity. */
 

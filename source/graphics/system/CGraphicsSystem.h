@@ -12,6 +12,8 @@
 #include "graphics/IRenderer.h"
 #include "graphics/CDebugInfoDisplay.h"
 
+#include "SGraphicsSettings.h"
+
 class CGraphicsSystem : public IGraphicsSystem
 {
 public:
@@ -28,10 +30,15 @@ public:
 	void setActiveCamera(const ICamera* camera);
 
 	void toggleDebugOverlay();
+	void toggleWireframeMode();
+	void toggleViewFrustumCulling();
 
 	void draw(IWindow& window);
 	
 private:
+	bool m_wireframeMode = false; /**< Wireframe mode flag. */
+	bool m_viewFrustumClunningMode = true; /**< View frustum culling mode flag. */
+
 	bool m_drawDebugOverlay = false;
 	CDebugInfo m_debugInfo; /**< Debug info data. */
 	std::unique_ptr<CDebugInfoDisplay> m_debugInfoDisplay = nullptr; /**< Debug info overlay renderer. */
