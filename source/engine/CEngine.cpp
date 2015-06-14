@@ -290,22 +290,24 @@ void CEngine::run()
 		// Key 1
 		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_1) == GLFW_PRESS && k1Cooldown <= 0.f)
 		{
-			k1Cooldown = 0.5f;
+			k1Cooldown = 0.3f;
 			// Turns mouse capture on/off
 			m_window->toggleMouseCapture();
 		}
 
-		// Key F2 sets active rendering device to deferred renderer
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F2) == GLFW_PRESS && f2Cooldown <= 0.f)
+		// Key 2
+        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_2) == GLFW_PRESS && k2Cooldown <= 0.f)
         {
-            f2Cooldown = 0.3f;
+            k2Cooldown = 0.3f;
+			// Sets active rendering device to deferred renderer
 			m_graphicsSystem->setActiveRenderer("deferred");
         }
 
-		// Key F3 sets active rendering device to forward renderer
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F3) == GLFW_PRESS && f3Cooldown <= 0.f)
+		// Key 3
+        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_3) == GLFW_PRESS && k3Cooldown <= 0.f)
         {
-            f3Cooldown = 0.3f;
+            k3Cooldown = 0.3f;
+			// Sets active rendering device to forward renderer
 			m_graphicsSystem->setActiveRenderer("forward");
         }
 
