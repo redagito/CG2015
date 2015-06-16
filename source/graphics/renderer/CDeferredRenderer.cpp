@@ -908,10 +908,9 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	// Scene with bloom in texture 0
 
 	// Lens flare pass
-	/*m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
-	lensFlarePass(window, manager, m_postProcessPassTexture0);*/
-	// Flare texture in texture 0
-
+	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
+	lensFlarePass(window, manager, m_postProcessPassTexture0);
+	
 	// Tone map
 	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
 	toneMapPass(window, manager, m_postProcessPassTexture0);
