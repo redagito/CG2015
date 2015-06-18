@@ -127,7 +127,10 @@ const GLint bloomPass2SceneTextureUnit = 0;
 const GLint bloomPass2BloomTextureUnit = 1;
 
 // Texture units for lens flare pass
-const GLint lensFlareSceneTextureUnit = 0;
+const GLint lensFlare1InputTextureUnit = 0;
+const GLint lensFlare2InputTextureUnit = 1;
+const GLint lensFlare3SceneTextureUnit = 0;
+const GLint lensFlare3LensTextureUnit = 1;
 
 // Texture unit for tone map pass
 const GLint toneMapPassInputTextureUnit = 0;
@@ -148,7 +151,8 @@ const std::string sceneTextureUniformName = "scene_texture";
 const std::string blurTextureUniformName = "blur_texture";
 const std::string godRayTextureUniformName = "godray_texture";
 const std::string bloomTextureUniformName = "bloom_texture";
-const std::string lensFlareTextureUniformName = "lenscolor_texture";
+const std::string lensFlareTextureUniformName = "lens_texture";
+
 
 // Generic texture names
 const std::string texture0UniformName = "texture0";

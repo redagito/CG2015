@@ -159,6 +159,13 @@ protected:
 	void lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
 				    const std::shared_ptr<CTexture>& texture);
 
+	void lensFlarePass2(const IWindow& window, const IGraphicsResourceManager& manager,
+		const std::shared_ptr<CTexture>& texture);
+
+	void lensFlarePass3(const IWindow& window, const IGraphicsResourceManager& manager,
+		const std::shared_ptr<CTexture>& texture,
+		const std::shared_ptr<CTexture>& lensTexture);
+
 	/**
 	* \brief Tone map pass for HDR to LDR conversion.
 	*
@@ -255,6 +262,15 @@ protected:
 	*/
 	bool initLensFlarePass(IResourceManager& manager);
 
+	/**
+	* \brief Lens flare technique.
+	*/
+	bool initLensFlarePass2(IResourceManager& manager);
+
+	/**
+	* \brief Lens flare technique.
+	*/
+	bool initLensFlarePass3(IResourceManager& manager);
 
 	/**
 	* \brief Tone mapping pass.
@@ -351,6 +367,8 @@ protected:
 
 	// Lens flare Pass
 	ResourceId m_lensFlarePassShaderId = invalidResource;
+	ResourceId m_lensFlarePass2ShaderId = invalidResource;
+	ResourceId m_lensFlarePass3ShaderId = invalidResource;
 
 	// Tonemap pass
 	ResourceId m_toneMapPassShaderId = invalidResource;

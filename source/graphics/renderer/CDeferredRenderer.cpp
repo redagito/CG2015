@@ -908,16 +908,23 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	// Scene with bloom in texture 0
 
 	// Lens flare pass
-	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
+	m_postProcessPassFrameBuffer2.setActive(GL_FRAMEBUFFER);
 	lensFlarePass(window, manager, m_postProcessPassTexture0);
+
+	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
+	lensFlarePass2(window, manager, m_postProcessPassTexture2);
+
+	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+	lensFlarePass3(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
+	// Scene with flare in texture 0
 	
 	// Tone map
-	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
 	toneMapPass(window, manager, m_postProcessPassTexture0);
 	// Tone mapped scene in texture 0
 
     // Set output texture
-    m_postProcessPassOutputTexture = m_postProcessPassTexture0;
+    m_postProcessPassOutputTexture = m_postProcessPassTexture1;
 	return;
 }
 
@@ -1400,8 +1407,73 @@ void CDeferredRenderer::lensFlarePass(const IWindow& window, const IGraphicsReso
 	}
 
 	// Scene texture
-	sceneTexture->setActive(lensFlareSceneTextureUnit);
-	shader->setUniform(sceneTextureUniformName, lensFlareSceneTextureUnit);
+	sceneTexture->setActive(lensFlare1InputTextureUnit);
+	shader->setUniform(sceneTextureUniformName, lensFlare1InputTextureUnit);
+
+	// Screen size
+	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
+
+	// Perform pass
+	::draw(*quadMesh);
+}
+
+void CDeferredRenderer::lensFlarePass2(const IWindow& window, const IGraphicsResourceManager& manager,
+	const std::shared_ptr<CTexture>& sceneTexture)
+{
+	CShaderProgram* shader = manager.getShaderProgram(m_lensFlarePass2ShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for lens flare could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for lens flare could not be retrieved.");
+		return;
+	}
+
+	// Scene texture
+	sceneTexture->setActive(lensFlare2InputTextureUnit);
+	shader->setUniform(sceneTextureUniformName, lensFlare2InputTextureUnit);
+
+	// Screen size
+	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
+
+	// Perform pass
+	::draw(*quadMesh);
+}
+
+void CDeferredRenderer::lensFlarePass3(const IWindow& window, const IGraphicsResourceManager& manager,
+	const std::shared_ptr<CTexture>& sceneTexture, 
+	const std::shared_ptr<CTexture>& lensTexture)
+{
+	CShaderProgram* shader = manager.getShaderProgram(m_lensFlarePass3ShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for lens flare could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for lens flare could not be retrieved.");
+		return;
+	}
+
+	// Scene texture
+	sceneTexture->setActive(lensFlare3SceneTextureUnit);
+	shader->setUniform(sceneTextureUniformName, lensFlare3SceneTextureUnit);
+
+	// Scene texture
+	lensTexture->setActive(lensFlare3LensTextureUnit);
+	shader->setUniform(lensFlareTextureUniformName, lensFlare3LensTextureUnit);
 
 	// Screen size
 	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
@@ -1959,6 +2031,14 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 		return false;
 	}
 
+	if (!initLensFlarePass2(manager)) {
+		LOG_ERROR("Failed to initialize lens flare pass.");
+		return false;
+	}
+	if (!initLensFlarePass3(manager)) {
+		LOG_ERROR("Failed to initialize lens flare pass.");
+		return false;
+	}
 	// Tone map pass (non-adaptive)
 	if (!initToneMapPass(manager))
 	{
@@ -2183,6 +2263,34 @@ bool CDeferredRenderer::initLensFlarePass(IResourceManager& manager)
 	m_lensFlarePassShaderId = manager.loadShader(shaderFile);
 	// Check if ok
 	if (m_lensFlarePassShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool CDeferredRenderer::initLensFlarePass2(IResourceManager& manager)
+{
+	//Get shader
+	std::string shaderFile = "data/shader/post/lens_flare_pass2.ini";
+	m_lensFlarePass2ShaderId = manager.loadShader(shaderFile);
+	// Check if ok
+	if (m_lensFlarePass2ShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool CDeferredRenderer::initLensFlarePass3(IResourceManager& manager)
+{
+	//Get shader
+	std::string shaderFile = "data/shader/post/lens_flare_pass3.ini";
+	m_lensFlarePass3ShaderId = manager.loadShader(shaderFile);
+	// Check if ok
+	if (m_lensFlarePass3ShaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
 		return false;
