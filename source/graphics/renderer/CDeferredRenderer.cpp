@@ -866,7 +866,7 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
     // Processed scene in texture0
 
 	// Godray technique, consists of 2 passes
-	if ((camera.getFeatureInfo().godRayActive || camera.getFeatureInfo().renderMode == RenderMode::GodRay) && false) // Disabled
+	if ((camera.getFeatureInfo().godRayActive || camera.getFeatureInfo().renderMode == RenderMode::GodRay))
 	{
 		// God ray pass 1
 		m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
@@ -907,17 +907,20 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	bloomPass2(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
 	// Scene with bloom in texture 0
 
-	// Lens flare pass
-	m_postProcessPassFrameBuffer2.setActive(GL_FRAMEBUFFER);
-	lensFlarePass(window, manager, m_postProcessPassTexture0);
+	if (camera.getFeatureInfo().lenseFlareActive)
+	{
+		// Lens flare pass
+		m_postProcessPassFrameBuffer2.setActive(GL_FRAMEBUFFER);
+		lensFlarePass(window, manager, m_postProcessPassTexture0);
 
-	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
-	lensFlarePass2(window, manager, m_postProcessPassTexture2);
+		m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
+		lensFlarePass2(window, manager, m_postProcessPassTexture2);
 
-	m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
-	lensFlarePass3(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
-	// Scene with flare in texture 0
-	
+		m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+		lensFlarePass3(window, manager, m_postProcessPassTexture0, m_postProcessPassTexture1);
+		// Scene with flare in texture 0
+	}
+
 	// Tone map
 	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
 	toneMapPass(window, manager, m_postProcessPassTexture0);
@@ -1777,12 +1780,13 @@ bool CDeferredRenderer::initShadowMapPass(IResourceManager& manager)
     m_shadowDepthTexture = std::make_shared<CTexture>();
 	m_shadowDepthTexture->init(4096, 4096, GL_DEPTH_COMPONENT24);
 
+	// Set to PCF parameters
     glBindTexture(GL_TEXTURE_2D, m_shadowDepthTexture->getId());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LESS);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
     glBindTexture(GL_TEXTURE_2D, 0);
 

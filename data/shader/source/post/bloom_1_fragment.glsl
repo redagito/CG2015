@@ -32,6 +32,6 @@ void main()
 	// Should be uniform
 	float threshold = 1.4f;
 	
-	// Apply advanced bloom
+	// Perform brightpass filter, write result to texture
 	color = brightpass(texel, threshold) * texel;
 }

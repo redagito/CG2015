@@ -40,7 +40,7 @@ struct SFeatureInfo
     float dofFarBlur = 150.f;
     
     bool fxaaActive = true;
-
+	bool lenseFlareActive = true;
 	bool godRayActive  = true;
     
     bool normalMappingActive = true;

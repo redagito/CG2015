@@ -47,6 +47,7 @@
 
 // Game
 #include "game/CGameSystem.h"
+#include "game/state/CLoadState.h"
 #include "game/state/CTitleState.h"
 #include "game/state/CGamePlayState.h"
 #include "game/state/CDemoState.h"
@@ -371,11 +372,12 @@ bool CEngine::initGameSystem(const std::string& gameFile)
 	m_gameSystem = std::make_shared<CGameSystem>();
 
 	// TODO Load from game file
+	m_gameSystem->addState("load", new CLoadState("data/world/load_1.json", 10.f));
 	m_gameSystem->addState("title", new CTitleState("data/world/intro_1.json"));
 	m_gameSystem->addState("game", new CGamePlayState());
 	m_gameSystem->addState("lose", new CLoseState("data/world/lose.json"));
 	m_gameSystem->addState("win", new CWinState("data/world/win.json"));
-	if (!m_gameSystem->init("title", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
+	if (!m_gameSystem->init("load", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
 	{
 		LOG_ERROR("Failed to initialize game system.");
 		return false;
