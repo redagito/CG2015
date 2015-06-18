@@ -108,6 +108,11 @@ void CGraphicsSystem::toggleDebugOverlay()
 	m_drawDebugOverlay = !m_drawDebugOverlay;
 }
 
+void CGraphicsSystem::toggleDebugOverlayTransparency()
+{
+	m_transparentDebugOverlay = !m_transparentDebugOverlay;
+}
+
 void CGraphicsSystem::toggleWireframeMode()
 {
 	m_wireframeMode = !m_wireframeMode;
@@ -191,6 +196,6 @@ void CGraphicsSystem::draw(IWindow& window)
 		m_debugInfo.setValue("Camera y", std::to_string(m_activeCamera->getPosition().y));
 		m_debugInfo.setValue("Camera z", std::to_string(m_activeCamera->getPosition().z));
 		m_debugInfo.setValue("FPS", std::to_string(m_lastFrameCount));
-		m_debugInfoDisplay->draw(m_debugInfo);
+		m_debugInfoDisplay->draw(m_debugInfo, m_transparentDebugOverlay);
 	}
 }

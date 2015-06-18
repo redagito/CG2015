@@ -30,6 +30,7 @@ bool CDemoState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProv
 	m_cameraController = std::make_shared<CFreeFlightCameraController>();
 	m_cameraController->setCamera(m_camera);
 	m_cameraController->setInputProvider(inputProvider);
+	m_camera->getFeatureInfoForWrite().lenseFlareActive = false;
 
 	// Create new scene object
 	m_scene = m_graphicsSystem->createScene();

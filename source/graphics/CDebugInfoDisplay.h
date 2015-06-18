@@ -17,7 +17,7 @@ class CDebugInfoDisplay
     CDebugInfoDisplay(IResourceManager& resourceManager);
 
 	bool loadFont(const std::string& path, IResourceManager& resourceManager);
-    void draw(const CDebugInfo& info);
+    void draw(const CDebugInfo& info, bool transparent);
 
    private:
     std::unique_ptr<CShaderProgram> m_textShader = nullptr;

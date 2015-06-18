@@ -44,6 +44,13 @@ public:
 	virtual void toggleDebugOverlay() = 0;
 
 	/**
+	* \brief Toggles debug overlay transparency on/off.
+	*
+	* Default is on.
+	*/
+	virtual void toggleDebugOverlayTransparency() = 0;
+
+	/**
 	* \brief Toggles wireframe mode on/off.
 	*
 	* Default is off.

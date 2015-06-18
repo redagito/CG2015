@@ -289,6 +289,13 @@ void CEngine::run()
 			m_graphicsSystem->toggleViewFrustumCulling();
 		}
 
+		// Key F9
+		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F9) == GLFW_PRESS && f9Cooldown <= 0.f)
+		{
+			f9Cooldown = 0.3f;
+			m_graphicsSystem->toggleDebugOverlayTransparency();
+		}
+
 		// Key 1
 		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_1) == GLFW_PRESS && k1Cooldown <= 0.f)
 		{

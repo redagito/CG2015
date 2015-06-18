@@ -145,13 +145,16 @@ void textToBuffers(const std::string &text, unsigned int x, unsigned int y, unsi
     }
 }
 
-void CDebugInfoDisplay::draw(const CDebugInfo &info)
+void CDebugInfoDisplay::draw(const CDebugInfo &info, bool transparent)
 {
     m_VAO->setActive();
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_DEPTH_TEST);
+	if (transparent)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	glDisable(GL_DEPTH_TEST);
 
     int hOffsetLog = 0;
     int vOffsetLog = (int) info.getLogBufferSize() * m_fontSize;
@@ -206,6 +209,13 @@ void CDebugInfoDisplay::draw(const CDebugInfo &info)
     
     glDisableVertexAttribArray(0);
 
+	// Set transparency for text, otherwise we get white blocks
+	if (!transparent)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+
     // ===
     // render text
     // ===
@@ -255,9 +265,8 @@ void CDebugInfoDisplay::draw(const CDebugInfo &info)
     // ===
     // finish
     // ===
-
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 
     m_VAO->setInactive();
 }

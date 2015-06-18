@@ -30,6 +30,7 @@ public:
 	void setActiveCamera(const ICamera* camera);
 
 	void toggleDebugOverlay();
+	void toggleDebugOverlayTransparency();
 	void toggleWireframeMode();
 	void toggleViewFrustumCulling();
 
@@ -40,6 +41,7 @@ private:
 	bool m_viewFrustumClunningMode = true; /**< View frustum culling mode flag. */
 
 	bool m_drawDebugOverlay = false;
+	bool m_transparentDebugOverlay = true;
 	CDebugInfo m_debugInfo; /**< Debug info data. */
 	std::unique_ptr<CDebugInfoDisplay> m_debugInfoDisplay = nullptr; /**< Debug info overlay renderer. */
 

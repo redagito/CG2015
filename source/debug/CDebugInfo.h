@@ -1,7 +1,7 @@
 #pragma once
 
 #include <list>
-#include <unordered_map>
+#include <map>
 #include <string>
 
 #include "ILogListener.h"
@@ -22,10 +22,10 @@ class CDebugInfo : public ILogListener
     size_t getLogBufferSize() const;
 
     void setValue(const std::string& key, const std::string& value);
-    const std::unordered_map<std::string, std::string>& getValues() const;
+    const std::map<std::string, std::string>& getValues() const;
 
    private:
     size_t m_logBufferSize = 10;        /**< Maximum number of log events stored. */
     std::list<std::string> m_logBuffer; /**< Log buffer with latest log events. */
-    std::unordered_map<std::string, std::string> m_values; /**< Stores debug key/value pairs. */
+    std::map<std::string, std::string> m_values; /**< Stores debug key/value pairs. */
 };

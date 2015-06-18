@@ -28,7 +28,7 @@ void CDebugInfo::setValue(const std::string& key, const std::string& value)
     m_values[key] = value;
 }
 
-const std::unordered_map<std::string, std::string>& CDebugInfo::getValues() const
+const std::map<std::string, std::string>& CDebugInfo::getValues() const
 {
     return m_values;
 }
