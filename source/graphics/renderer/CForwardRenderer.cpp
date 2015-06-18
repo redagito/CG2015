@@ -18,6 +18,7 @@
 #include "Draw.h"
 
 #include "resource/IResourceManager.h"
+#include "math/CTransformer.h"
 
 #include "core/RendererCoreConfig.h"
 
@@ -117,16 +118,13 @@ void CForwardRenderer::draw(const IScene& scene, const ICamera& camera, const IW
 			CMaterial* material = manager.getMaterial(materialId);
 
 			// Create matrices
-			glm::mat4 translationMatrix = glm::translate(position);
-
-			// TODO Correct but slow?
-			glm::mat4 rotationMatrix = glm::rotate(rotation.x, glm::vec3(1.f, 0.f, 0.f)) *
-				glm::rotate(rotation.y, glm::vec3(0.f, 1.f, 0.f)) *
-				glm::rotate(rotation.z, glm::vec3(0.f, 0.f, 1.f));
-			glm::mat4 scaleMatrix = glm::scale(scale);
+			CTransformer transformer;
+			transformer.setPosition(position);
+			transformer.setRotation(rotation);
+			transformer.setScale(scale);
 
 			// Forward draw call
-			draw(mesh, translationMatrix, rotationMatrix, scaleMatrix, material, manager);
+			draw(mesh, transformer.getTranslationMatrix(), transformer.getRotationMatrix(), transformer.getScaleMatrix(), material, manager);
 		}
 	}
 

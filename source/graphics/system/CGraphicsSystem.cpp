@@ -61,7 +61,8 @@ bool CGraphicsSystem::init(IResourceManager& manager)
 
 void CGraphicsSystem::setActiveRenderer(const std::string& renderer)
 {
-	if (renderer == "deferred")
+	// Deferred renderer does not support wireframe mode, force forward renderer
+	if (renderer == "deferred" && !m_wireframeMode)
 	{
 		m_activeRenderer = m_deferredRenderer.get();
 	}
@@ -113,10 +114,16 @@ void CGraphicsSystem::toggleWireframeMode()
 	if (m_wireframeMode)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		// Only supported for forward renderer
+		// TODO Implement rendering parameters for IRenderer interface
+		// Force usage of forward renderer
+		setActiveRenderer("forward");
 	}
 	else
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		// Reset renderer
+		setActiveRenderer("deferred");
 	}
 }
 
