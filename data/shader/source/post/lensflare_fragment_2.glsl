@@ -6,8 +6,8 @@ uniform float screen_height;
 
 uniform float uDispersal = 0.80;
 uniform int uGhosts = 4;
-uniform float uHaloWidth = 5.0;
-uniform float uDistortion = 15.0;
+uniform float uHaloWidth = 2.0;
+uniform float uDistortion = 10.0;
 
 layout (location = 0) out vec4 color;
 
