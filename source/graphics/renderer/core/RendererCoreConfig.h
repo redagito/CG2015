@@ -132,6 +132,9 @@ const GLint lensFlare2InputTextureUnit = 1;
 const GLint lensFlare3SceneTextureUnit = 0;
 const GLint lensFlare3LensTextureUnit = 1;
 
+// Texture units for lens flare pass
+const GLint celPassInputTextureUnit = 0;
+
 // Texture unit for tone map pass
 const GLint toneMapPassInputTextureUnit = 0;
 
