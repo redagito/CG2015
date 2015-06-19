@@ -301,6 +301,12 @@ bool CGamePlayState::update(float dtime)
 		return false;
 	}
 
+	if (m_inputProvider->isKeyPressed(GLFW_KEY_K)) {
+		m_camera->getFeatureInfoForWrite().toonActive = true;
+	}
+	if (m_inputProvider->isKeyPressed(GLFW_KEY_L)) {
+		m_camera->getFeatureInfoForWrite().toonActive = false;
+	}
 	// Update collision system
 	m_collisionSystem->update();
 	// Update gameworld

@@ -42,6 +42,7 @@ struct SFeatureInfo
     bool fxaaActive = true;
 	bool lenseFlareActive = true;
 	bool godRayActive  = true;
+	bool toonActive = false;
     
     bool normalMappingActive = true;
 };

@@ -167,6 +167,12 @@ protected:
 		const std::shared_ptr<CTexture>& lensTexture);
 
 	/**
+	* \brief Cel pass, blends Cel texture on scene texture.
+	*/
+	void celPass(const IWindow& window, const IGraphicsResourceManager& manager,
+		const std::shared_ptr<CTexture>& texture);
+
+	/**
 	* \brief Tone map pass for HDR to LDR conversion.
 	*
 	* This pass should be done at the end of the post porcessing pipeline.
@@ -273,6 +279,11 @@ protected:
 	bool initLensFlarePass3(IResourceManager& manager);
 
 	/**
+	* \brief Lens flare technique.
+	*/
+	bool initCelPass(IResourceManager& manager);
+
+	/**
 	* \brief Tone mapping pass.
 	*/
 	bool initToneMapPass(IResourceManager& manager);
@@ -369,6 +380,9 @@ protected:
 	ResourceId m_lensFlarePassShaderId = invalidResource;
 	ResourceId m_lensFlarePass2ShaderId = invalidResource;
 	ResourceId m_lensFlarePass3ShaderId = invalidResource;
+
+	//Cel Pass
+	ResourceId m_celPassShaderId = invalidResource;
 
 	// Tonemap pass
 	ResourceId m_toneMapPassShaderId = invalidResource;

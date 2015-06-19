@@ -926,8 +926,19 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	toneMapPass(window, manager, m_postProcessPassTexture0);
 	// Tone mapped scene in texture 0
 
+	if (camera.getFeatureInfo().toonActive)
+	{
+		//Cell pass
+		m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+		celPass(window, manager, m_postProcessPassTexture1);
+	}
+	else {
+		m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
+		passthroughPass(window, manager, m_postProcessPassTexture1);
+	}
+
     // Set output texture
-    m_postProcessPassOutputTexture = m_postProcessPassTexture1;
+    m_postProcessPassOutputTexture = m_postProcessPassTexture0;
 	return;
 }
 
@@ -1477,6 +1488,36 @@ void CDeferredRenderer::lensFlarePass3(const IWindow& window, const IGraphicsRes
 	// Scene texture
 	lensTexture->setActive(lensFlare3LensTextureUnit);
 	shader->setUniform(lensFlareTextureUniformName, lensFlare3LensTextureUnit);
+
+	// Screen size
+	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
+	shader->setUniform(screenHeightUniformName, (float)window.getHeight());
+
+	// Perform pass
+	::draw(*quadMesh);
+}
+
+void CDeferredRenderer::celPass(const IWindow& window, const IGraphicsResourceManager& manager,
+	const std::shared_ptr<CTexture>& sceneTexture)
+{
+	CShaderProgram* shader = manager.getShaderProgram(m_celPassShaderId);
+	if (shader == nullptr)
+	{
+		LOG_ERROR("Shader program for cel Pass could not be retrieved.");
+		return;
+	}
+
+	// Get screen space quad
+	CMesh* quadMesh = manager.getMesh(m_postProcessScreenQuadId);
+	if (quadMesh == nullptr)
+	{
+		LOG_ERROR("Mesh object for cel Pass could not be retrieved.");
+		return;
+	}
+
+	// Scene texture
+	sceneTexture->setActive(celPassInputTextureUnit);
+	shader->setUniform(sceneTextureUniformName, celPassInputTextureUnit);
 
 	// Screen size
 	shader->setUniform(screenWidthUniformName, (float)window.getWidth());
@@ -2043,6 +2084,10 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 		LOG_ERROR("Failed to initialize lens flare pass.");
 		return false;
 	}
+	if (!initCelPass(manager)) {
+		LOG_ERROR("Failed to initialize cel pass.");
+		return false;
+	}
 	// Tone map pass (non-adaptive)
 	if (!initToneMapPass(manager))
 	{
@@ -2295,6 +2340,20 @@ bool CDeferredRenderer::initLensFlarePass3(IResourceManager& manager)
 	m_lensFlarePass3ShaderId = manager.loadShader(shaderFile);
 	// Check if ok
 	if (m_lensFlarePass3ShaderId == invalidResource)
+	{
+		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
+		return false;
+	}
+	return true;
+}
+
+bool CDeferredRenderer::initCelPass(IResourceManager& manager)
+{
+	//Get shader
+	std::string shaderFile = "data/shader/post/cel_pass.ini";
+	m_celPassShaderId = manager.loadShader(shaderFile);
+	// Check if ok
+	if (m_celPassShaderId == invalidResource)
 	{
 		LOG_ERROR("Failed to initialize the shader from file %s.", shaderFile.c_str());
 		return false;
