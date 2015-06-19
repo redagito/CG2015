@@ -12,6 +12,9 @@ CG 2015 Project
 
 ![](https://github.com/redagito/CG2015/wiki/testscene_3.png)
 
+Godray with lense flare
+![](https://github.com/redagito/CG2015/wiki/testscene_4.png)
+
 Renderer features
 * Modern OpenGL (3.3+ core profile)
 * Deferred renderer
@@ -24,3 +27,4 @@ Renderer features
 * Fog
 * God ray
 * Vignette with distortion/blur effect
+* Lense flare
