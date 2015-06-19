@@ -206,8 +206,8 @@ bool CTexture::init(const std::vector<unsigned char>& image, unsigned int width,
     }
 
     // Set wrap mode
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
 
 	// Load data
 	if (image.empty())
@@ -252,4 +252,10 @@ bool CTexture::init(const std::vector<unsigned char>& image, unsigned int width,
     m_height = height;
     m_valid = true;
     return true;
+}
+
+void CTexture::setParameter(GLenum parameterName, GLint value)
+{
+	glBindTexture(GL_TEXTURE_2D, m_textureId);
+	glTexParameteri(GL_TEXTURE_2D, parameterName, value);
 }

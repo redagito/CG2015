@@ -166,6 +166,7 @@ void CDebugInfoDisplay::draw(const CDebugInfo &info, bool transparent)
     // render overlays
     // ===
     
+	// TODO Can be cached?
     std::vector<float> overlayVertices;
     
     overlayVertices.push_back(0.f);

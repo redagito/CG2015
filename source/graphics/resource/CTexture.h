@@ -40,6 +40,11 @@ class CTexture
 
     bool init(unsigned int width, unsigned int height, GLint format);
 
+	/**
+	* \brief Sets filtering.
+	*/
+	void setParameter(GLenum parameterName, GLint value);
+
     /**
     * \brief Resizes texture.
     */

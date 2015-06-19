@@ -2030,6 +2030,7 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 		LOG_ERROR("Failed to initialize bloom pass 2.");
 		return false;
 	}
+
 	if (!initLensFlarePass(manager)) {
 		LOG_ERROR("Failed to initialize lens flare pass.");
 		return false;
@@ -2039,10 +2040,12 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
 		LOG_ERROR("Failed to initialize lens flare pass.");
 		return false;
 	}
+
 	if (!initLensFlarePass3(manager)) {
 		LOG_ERROR("Failed to initialize lens flare pass.");
 		return false;
 	}
+
 	// Tone map pass (non-adaptive)
 	if (!initToneMapPass(manager))
 	{
@@ -2065,7 +2068,10 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
     {
         LOG_ERROR("Failed to initialize post process pass texture 0.");
         return false;
-    }
+	}
+	m_postProcessPassTexture0->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+	m_postProcessPassTexture0->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	m_postProcessPassTexture0->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     // Texture 1
     m_postProcessPassTexture1 = std::make_shared<CTexture>();
@@ -2073,7 +2079,10 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
     {
         LOG_ERROR("Failed to initialize post process pass texture 1.");
         return false;
-    }
+	}
+	m_postProcessPassTexture1->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+	m_postProcessPassTexture1->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	m_postProcessPassTexture1->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     // Texture 2
     m_postProcessPassTexture2 = std::make_shared<CTexture>();
@@ -2081,7 +2090,10 @@ bool CDeferredRenderer::initPostProcessPass(IResourceManager& manager)
     {
         LOG_ERROR("Failed to initialize post process pass texture 2.");
         return false;
-    }
+	}
+	m_postProcessPassTexture2->setParameter(GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+	m_postProcessPassTexture2->setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+	m_postProcessPassTexture2->setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
     m_postProcessPassFrameBuffer0.attach(m_postProcessPassTexture0, GL_COLOR_ATTACHMENT0);
     m_postProcessPassFrameBuffer1.attach(m_postProcessPassTexture1, GL_COLOR_ATTACHMENT0);
