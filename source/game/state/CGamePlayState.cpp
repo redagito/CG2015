@@ -84,7 +84,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	{
 		return false;
 	}
-	ResourceId bulletMaterial = m_resourceManager->loadMaterial("data/material/white_glowing.json");
+	ResourceId bulletMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
 	if (bulletMaterial == invalidResource)
 	{
 		return false;
@@ -190,6 +190,63 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 		return false;
 	}
 
+	//Load boss Enemy resources
+	//Add enemy with rotating ring
+	m_bossEnemy = new CGameObject();
+	m_bossEnemy->setPosition(glm::vec3(0.f, 20.f, -50.f));
+	m_bossEnemy->setRotation(glm::vec3(0.f));
+	m_bossEnemy->setScale(glm::vec3(0.6f));
+	m_bossEnemy->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
+	m_bossEnemy->addController(std::make_shared<CLinearMovementController>(m_bossEnemy->getForward(), 17.f));
+	m_bossEnemy->addController(std::make_shared<CHealthController>(300.f));
+	m_bossEnemy->addController(std::make_shared<CRemoveOnDeathController>(this));
+
+	bossShip = m_resourceManager->loadMesh("data/mesh/ship_2.obj");
+	if (bossShip == invalidResource)
+	{
+		return false;
+	}
+
+
+	bossShipMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
+	if (enemyShipMaterial == invalidResource)
+	{
+		return false;
+	}
+
+	// Create scene object
+	CSceneObjectProxy* bossSceneObject = new CSceneObjectProxy(m_scene, m_scene->createObject(bossShip, bossShipMaterial, glm::vec3(0.f, 20.f, -50.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(0.5f)));
+	m_bossEnemy->setSceneObject(bossSceneObject);
+
+	getGameWorld().addObject(m_bossEnemy);
+
+	m_ring = new CGameObject();
+	m_ring->setPosition(glm::vec3(0.f, 20.f, -50.f));
+	m_ring->setRotation(glm::vec3(0.f));
+	m_ring->setScale(glm::vec3(0.5f));
+	m_ring->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
+	m_ring->addController(std::make_shared<CLinearMovementController>(m_ring->getForward(), 17.f));
+
+
+	bossRing = m_resourceManager->loadMesh("data/mesh/ring_animation.obj");
+	if (bossRing == invalidResource)
+	{
+		return false;
+	}
+
+	bossRingMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
+	if (bossRingMaterial == invalidResource)
+	{
+		return false;
+	}
+
+	// Create scene object
+	CSceneObjectProxy* bossRingObject = new CSceneObjectProxy(m_scene, m_scene->createObject(bossRing, bossRingMaterial, glm::vec3(0.f, 20.f, -50.f), glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(0.5f)));
+	m_ring->setSceneObject(bossRingObject);
+
+	getGameWorld().addObject(m_ring);
+
+
 	return true;
 }
 
@@ -284,9 +341,14 @@ bool CGamePlayState::update(float dtime)
 
         // Add enemy
 		getGameWorld().addObject(enemy);
+
 		m_enemyCount -= 1;
 		m_enemyXPosition += 25.f;
 	}
+
+	
+	m_ring->setRotation(glm::vec3(m_ring->getRotation().x, m_ring->getRotation().y, m_ring->getRotation().z + dtime));
+	
 
 	if (m_inputProvider->isKeyPressed(GLFW_KEY_P))
 	{

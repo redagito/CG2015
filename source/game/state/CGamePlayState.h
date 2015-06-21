@@ -42,6 +42,8 @@ private:
 	CGameObject* m_player; /**< Player object. */
 	CGameObject* m_mothership; /**< Mothership object. */
 	CGameObject* m_enemy; /**< Mothership object. */
+	CGameObject* m_ring; /**< Ring object. */
+	CGameObject* m_bossEnemy; /**< Mothership object. */
 	
 	int m_enemyCount; /**< Enemy spawn counter. */
 	int m_enemyId;
@@ -52,6 +54,10 @@ private:
 
 	ResourceId enemyShip;
 	ResourceId enemyShipMaterial;
+	ResourceId bossShip;
+	ResourceId bossShipMaterial;
+	ResourceId bossRing;
+	ResourceId bossRingMaterial;
 
 	int m_winCounter = 0;
 };
