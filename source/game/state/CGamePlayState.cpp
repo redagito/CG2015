@@ -84,7 +84,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 	{
 		return false;
 	}
-	ResourceId bulletMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
+	ResourceId bulletMaterial = m_resourceManager->loadMaterial("data/material/white.json");
 	if (bulletMaterial == invalidResource)
 	{
 		return false;
