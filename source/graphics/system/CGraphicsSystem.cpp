@@ -196,6 +196,7 @@ void CGraphicsSystem::draw(IWindow& window)
 		m_debugInfo.setValue("Camera y", std::to_string(m_activeCamera->getPosition().y));
 		m_debugInfo.setValue("Camera z", std::to_string(m_activeCamera->getPosition().z));
 		m_debugInfo.setValue("FPS", std::to_string(m_lastFrameCount));
+		m_debugInfo.setValue("Culled objects", std::to_string(m_activeCamera->getFeatureInfo().culledObjectCount));
 		m_debugInfoDisplay->draw(m_debugInfo, m_transparentDebugOverlay);
 	}
 }

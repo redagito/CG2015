@@ -45,6 +45,8 @@ struct SFeatureInfo
 	bool toonActive = false;
     
     bool normalMappingActive = true;
+	// Hackyyy
+	mutable unsigned int culledObjectCount = 0;
 };
 
 /**

@@ -173,7 +173,10 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 	CFrustum viewFrustum;
 	viewFrustum.setFromViewProjectionClipSpaceApproach(camera.getView(), camera.getProjection());
 
-    // TODO Occlusion culling, better data structure for objects
+	// Hackyyy
+	camera.getFeatureInfo().culledObjectCount = 0;
+    
+	// TODO Occlusion culling, better data structure for objects
     for (unsigned int i = 0; i < m_objects.size(); ++i)
     {
 		// Return only objects with visibility flag set
@@ -185,6 +188,10 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 				// Object is (at least partially) visible, add to query result
 				// Counter variable is object id
 				query.addObject(i);
+			}
+			else
+			{
+				camera.getFeatureInfo().culledObjectCount += 1;
 			}
 		}
     }

@@ -924,15 +924,16 @@ void CDeferredRenderer::postProcessPass(const ICamera& camera, const IWindow& wi
 	// Tone map
 	m_postProcessPassFrameBuffer1.setActive(GL_FRAMEBUFFER);
 	toneMapPass(window, manager, m_postProcessPassTexture0);
-	// Tone mapped scene in texture 0
+	// Tone mapped scene in texture 1
 
 	if (camera.getFeatureInfo().toonActive)
 	{
-		//Cell pass
+		// Cel shading pass
 		m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
 		celPass(window, manager, m_postProcessPassTexture1);
 	}
-	else {
+	else 
+	{
 		m_postProcessPassFrameBuffer0.setActive(GL_FRAMEBUFFER);
 		passthroughPass(window, manager, m_postProcessPassTexture1);
 	}
