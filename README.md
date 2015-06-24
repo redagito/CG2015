@@ -15,7 +15,7 @@ CG 2015 Project
 Godray with lense flare
 ![](https://github.com/redagito/CG2015/wiki/testscene_4.png)
 
-Renderer features
+## Features
 * Modern OpenGL (3.3+ core profile)
 * Deferred renderer
 * Shadow mapping
@@ -28,5 +28,5 @@ Renderer features
 * God ray
 * Vignette with distortion/blur effect
 * Lense flare
-Additional features
 * View frustum culling (bounding sphere based)
+* State based game system
