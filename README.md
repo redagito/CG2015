@@ -20,7 +20,7 @@ Renderer features
 * Deferred renderer
 * Shadow mapping
 * Omni-directional shadow mapping
-* HDR rendering with tonemapping
+* HDR rendering with fixed (non-adaptive) tonemapping
 * Bloom
 * Depth of field (Gauss blur based)
 * FXAA
@@ -28,3 +28,5 @@ Renderer features
 * God ray
 * Vignette with distortion/blur effect
 * Lense flare
+Additional features
+* View frustum culling (bounding sphere based)
