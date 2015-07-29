@@ -53,7 +53,7 @@ private:
 	* \brief Creates and initializes game system in demo mode.
 	* TODO Should be considered legacy and removed later.
 	*/
-	bool CEngine::initDemo(const std::string& sceneFile);
+	bool initDemo(const std::string& sceneFile);
 
 	// TODO Should use interface instead of concrete class.
 	std::shared_ptr<CGameSystem> m_gameSystem = nullptr; /**< Game system. */

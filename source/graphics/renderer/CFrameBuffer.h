@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <map>
 
 #include "core/RendererCoreConfig.h"
 #include "ETextureSemantic.h"
@@ -53,7 +54,7 @@ private:
         m_textures; /**< Stores attached textures by attachment type. */
     std::unordered_map<GLenum, std::shared_ptr<CRenderBuffer>>
         m_renderBuffers; /**< Stores attached render buffers. */
-	std::unordered_map<ETextureSemantic, std::shared_ptr<CTexture>> 
+	std::map<ETextureSemantic, std::shared_ptr<CTexture>> 
 		m_texturesBySemantic; /**< Stores textures by their semantic. */
 
     GLuint m_fboId; /**< Frame buffer id. */
