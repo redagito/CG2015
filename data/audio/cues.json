@@ -1,0 +1,130 @@
+{
+  "volumes": {
+    "master": 0.65,
+    "music": 0.5,
+    "effects": 0.7,
+    "engines": 0.55,
+    "ui": 0.7
+  },
+  "cues": {
+    "title_music": {
+      "files": [
+        "data/audio/music/outer_space.flac"
+      ],
+      "bus": "music",
+      "gain": 0.5,
+      "stream": true,
+      "loop": true,
+      "max_instances": 1,
+      "priority": 100
+    },
+    "combat_music": {
+      "files": [
+        "data/audio/music/space_adventure.flac"
+      ],
+      "bus": "music",
+      "gain": 0.5,
+      "stream": true,
+      "loop": true,
+      "max_instances": 1,
+      "priority": 100
+    },
+    "shot": {
+      "files": [
+        "data/audio/sfx/shot_0.wav",
+        "data/audio/sfx/shot_1.wav",
+        "data/audio/sfx/shot_2.wav"
+      ],
+      "bus": "effects",
+      "gain": 0.45,
+      "spatial": true,
+      "min_distance": 30,
+      "max_distance": 600,
+      "pitch_variation": 0.035,
+      "max_instances": 6,
+      "priority": 30
+    },
+    "hit": {
+      "files": [
+        "data/audio/sfx/hit_0.wav",
+        "data/audio/sfx/hit_1.wav",
+        "data/audio/sfx/hit_2.wav"
+      ],
+      "bus": "effects",
+      "gain": 0.55,
+      "spatial": true,
+      "min_distance": 35,
+      "max_distance": 700,
+      "pitch_variation": 0.04,
+      "max_instances": 6,
+      "priority": 60
+    },
+    "explosion": {
+      "files": [
+        "data/audio/sfx/explosion_0.wav",
+        "data/audio/sfx/explosion_1.wav"
+      ],
+      "bus": "effects",
+      "gain": 0.6,
+      "spatial": true,
+      "min_distance": 45,
+      "max_distance": 900,
+      "pitch_variation": 0.03,
+      "max_instances": 4,
+      "priority": 70
+    },
+    "ufo_engine": {
+      "files": [
+        "data/audio/sfx/ufo_engine.wav"
+      ],
+      "bus": "engines",
+      "gain": 0.7,
+      "loop": true,
+      "spatial": true,
+      "min_distance": 100,
+      "max_distance": 1000,
+      "max_instances": 1,
+      "priority": 80
+    },
+    "player_engine": {
+      "files": [
+        "data/audio/sfx/player_engine.wav"
+      ],
+      "bus": "engines",
+      "gain": 0.3,
+      "loop": true,
+      "spatial": true,
+      "min_distance": 10,
+      "max_distance": 300,
+      "max_instances": 1,
+      "priority": 80
+    },
+    "confirm": {
+      "files": [
+        "data/audio/sfx/confirm.wav"
+      ],
+      "bus": "ui",
+      "gain": 0.35,
+      "max_instances": 2,
+      "priority": 100
+    },
+    "victory": {
+      "files": [
+        "data/audio/sfx/victory.wav"
+      ],
+      "bus": "ui",
+      "gain": 0.35,
+      "max_instances": 2,
+      "priority": 100
+    },
+    "defeat": {
+      "files": [
+        "data/audio/sfx/defeat.wav"
+      ],
+      "bus": "ui",
+      "gain": 0.35,
+      "max_instances": 2,
+      "priority": 100
+    }
+  }
+}

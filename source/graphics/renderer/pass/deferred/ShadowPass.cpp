@@ -8,36 +8,27 @@
 
 #include <glm/ext.hpp>
 
-#include "graphics/IScene.h"
-#include "graphics/scene/CSceneQuery.h"
 #include "graphics/ICamera.h"
+#include "graphics/IScene.h"
 #include "graphics/IWindow.h"
+#include "graphics/scene/CSceneQuery.h"
 
-#include "resource/IResourceManager.h"
 #include "graphics/camera/CStaticCamera.h"
+#include "resource/IResourceManager.h"
 
 #include "graphics/IGraphicsResourceManager.h"
 #include "graphics/resource/CMaterial.h"
 #include "graphics/resource/CMesh.h"
-#include "graphics/resource/CTexture.h"
 #include "graphics/resource/CShaderProgram.h"
+#include "graphics/resource/CTexture.h"
 
-#include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/renderer/Draw.h"
+#include "graphics/renderer/core/RendererCoreConfig.h"
 
 #include "graphics/renderer/debug/RendererDebug.h"
 #include <spdlog/spdlog.h>
 
-
-namespace {
-struct CameraDirection
-{
-    GLenum cubemapFace;
-    glm::vec3 target;
-    glm::vec3 up;
-};
-
-CameraDirection g_cameraDirections[6] = {
+const ShadowPass::CameraDirection ShadowPass::g_cameraDirections[6] = {
     {GL_TEXTURE_CUBE_MAP_POSITIVE_X, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)},
     {GL_TEXTURE_CUBE_MAP_NEGATIVE_X, glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)},
     {GL_TEXTURE_CUBE_MAP_POSITIVE_Y, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)},
@@ -45,26 +36,25 @@ CameraDirection g_cameraDirections[6] = {
     {GL_TEXTURE_CUBE_MAP_POSITIVE_Z, glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)},
     {GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)}};
 
-}
-
-void ShadowPass::renderDirectional(const IScene& scene, const ICamera& camera,
-                                      const IWindow& window,
-                                      const IGraphicsResourceManager& manager)
+void ShadowPass::renderDirectional(const IScene &scene, const ICamera &camera,
+                                   const IWindow &window, const IGraphicsResourceManager &manager)
 {
-    CShaderProgram* shadowMapPassShader = manager.getShaderProgram(m_shadowMapPassShaderId);
+    CShaderProgram *shadowMapPassShader = manager.getShaderProgram(m_shadowMapPassShaderId);
 
     // Set framebuffer
     m_shadows.directionalFramebuffer.setActive(GL_FRAMEBUFFER);
-    const auto resolution=std::clamp(camera.getFeatureInfo().shadowMapResolution,64u,4096u);
-    m_shadows.directionalFramebuffer.resize(resolution,resolution);
-    glDepthMask(GL_TRUE);glDisable(GL_BLEND);
-	shadowMapPassShader->setActive();
+    const auto resolution = std::clamp(camera.getFeatureInfo().shadowMapResolution, 64u, 4096u);
+    m_shadows.directionalFramebuffer.resize(resolution, resolution);
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
+    shadowMapPassShader->setActive();
 
     // Clear
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Depth
-    glEnable(GL_DEPTH_TEST); glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
 
     // Backface culling disabled for debugging
@@ -75,7 +65,7 @@ void ShadowPass::renderDirectional(const IScene& scene, const ICamera& camera,
     glFrontFace(GL_CCW);
 
     // Reset viewport
-    glViewport(0,0,resolution,resolution);
+    glViewport(0, 0, resolution, resolution);
 
     // Stores active transformations
     CTransformer transformer;
@@ -85,13 +75,12 @@ void ShadowPass::renderDirectional(const IScene& scene, const ICamera& camera,
     transformer.setProjectionMatrix(camera.getProjection());
 
     // Query visible scene objects
-	CSceneQuery query;
-	scene.getVisibleObjects(camera, query);
+    CSceneQuery query;
+    scene.getVisibleObjects(camera, query);
 
     // Send view/projection to default shader
     shadowMapPassShader->setUniform(viewMatrixUniformName, transformer.getViewMatrix());
-    shadowMapPassShader->setUniform(projectionMatrixUniformName,
-                                      transformer.getProjectionMatrix());
+    shadowMapPassShader->setUniform(projectionMatrixUniformName, transformer.getProjectionMatrix());
 
     // Traverse visible objects
     while (query.hasNextObject())
@@ -105,7 +94,7 @@ void ShadowPass::renderDirectional(const IScene& scene, const ICamera& camera,
         glm::vec3 position;
         glm::quat rotation;
         glm::vec3 scale;
-		bool visible;
+        bool visible;
 
         // Retrieve object data
         if (!scene.getObject(id, meshId, materialId, position, rotation, scale, visible))
@@ -116,9 +105,11 @@ void ShadowPass::renderDirectional(const IScene& scene, const ICamera& camera,
         else
         {
             // Resolve ids
-            CMesh* mesh = manager.getMesh(meshId);
-            CMaterial* material = manager.getMaterial(materialId);
-            if (material && (material->settings.background || material->settings.alphaMode == AlphaMode::Blend)) continue;
+            CMesh *mesh = manager.getMesh(meshId);
+            CMaterial *material = manager.getMaterial(materialId);
+            if (material &&
+                (material->settings.background || material->settings.alphaMode == AlphaMode::Blend))
+                continue;
 
             // Set transformations
             transformer.setPosition(position);
@@ -126,8 +117,9 @@ void ShadowPass::renderDirectional(const IScene& scene, const ICamera& camera,
             transformer.setScale(scale);
 
             // Forward draw call
-            drawMaterialMesh(mesh, transformer.getTranslationMatrix(), transformer.getRotationMatrix(),
-                    transformer.getScaleMatrix(), material, manager, shadowMapPassShader);
+            drawMaterialMesh(mesh, transformer.getTranslationMatrix(),
+                             transformer.getRotationMatrix(), transformer.getScaleMatrix(),
+                             material, manager, shadowMapPassShader);
         }
     }
 
@@ -144,15 +136,15 @@ void ShadowPass::renderDirectional(const IScene& scene, const ICamera& camera,
     glCullFace(GL_BACK);
 }
 
-void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
-                                       const IWindow& window,
-                                       const IGraphicsResourceManager& manager)
+void ShadowPass::renderPoint(const IScene &scene, const ICamera &camera, const IWindow &window,
+                             const IGraphicsResourceManager &manager)
 {
-    CShaderProgram* shadowCubePassShader = manager.getShaderProgram(m_shadowCubePassShaderId);
+    CShaderProgram *shadowCubePassShader = manager.getShaderProgram(m_shadowCubePassShaderId);
     shadowCubePassShader->setActive();
 
     // Depth
-    glEnable(GL_DEPTH_TEST); glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
 
     // Backface culling disabled for debugging
@@ -165,9 +157,10 @@ void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
     glFrontFace(GL_CCW);
 
     // Reset viewport
-    const auto resolution=std::clamp(camera.getFeatureInfo().pointShadowResolution,64u,2048u);
-    m_shadows.pointDepth->resize(resolution,resolution);m_shadows.pointCube->resize(resolution,resolution);
-    glViewport(0,0,resolution,resolution);
+    const auto resolution = std::clamp(camera.getFeatureInfo().pointShadowResolution, 64u, 2048u);
+    m_shadows.pointDepth->resize(resolution, resolution);
+    m_shadows.pointCube->resize(resolution, resolution);
+    glViewport(0, 0, resolution, resolution);
     // m_shadows.directionalFramebuffer.resize(1024, 1024);
 
     shadowCubePassShader->setUniform(lightPositionUniformName, camera.getPosition());
@@ -183,7 +176,7 @@ void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
 
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-        glViewport(0,0,resolution,resolution);
+        glViewport(0, 0, resolution, resolution);
 
         // Send view/projection to default shader
         glm::mat4 view =
@@ -194,9 +187,9 @@ void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
         shadowCubePassShader->setUniform(viewMatrixUniformName, view);
 
         // Query visible scene objects
-		CSceneQuery query;
-		CStaticCamera faceCamera(view, camera.getProjection(), camera.getPosition());
-		scene.getVisibleObjects(faceCamera, query);
+        CSceneQuery query;
+        CStaticCamera faceCamera(view, camera.getProjection(), camera.getPosition());
+        scene.getVisibleObjects(faceCamera, query);
 
         // Traverse visible objects
         while (query.hasNextObject())
@@ -210,7 +203,7 @@ void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
             glm::vec3 position;
             glm::quat rotation;
             glm::vec3 scale;
-			bool visible;
+            bool visible;
 
             // Retrieve object data
             if (!scene.getObject(id, meshId, materialId, position, rotation, scale, visible))
@@ -221,9 +214,11 @@ void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
             else
             {
                 // Resolve ids
-                CMesh* mesh = manager.getMesh(meshId);
-                CMaterial* material = manager.getMaterial(materialId);
-            if (material && (material->settings.background || material->settings.alphaMode == AlphaMode::Blend)) continue;
+                CMesh *mesh = manager.getMesh(meshId);
+                CMaterial *material = manager.getMaterial(materialId);
+                if (material && (material->settings.background ||
+                                 material->settings.alphaMode == AlphaMode::Blend))
+                    continue;
 
                 CTransformer transformer;
 
@@ -233,8 +228,9 @@ void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
                 transformer.setScale(scale);
 
                 // Forward draw call
-                drawMaterialMesh(mesh, transformer.getTranslationMatrix(), transformer.getRotationMatrix(),
-                     transformer.getScaleMatrix(), material, manager, shadowCubePassShader);
+                drawMaterialMesh(mesh, transformer.getTranslationMatrix(),
+                                 transformer.getRotationMatrix(), transformer.getScaleMatrix(),
+                                 material, manager, shadowCubePassShader);
             }
         }
     }
@@ -253,7 +249,7 @@ void ShadowPass::renderPoint(const IScene& scene, const ICamera& camera,
     glCullFace(GL_BACK);
 }
 
-bool ShadowPass::initShadowMapPass(IResourceManager& manager)
+bool ShadowPass::initShadowMapPass(IResourceManager &manager)
 {
     std::string shaderFile("data/shader/shadow_map_pass.ini");
     m_shadowMapPassShaderId = manager.loadShader(shaderFile);
@@ -266,9 +262,9 @@ bool ShadowPass::initShadowMapPass(IResourceManager& manager)
 
     // Depth texture
     m_shadows.directionalDepth = std::make_shared<CTexture>();
-	m_shadows.directionalDepth->init(1, 1, GL_DEPTH_COMPONENT24);
+    m_shadows.directionalDepth->init(1, 1, GL_DEPTH_COMPONENT24);
 
-	// Set to PCF parameters
+    // Set to PCF parameters
     glBindTexture(GL_TEXTURE_2D, m_shadows.directionalDepth->getId());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -299,7 +295,8 @@ bool ShadowPass::initShadowMapPass(IResourceManager& manager)
         return false;
     }
 
-    SPDLOG_INFO("Shadow map buffer state: {}.", m_shadows.directionalFramebuffer.getState().c_str());
+    SPDLOG_INFO("Shadow map buffer state: {}.",
+                m_shadows.directionalFramebuffer.getState().c_str());
 
     // Reset framebuffer
     m_shadows.directionalFramebuffer.setInactive(GL_FRAMEBUFFER);
@@ -313,7 +310,7 @@ bool ShadowPass::initShadowMapPass(IResourceManager& manager)
     return true;
 }
 
-bool ShadowPass::initShadowCubePass(IResourceManager& manager)
+bool ShadowPass::initShadowCubePass(IResourceManager &manager)
 {
     std::string shaderFile("data/shader/shadow_cube_pass.ini");
     m_shadowCubePassShaderId = manager.loadShader(shaderFile);
@@ -330,7 +327,7 @@ bool ShadowPass::initShadowCubePass(IResourceManager& manager)
     m_shadows.pointDepth = std::make_shared<CTexture>();
     m_shadows.pointDepth->init(1, 1, GL_DEPTH_COMPONENT24);
 
-	// TODO Cleanup and move into cube texture class
+    // TODO Cleanup and move into cube texture class
     glBindTexture(GL_TEXTURE_2D, m_shadows.pointDepth->getId());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -351,12 +348,12 @@ bool ShadowPass::initShadowCubePass(IResourceManager& manager)
 
     for (int i = 0; i < 6; i++)
     {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, 1, 1, 0, GL_RED,
-                     GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_R32F, 1, 1, 0, GL_RED, GL_FLOAT,
+                     NULL);
     }
 
-    m_shadows.pointCube = std::make_shared<CTexture>(textureId, false, 1, 1,
-                                                     GL_R32F, GL_RED, GL_TEXTURE_CUBE_MAP);
+    m_shadows.pointCube =
+        std::make_shared<CTexture>(textureId, false, 1, 1, GL_R32F, GL_RED, GL_TEXTURE_CUBE_MAP);
 
     // Error check
     std::string error;
@@ -395,7 +392,7 @@ bool ShadowPass::initShadowCubePass(IResourceManager& manager)
     return true;
 }
 
-bool ShadowPass::init(IResourceManager& manager)
+bool ShadowPass::init(IResourceManager &manager)
 {
     return initShadowMapPass(manager) && initShadowCubePass(manager);
 }

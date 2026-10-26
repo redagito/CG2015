@@ -1,704 +1,748 @@
 #include "CGraphicsResourceManager.h"
 
 #include <cassert>
-#include <string>
 #include <stdexcept>
+#include <string>
 
 #include "resource/IResourceManager.h"
 #include <spdlog/spdlog.h>
 
 CGraphicsResourceManager::CGraphicsResourceManager()
 {
-	// Create default textures
-	initDefaultTextures();
-	return;
+    // Create default textures
+    initDefaultTextures();
+    return;
 }
 
 CGraphicsResourceManager::~CGraphicsResourceManager()
 {
-	// Remove resource listener
-	while (!m_registeredManagers.empty())
-	{
-		// Calls onDettach, which removes from ist
-		m_registeredManagers.front()->removeResourceListener(this);
-	}
+    // Remove resource listener
+    while (!m_registeredManagers.empty())
+    {
+        // Calls onDettach, which removes from ist
+        m_registeredManagers.front()->removeResourceListener(this);
+    }
 }
 
-void CGraphicsResourceManager::onAttach(IResourceManager* resourceManager)
+void CGraphicsResourceManager::onAttach(IResourceManager *resourceManager)
 {
-    if (!m_registeredManagers.empty() && m_registeredManagers.front()!=resourceManager) throw std::runtime_error("A graphics manager owns one CPU resource namespace");
-	// Add to known resource managers
-	if (std::find(m_registeredManagers.begin(), m_registeredManagers.end(), resourceManager) == m_registeredManagers.end())
-	{
-		m_registeredManagers.push_back(resourceManager);
-	}
-	return;
+    if (!m_registeredManagers.empty() && m_registeredManagers.front() != resourceManager)
+        throw std::runtime_error("A graphics manager owns one CPU resource namespace");
+    // Add to known resource managers
+    if (std::find(m_registeredManagers.begin(), m_registeredManagers.end(), resourceManager) ==
+        m_registeredManagers.end())
+    {
+        m_registeredManagers.push_back(resourceManager);
+    }
+    return;
 }
 
-void CGraphicsResourceManager::onDetach(IResourceManager* resourceManager)
+void CGraphicsResourceManager::onDetach(IResourceManager *resourceManager)
 {
-	m_registeredManagers.remove(resourceManager);
-	return;
+    m_registeredManagers.remove(resourceManager);
+    return;
 }
 
 void CGraphicsResourceManager::notify(EResourceType type, ResourceId id, EListenerEvent event,
-	IResourceManager* resourceManager)
+                                      IResourceManager *resourceManager)
 {
-	// Resolve resource type
-	switch (type)
-	{
-	case EResourceType::Image:
-		handleImageEvent(id, event, resourceManager);
-		break;
-	case EResourceType::Material:
-		handleMaterialEvent(id, event, resourceManager);
-		break;
-	case EResourceType::Mesh:
-		handleMeshEvent(id, event, resourceManager);
-		break;
-	case EResourceType::Shader:
-		handleShaderEvent(id, event, resourceManager);
-		break;
-	case EResourceType::Model:
+    // Resolve resource type
+    switch (type)
+    {
+    case EResourceType::Audio:
+        break;
+    case EResourceType::Image:
+        handleImageEvent(id, event, resourceManager);
+        break;
+    case EResourceType::Material:
+        handleMaterialEvent(id, event, resourceManager);
+        break;
+    case EResourceType::Mesh:
+        handleMeshEvent(id, event, resourceManager);
+        break;
+    case EResourceType::Shader:
+        handleShaderEvent(id, event, resourceManager);
+        break;
+    case EResourceType::Model:
         handleModelEvent(id, event, resourceManager);
         break;
     case EResourceType::String:
-		handleStringEvent(id, event, resourceManager);
-		break;
-	default:
-		SPDLOG_ERROR("Unknown resource type encountered.");
-		break;
-	}
+        handleStringEvent(id, event, resourceManager);
+        break;
+    default:
+        SPDLOG_ERROR("Unknown resource type encountered.");
+        break;
+    }
 }
 
 void CGraphicsResourceManager::initDefaultTextures()
 {
-	// Default diffuse texture is deep pink to signal errors/missing textures
-	m_defaultDiffuseTexture.reset(new CTexture({ 238, 18, 137 }, 1, 1, EColorFormat::RGB24, 0));
+    // Default diffuse texture is deep pink to signal errors/missing textures
+    m_defaultDiffuseTexture.reset(new CTexture({238, 18, 137}, 1, 1, EColorFormat::RGB24, 0));
 
-	// Default normal texture with straight/non-perturbed normals
-	// Discussion here:
-	// http://www.gameartisans.org/forums/threads/1985-Normal-Map-RGB-127-127-255-or-128-128-255
-	m_defaultNormalTexture.reset(new CTexture({ 128, 128, 255 }, 1, 1, EColorFormat::RGB24, 0));
+    // Default normal texture with straight/non-perturbed normals
+    // Discussion here:
+    // http://www.gameartisans.org/forums/threads/1985-Normal-Map-RGB-127-127-255-or-128-128-255
+    m_defaultNormalTexture.reset(new CTexture({128, 128, 255}, 1, 1, EColorFormat::RGB24, 0));
 
-	// Default specular texture is black (no specular highlights)
-	m_defaultSpecularTexture.reset(new CTexture({ 0 }, 1, 1, EColorFormat::GreyScale8));
+    // Default specular texture is black (no specular highlights)
+    m_defaultSpecularTexture.reset(new CTexture({0}, 1, 1, EColorFormat::GreyScale8));
 
-	// Default glow texture is black (no glow)
-	m_defaultGlowTexture.reset(new CTexture({ 0 }, 1, 1, EColorFormat::GreyScale8));
+    // Default glow texture is black (no glow)
+    m_defaultGlowTexture.reset(new CTexture({0}, 1, 1, EColorFormat::GreyScale8));
 
-	// Default alpha texture is white (completely opaque)
-	m_defaultAlphaTexture.reset(new CTexture({ 255 }, 1, 1, EColorFormat::GreyScale8));
+    // Default alpha texture is white (completely opaque)
+    m_defaultAlphaTexture.reset(new CTexture({255}, 1, 1, EColorFormat::GreyScale8));
 }
 
-CMesh* CGraphicsResourceManager::getMesh(ResourceId id) const
+CMesh *CGraphicsResourceManager::getMesh(ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_meshes.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_meshes.find(id);
 
-	// Id must exist
-	// TODO Allow mesh loading if not found?
-	if (iter == m_meshes.end()) return nullptr;
+    // Id must exist
+    // TODO Allow mesh loading if not found?
+    if (iter == m_meshes.end())
+        return nullptr;
     return iter->second.get();
 }
 
-CMaterial* CGraphicsResourceManager::getMaterial(ResourceId id) const
+CMaterial *CGraphicsResourceManager::getMaterial(ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_materials.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_materials.find(id);
 
-	// Id must exist
-	// TODO Allow material loading if not found?
-	if (iter == m_materials.end()) return nullptr;
+    // Id must exist
+    // TODO Allow material loading if not found?
+    if (iter == m_materials.end())
+        return nullptr;
     return iter->second.get();
 }
 
-CModel* CGraphicsResourceManager::getModel(ResourceId id) const
+CModel *CGraphicsResourceManager::getModel(ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_models.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_models.find(id);
 
-	// Id must exist
-	// TODO Allow model loading if not found?
-	if (iter == m_models.end()) return nullptr;
+    // Id must exist
+    // TODO Allow model loading if not found?
+    if (iter == m_models.end())
+        return nullptr;
     return iter->second.get();
 }
 
-CTexture* CGraphicsResourceManager::getTexture(ResourceId id) const
+CTexture *CGraphicsResourceManager::getTexture(ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_textures.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_textures.find(id);
 
-	// Id must exist
-	// TODO Allow texture loading if not found?
-	if (iter == m_textures.end()) return nullptr;
+    // Id must exist
+    // TODO Allow texture loading if not found?
+    if (iter == m_textures.end())
+        return nullptr;
     return iter->second.get();
 }
 
-CShaderProgram* CGraphicsResourceManager::getShaderProgram(ResourceId id) const
+CShaderProgram *CGraphicsResourceManager::getShaderProgram(ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_shaderPrograms.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_shaderPrograms.find(id);
 
-	// Id must exist
-	// TODO Allow shader loading if not found?
-	if (iter == m_shaderPrograms.end())
-	{
-		SPDLOG_ERROR("The requested shader program id {} has not been loaded.", id);
-		return nullptr;
-	}
-	return iter->second.get();
-}
-
-
-CTexture* CGraphicsResourceManager::getDefaultDiffuseTexture() const
-{
-	return m_defaultDiffuseTexture.get();
-}
-
-CTexture* CGraphicsResourceManager::getDefaultNormalTexture() const
-{
-	return m_defaultNormalTexture.get();
-}
-
-CTexture* CGraphicsResourceManager::getDefaultSpecularTexture() const
-{
-	return m_defaultSpecularTexture.get();
-}
-
-CTexture* CGraphicsResourceManager::getDefaultGlowTexture() const
-{
-	return m_defaultGlowTexture.get();
-}
-
-CTexture* CGraphicsResourceManager::getDefaultAlphaTexture() const
-{
-	return m_defaultAlphaTexture.get();
-}
-
-TShaderObject<GL_VERTEX_SHADER>* CGraphicsResourceManager::getVertexShaderObject(ResourceId id) const
-{
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_vertexShader.find(id);
-
-	// Id must exist
-	// TODO Allow shader loading if not found?
-	if (iter == m_vertexShader.end()) return nullptr;
+    // Id must exist
+    // TODO Allow shader loading if not found?
+    if (iter == m_shaderPrograms.end())
+    {
+        SPDLOG_ERROR("The requested shader program id {} has not been loaded.", id);
+        return nullptr;
+    }
     return iter->second.get();
 }
 
-TShaderObject<GL_TESS_CONTROL_SHADER>* CGraphicsResourceManager::getTessControlShaderObject(ResourceId id) const
+CTexture *CGraphicsResourceManager::getDefaultDiffuseTexture() const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_tessConstrolShader.find(id);
+    return m_defaultDiffuseTexture.get();
+}
 
-	// Id must exist
-	// TODO Allow shader loading if not found?
-	if (iter == m_tessConstrolShader.end()) return nullptr;
+CTexture *CGraphicsResourceManager::getDefaultNormalTexture() const
+{
+    return m_defaultNormalTexture.get();
+}
+
+CTexture *CGraphicsResourceManager::getDefaultSpecularTexture() const
+{
+    return m_defaultSpecularTexture.get();
+}
+
+CTexture *CGraphicsResourceManager::getDefaultGlowTexture() const
+{
+    return m_defaultGlowTexture.get();
+}
+
+CTexture *CGraphicsResourceManager::getDefaultAlphaTexture() const
+{
+    return m_defaultAlphaTexture.get();
+}
+
+TShaderObject<GL_VERTEX_SHADER> *CGraphicsResourceManager::getVertexShaderObject(
+    ResourceId id) const
+{
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_vertexShader.find(id);
+
+    // Id must exist
+    // TODO Allow shader loading if not found?
+    if (iter == m_vertexShader.end())
+        return nullptr;
     return iter->second.get();
 }
 
-TShaderObject<GL_TESS_EVALUATION_SHADER>* CGraphicsResourceManager::getTessEvalShaderObject(ResourceId id) const
+TShaderObject<GL_TESS_CONTROL_SHADER> *CGraphicsResourceManager::getTessControlShaderObject(
+    ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_tessEvalShader.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_tessConstrolShader.find(id);
 
-	// Id must exist
-	// TODO Allow shader loading if not found?
-	if (iter == m_tessEvalShader.end()) return nullptr;
+    // Id must exist
+    // TODO Allow shader loading if not found?
+    if (iter == m_tessConstrolShader.end())
+        return nullptr;
     return iter->second.get();
 }
 
-TShaderObject<GL_GEOMETRY_SHADER>* CGraphicsResourceManager::getGeometryShaderObject(ResourceId id) const
+TShaderObject<GL_TESS_EVALUATION_SHADER> *CGraphicsResourceManager::getTessEvalShaderObject(
+    ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_geometryShader.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_tessEvalShader.find(id);
 
-	// Id must exist
-	// TODO Allow shader loading if not found?
-	if (iter == m_geometryShader.end()) return nullptr;
+    // Id must exist
+    // TODO Allow shader loading if not found?
+    if (iter == m_tessEvalShader.end())
+        return nullptr;
     return iter->second.get();
 }
 
-TShaderObject<GL_FRAGMENT_SHADER>* CGraphicsResourceManager::getFragmentShaderObject(ResourceId id) const
+TShaderObject<GL_GEOMETRY_SHADER> *CGraphicsResourceManager::getGeometryShaderObject(
+    ResourceId id) const
 {
-	// Invalid id
-	if (id == invalidResource)
-	{
-		return nullptr;
-	}
-	// Search for id
-	auto iter = m_fragmentShader.find(id);
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_geometryShader.find(id);
 
-	// Id must exist
-	// TODO Allow shader loading if not found?
-	if (iter == m_fragmentShader.end()) return nullptr;
+    // Id must exist
+    // TODO Allow shader loading if not found?
+    if (iter == m_geometryShader.end())
+        return nullptr;
     return iter->second.get();
 }
 
-bool CGraphicsResourceManager::loadVertexShader(ResourceId id, IResourceManager* resourceManager)
+TShaderObject<GL_FRAGMENT_SHADER> *CGraphicsResourceManager::getFragmentShaderObject(
+    ResourceId id) const
 {
-	// Unused id
-	if (id == invalidResource)
-	{
-		return true;
-	}
-	// Already loaded
-	if (m_vertexShader.count(id) != 0)
-	{
-		return true;
-	}
-	// Load from resoucre manager
-	std::string text;
-	resourceManager->getString(id, text);
-	if (text.empty())
-	{
-		return false;
-	}
-	std::unique_ptr<TShaderObject<GL_VERTEX_SHADER>> shader(
-		new TShaderObject<GL_VERTEX_SHADER>(text));
-	// Check compile error
-	if (!shader->isValid())
-	{
-		SPDLOG_ERROR("{}", shader->getErrorString().c_str());
-		return false;
-	}
-	// Move to map
-	m_vertexShader[id] = std::move(shader);
-	return true;
+    // Invalid id
+    if (id == invalidResource)
+    {
+        return nullptr;
+    }
+    // Search for id
+    auto iter = m_fragmentShader.find(id);
+
+    // Id must exist
+    // TODO Allow shader loading if not found?
+    if (iter == m_fragmentShader.end())
+        return nullptr;
+    return iter->second.get();
 }
 
-bool CGraphicsResourceManager::loadTessControlShader(ResourceId id, IResourceManager* resourceManager)
+bool CGraphicsResourceManager::loadVertexShader(ResourceId id, IResourceManager *resourceManager)
 {
-	// Unused id
-	if (id == invalidResource)
-	{
-		return true;
-	}
-	// Already loaded
-	if (m_tessConstrolShader.count(id) != 0)
-	{
-		return true;
-	}
-	// Load from resoucre manager
-	std::string text;
-	resourceManager->getString(id, text);
-	if (text.empty())
-	{
-		return false;
-	}
-	std::unique_ptr<TShaderObject<GL_TESS_CONTROL_SHADER>> shader(
-		new TShaderObject<GL_TESS_CONTROL_SHADER>(text));
-	// Check compile error
-	if (!shader->isValid())
-	{
-		SPDLOG_ERROR("{}", shader->getErrorString().c_str());
-		return false;
-	}
-	// Move to map
-	m_tessConstrolShader[id] = std::move(shader);
-	return true;
+    // Unused id
+    if (id == invalidResource)
+    {
+        return true;
+    }
+    // Already loaded
+    if (m_vertexShader.count(id) != 0)
+    {
+        return true;
+    }
+    // Load from resoucre manager
+    std::string text;
+    resourceManager->getString(id, text);
+    if (text.empty())
+    {
+        return false;
+    }
+    std::unique_ptr<TShaderObject<GL_VERTEX_SHADER>> shader(
+        new TShaderObject<GL_VERTEX_SHADER>(text));
+    // Check compile error
+    if (!shader->isValid())
+    {
+        SPDLOG_ERROR("{}", shader->getErrorString().c_str());
+        return false;
+    }
+    // Move to map
+    m_vertexShader[id] = std::move(shader);
+    return true;
 }
 
-bool CGraphicsResourceManager::loadTessEvalShader(ResourceId id, IResourceManager* resourceManager)
+bool CGraphicsResourceManager::loadTessControlShader(ResourceId id,
+                                                     IResourceManager *resourceManager)
 {
-	// Unused id
-	if (id == invalidResource)
-	{
-		return true;
-	}
-	// Already loaded
-	if (m_tessEvalShader.count(id) != 0)
-	{
-		return true;
-	}
-	// Load from resoucre manager
-	std::string text;
-	resourceManager->getString(id, text);
-	if (text.empty())
-	{
-		return false;
-	}
-	std::unique_ptr<TShaderObject<GL_TESS_EVALUATION_SHADER>> shader(
-		new TShaderObject<GL_TESS_EVALUATION_SHADER>(text));
-	// Check compile error
-	if (!shader->isValid())
-	{
-		SPDLOG_ERROR("{}", shader->getErrorString().c_str());
-		return false;
-	}
-	// Move to map
-	m_tessEvalShader[id] = std::move(shader);
-	return true;
+    // Unused id
+    if (id == invalidResource)
+    {
+        return true;
+    }
+    // Already loaded
+    if (m_tessConstrolShader.count(id) != 0)
+    {
+        return true;
+    }
+    // Load from resoucre manager
+    std::string text;
+    resourceManager->getString(id, text);
+    if (text.empty())
+    {
+        return false;
+    }
+    std::unique_ptr<TShaderObject<GL_TESS_CONTROL_SHADER>> shader(
+        new TShaderObject<GL_TESS_CONTROL_SHADER>(text));
+    // Check compile error
+    if (!shader->isValid())
+    {
+        SPDLOG_ERROR("{}", shader->getErrorString().c_str());
+        return false;
+    }
+    // Move to map
+    m_tessConstrolShader[id] = std::move(shader);
+    return true;
 }
 
-bool CGraphicsResourceManager::loadGeometryShader(ResourceId id, IResourceManager* resourceManager)
+bool CGraphicsResourceManager::loadTessEvalShader(ResourceId id, IResourceManager *resourceManager)
 {
-	// Unused id
-	if (id == invalidResource)
-	{
-		return true;
-	}
-	// Already loaded
-	if (m_geometryShader.count(id) != 0)
-	{
-		return true;
-	}
-	// Load from resoucre manager
-	std::string text;
-	resourceManager->getString(id, text);
-	if (text.empty())
-	{
-		return false;
-	}
-	std::unique_ptr<TShaderObject<GL_GEOMETRY_SHADER>> shader(
-		new TShaderObject<GL_GEOMETRY_SHADER>(text));
-	// Check compile error
-	if (!shader->isValid())
-	{
-		SPDLOG_ERROR("{}", shader->getErrorString().c_str());
-		return false;
-	}
-	// Move to map
-	m_geometryShader[id] = std::move(shader);
-	return true;
+    // Unused id
+    if (id == invalidResource)
+    {
+        return true;
+    }
+    // Already loaded
+    if (m_tessEvalShader.count(id) != 0)
+    {
+        return true;
+    }
+    // Load from resoucre manager
+    std::string text;
+    resourceManager->getString(id, text);
+    if (text.empty())
+    {
+        return false;
+    }
+    std::unique_ptr<TShaderObject<GL_TESS_EVALUATION_SHADER>> shader(
+        new TShaderObject<GL_TESS_EVALUATION_SHADER>(text));
+    // Check compile error
+    if (!shader->isValid())
+    {
+        SPDLOG_ERROR("{}", shader->getErrorString().c_str());
+        return false;
+    }
+    // Move to map
+    m_tessEvalShader[id] = std::move(shader);
+    return true;
 }
 
-bool CGraphicsResourceManager::loadFragmentShader(ResourceId id, IResourceManager* resourceManager)
+bool CGraphicsResourceManager::loadGeometryShader(ResourceId id, IResourceManager *resourceManager)
 {
-	// Unused id
-	if (id == invalidResource)
-	{
-		return true;
-	}
-	// Already loaded
-	if (m_fragmentShader.count(id) != 0)
-	{
-		return true;
-	}
-	// Load from resoucre manager
-	std::string text;
-	resourceManager->getString(id, text);
-	if (text.empty())
-	{
-		return false;
-	}
-	std::unique_ptr<TShaderObject<GL_FRAGMENT_SHADER>> shader(
-		new TShaderObject<GL_FRAGMENT_SHADER>(text));
-	// Check compile error
-	if (!shader->isValid())
-	{
-		SPDLOG_ERROR("{}", shader->getErrorString().c_str());
-		return false;
-	}
-	// Move to map
-	m_fragmentShader[id] = std::move(shader);
-	return true;
+    // Unused id
+    if (id == invalidResource)
+    {
+        return true;
+    }
+    // Already loaded
+    if (m_geometryShader.count(id) != 0)
+    {
+        return true;
+    }
+    // Load from resoucre manager
+    std::string text;
+    resourceManager->getString(id, text);
+    if (text.empty())
+    {
+        return false;
+    }
+    std::unique_ptr<TShaderObject<GL_GEOMETRY_SHADER>> shader(
+        new TShaderObject<GL_GEOMETRY_SHADER>(text));
+    // Check compile error
+    if (!shader->isValid())
+    {
+        SPDLOG_ERROR("{}", shader->getErrorString().c_str());
+        return false;
+    }
+    // Move to map
+    m_geometryShader[id] = std::move(shader);
+    return true;
+}
+
+bool CGraphicsResourceManager::loadFragmentShader(ResourceId id, IResourceManager *resourceManager)
+{
+    // Unused id
+    if (id == invalidResource)
+    {
+        return true;
+    }
+    // Already loaded
+    if (m_fragmentShader.count(id) != 0)
+    {
+        return true;
+    }
+    // Load from resoucre manager
+    std::string text;
+    resourceManager->getString(id, text);
+    if (text.empty())
+    {
+        return false;
+    }
+    std::unique_ptr<TShaderObject<GL_FRAGMENT_SHADER>> shader(
+        new TShaderObject<GL_FRAGMENT_SHADER>(text));
+    // Check compile error
+    if (!shader->isValid())
+    {
+        SPDLOG_ERROR("{}", shader->getErrorString().c_str());
+        return false;
+    }
+    // Move to map
+    m_fragmentShader[id] = std::move(shader);
+    return true;
 }
 
 void CGraphicsResourceManager::handleImageEvent(ResourceId id, EListenerEvent event,
-	IResourceManager* resourceManager)
+                                                IResourceManager *resourceManager)
 {
-	std::vector<unsigned char> data;
-	unsigned int width;
-	unsigned int height;
-	EColorFormat format;
+    std::vector<unsigned char> data;
+    unsigned int width;
+    unsigned int height;
+    EColorFormat format;
 
-	switch (event)
-	{
-	case EListenerEvent::Create:
-		assert(m_textures.count(id) == 0 && "Texture id already exists");
+    switch (event)
+    {
+    case EListenerEvent::Create:
+        assert(m_textures.count(id) == 0 && "Texture id already exists");
 
-		if (!resourceManager->getImage(id, data, width, height, format))
-		{
-			throw std::runtime_error("Failed to access image resource");
-		}
-		// Create new texture
-		m_textures[id] =
-			std::move(std::unique_ptr<CTexture>(new CTexture(data, width, height, format)));
-		break;
+        if (!resourceManager->getImage(id, data, width, height, format))
+        {
+            throw std::runtime_error("Failed to access image resource");
+        }
+        // Create new texture
+        m_textures[id] =
+            std::move(std::unique_ptr<CTexture>(new CTexture(data, width, height, format)));
+        break;
 
-	case EListenerEvent::Change:
-		assert(m_textures.count(id) == 1 && "Texture id does not exist");
+    case EListenerEvent::Change:
+        assert(m_textures.count(id) == 1 && "Texture id does not exist");
 
-		if (!resourceManager->getImage(id, data, width, height, format))
-		{
-			throw std::runtime_error("Failed to access image resource");
-		}
-		// Reinitialize texture on change
-		m_textures.at(id)->init(data, width, height, format);
-        if (m_colorTextures.contains(id)) m_colorTextures.at(id)->init(data,width,height,format,true,true);
-		break;
+        if (!resourceManager->getImage(id, data, width, height, format))
+        {
+            throw std::runtime_error("Failed to access image resource");
+        }
+        // Reinitialize texture on change
+        m_textures.at(id)->init(data, width, height, format);
+        if (m_colorTextures.contains(id))
+            m_colorTextures.at(id)->init(data, width, height, format, true, true);
+        break;
 
-	case EListenerEvent::Delete:
-		m_textures.erase(id); m_colorTextures.erase(id);
-		break;
+    case EListenerEvent::Delete:
+        m_textures.erase(id);
+        m_colorTextures.erase(id);
+        break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 }
 
 void CGraphicsResourceManager::handleMeshEvent(ResourceId id, EListenerEvent event,
-	IResourceManager* resourceManager)
+                                               IResourceManager *resourceManager)
 {
-	std::vector<float> vertices;
-	std::vector<unsigned int> indices;
-	std::vector<float> normals;
-	std::vector<float> uvs;
-	EPrimitiveType type;
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+    std::vector<float> normals;
+    std::vector<float> uvs;
+    EPrimitiveType type;
 
-	switch (event)
-	{
-	case EListenerEvent::Create:
-		assert(m_meshes.count(id) == 0 && "Mesh id already exists");
+    switch (event)
+    {
+    case EListenerEvent::Create:
+        assert(m_meshes.count(id) == 0 && "Mesh id already exists");
 
-		if (!resourceManager->getMesh(id, vertices, indices, normals, uvs, type))
-		{
-			throw std::runtime_error("Failed to access mesh resource");
-		}
-		// Create new texture
-		m_meshes[id] =
-			std::move(std::unique_ptr<CMesh>(new CMesh(vertices, indices, normals, uvs, type)));
-		break;
+        if (!resourceManager->getMesh(id, vertices, indices, normals, uvs, type))
+        {
+            throw std::runtime_error("Failed to access mesh resource");
+        }
+        // Create new texture
+        m_meshes[id] =
+            std::move(std::unique_ptr<CMesh>(new CMesh(vertices, indices, normals, uvs, type)));
+        break;
 
-	case EListenerEvent::Change:
-		assert(m_meshes.count(id) == 1 && "Mesh id does not exist");
+    case EListenerEvent::Change:
+        assert(m_meshes.count(id) == 1 && "Mesh id does not exist");
 
-		if (!resourceManager->getMesh(id, vertices, indices, normals, uvs, type))
-		{
-			throw std::runtime_error("Failed to access mesh resource");
-		}
-		// Reinitialize mesh on change
-		m_meshes.at(id)->init(vertices, indices, normals, uvs, type);
-		break;
+        if (!resourceManager->getMesh(id, vertices, indices, normals, uvs, type))
+        {
+            throw std::runtime_error("Failed to access mesh resource");
+        }
+        // Reinitialize mesh on change
+        m_meshes.at(id)->init(vertices, indices, normals, uvs, type);
+        break;
 
-	case EListenerEvent::Delete:
-		m_meshes.erase(id);
-		break;
+    case EListenerEvent::Delete:
+        m_meshes.erase(id);
+        break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 }
 
 void CGraphicsResourceManager::handleMaterialEvent(ResourceId id, EListenerEvent event,
-	IResourceManager* resourceManager)
+                                                   IResourceManager *resourceManager)
 {
-	ResourceId diffuse;
-	ResourceId normal;
-	ResourceId specular;
-	ResourceId glow;
-	ResourceId alpha;
+    ResourceId diffuse;
+    ResourceId normal;
+    ResourceId specular;
+    ResourceId glow;
+    ResourceId alpha;
 
-	switch (event)
-	{
-	case EListenerEvent::Create:
-		assert(m_materials.count(id) == 0 && "Material id already exists");
+    switch (event)
+    {
+    case EListenerEvent::Create:
+        assert(m_materials.count(id) == 0 && "Material id already exists");
 
-		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
-		{
-			throw std::runtime_error("Failed to access material resource");
-			return;
-		}
+        if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
+        {
+            throw std::runtime_error("Failed to access material resource");
+            return;
+        }
 
-		// Create new material
-		m_materials[id] = std::move(std::unique_ptr<CMaterial>(
-			new CMaterial(getColorTexture(diffuse, resourceManager, resourceManager->getMaterialSettings(id).srgb), getTexture(normal), getTexture(specular),
-				getTexture(glow), getTexture(alpha))));
+        // Create new material
+        m_materials[id] = std::move(std::unique_ptr<CMaterial>(new CMaterial(
+            getColorTexture(diffuse, resourceManager,
+                            resourceManager->getMaterialSettings(id).srgb),
+            getTexture(normal), getTexture(specular), getTexture(glow), getTexture(alpha))));
         m_materials.at(id)->settings = resourceManager->getMaterialSettings(id);
-		break;
+        break;
 
-	case EListenerEvent::Change:
-		assert(m_materials.count(id) == 1 && "Material id does not exist");
+    case EListenerEvent::Change:
+        assert(m_materials.count(id) == 1 && "Material id does not exist");
 
-		if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
-		{
-			throw std::runtime_error("Failed to access material resource");
-			return;
-		}
+        if (!resourceManager->getMaterial(id, diffuse, normal, specular, glow, alpha))
+        {
+            throw std::runtime_error("Failed to access material resource");
+            return;
+        }
 
-		// Reinitialize material on change
-		m_materials.at(id)->init(getColorTexture(diffuse, resourceManager, resourceManager->getMaterialSettings(id).srgb), getTexture(normal), getTexture(specular),
-			getTexture(glow), getTexture(alpha));
+        // Reinitialize material on change
+        m_materials.at(id)->init(getColorTexture(diffuse, resourceManager,
+                                                 resourceManager->getMaterialSettings(id).srgb),
+                                 getTexture(normal), getTexture(specular), getTexture(glow),
+                                 getTexture(alpha));
         m_materials.at(id)->settings = resourceManager->getMaterialSettings(id);
-		break;
+        break;
 
-	case EListenerEvent::Delete:
-		m_materials.erase(id);
-		break;
+    case EListenerEvent::Delete:
+        m_materials.erase(id);
+        break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 }
 
 void CGraphicsResourceManager::handleModelEvent(ResourceId id, EListenerEvent event,
-	IResourceManager* resourceManager)
+                                                IResourceManager *resourceManager)
 {
-	ResourceId mesh;
-	ResourceId material;
+    ResourceId mesh;
+    ResourceId material;
 
-	switch (event)
-	{
-	case EListenerEvent::Create:
-		assert(m_models.count(id) == 0 && "Model id already exists");
+    switch (event)
+    {
+    case EListenerEvent::Create:
+        assert(m_models.count(id) == 0 && "Model id already exists");
 
-		if (!resourceManager->getModel(id, mesh, material))
-		{
-			throw std::runtime_error("Failed to access model resource");
-			return;
-		}
+        if (!resourceManager->getModel(id, mesh, material))
+        {
+            throw std::runtime_error("Failed to access model resource");
+            return;
+        }
 
-		// Create new model
-		m_models[id] = std::move(std::unique_ptr<CModel>(
-			new CModel(getMesh(mesh), getMaterial(material), mesh, material)));
-		break;
+        // Create new model
+        m_models[id] = std::move(std::unique_ptr<CModel>(
+            new CModel(getMesh(mesh), getMaterial(material), mesh, material)));
+        break;
 
-	case EListenerEvent::Change:
-		assert(m_models.count(id) == 1 && "Model id does not exist");
+    case EListenerEvent::Change:
+        assert(m_models.count(id) == 1 && "Model id does not exist");
 
-		if (!resourceManager->getModel(id, mesh, material))
-		{
-			throw std::runtime_error("Failed to access model resource");
-			return;
-		}
+        if (!resourceManager->getModel(id, mesh, material))
+        {
+            throw std::runtime_error("Failed to access model resource");
+            return;
+        }
 
-		// Reinitialize model on change
-		m_models.at(id)->init(getMesh(mesh), getMaterial(material), mesh, material);
-		break;
+        // Reinitialize model on change
+        m_models.at(id)->init(getMesh(mesh), getMaterial(material), mesh, material);
+        break;
 
-	case EListenerEvent::Delete:
-		m_models.erase(id);
-		break;
+    case EListenerEvent::Delete:
+        m_models.erase(id);
+        break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 }
 
 void CGraphicsResourceManager::handleShaderEvent(ResourceId id, EListenerEvent event,
-	IResourceManager* resourceManager)
+                                                 IResourceManager *resourceManager)
 {
-	ResourceId vertex;
-	ResourceId tessControl;
-	ResourceId tessEval;
-	ResourceId geometry;
-	ResourceId fragment;
+    ResourceId vertex;
+    ResourceId tessControl;
+    ResourceId tessEval;
+    ResourceId geometry;
+    ResourceId fragment;
 
-	switch (event)
-	{
-	case EListenerEvent::Change:
+    switch (event)
+    {
+    case EListenerEvent::Change:
         // Attached old shader objects remain alive in the old linked program until relink.
-        if (!resourceManager->getShader(id, vertex, tessControl, tessEval, geometry, fragment)) throw std::runtime_error("Missing shader for reload" );
-        m_vertexShader.erase(vertex); m_tessConstrolShader.erase(tessControl); m_tessEvalShader.erase(tessEval); m_geometryShader.erase(geometry); m_fragmentShader.erase(fragment);
+        if (!resourceManager->getShader(id, vertex, tessControl, tessEval, geometry, fragment))
+            throw std::runtime_error("Missing shader for reload");
+        m_vertexShader.erase(vertex);
+        m_tessConstrolShader.erase(tessControl);
+        m_tessEvalShader.erase(tessEval);
+        m_geometryShader.erase(geometry);
+        m_fragmentShader.erase(fragment);
         [[fallthrough]];
     case EListenerEvent::Create:
-		// TODO Replace assert with log statement and global error handler
+        // TODO Replace assert with log statement and global error handler
 
-
-		// Load shader source ids
-		if (!resourceManager->getShader(id, vertex, tessControl, tessEval, geometry, fragment))
-		{
-			// TODO Replace assert with log statement and global error handler
-			throw std::runtime_error("Failed to access shader resource");
-		}
-
-		// Load shader objects from source
-		if (!loadVertexShader(vertex, resourceManager) ||
-			!loadTessControlShader(tessControl, resourceManager) ||
-			!loadTessEvalShader(tessEval, resourceManager) ||
-			!loadGeometryShader(geometry, resourceManager) ||
-			!loadFragmentShader(fragment, resourceManager))
-		{
-			throw std::runtime_error("Shader stage compilation failed");
-		}
-
-		// Add create shader program
-		if (m_shaderPrograms.contains(id))
+        // Load shader source ids
+        if (!resourceManager->getShader(id, vertex, tessControl, tessEval, geometry, fragment))
         {
-            auto* program = m_shaderPrograms.at(id).get();
-            if (!program->init(getVertexShaderObject(vertex), getTessControlShaderObject(tessControl), getTessEvalShaderObject(tessEval), getGeometryShaderObject(geometry), getFragmentShaderObject(fragment)))
+            // TODO Replace assert with log statement and global error handler
+            throw std::runtime_error("Failed to access shader resource");
+        }
+
+        // Load shader objects from source
+        if (!loadVertexShader(vertex, resourceManager) ||
+            !loadTessControlShader(tessControl, resourceManager) ||
+            !loadTessEvalShader(tessEval, resourceManager) ||
+            !loadGeometryShader(geometry, resourceManager) ||
+            !loadFragmentShader(fragment, resourceManager))
+        {
+            throw std::runtime_error("Shader stage compilation failed");
+        }
+
+        // Add create shader program
+        if (m_shaderPrograms.contains(id))
+        {
+            auto *program = m_shaderPrograms.at(id).get();
+            if (!program->init(getVertexShaderObject(vertex),
+                               getTessControlShaderObject(tessControl),
+                               getTessEvalShaderObject(tessEval), getGeometryShaderObject(geometry),
+                               getFragmentShaderObject(fragment)))
                 throw std::runtime_error("Shader relink failed: " + program->getErrorString());
         }
         else
         {
-            auto program = std::make_unique<CShaderProgram>(getVertexShaderObject(vertex), getTessControlShaderObject(tessControl), getTessEvalShaderObject(tessEval), getGeometryShaderObject(geometry), getFragmentShaderObject(fragment));
-            if (!program->isValid()) throw std::runtime_error("Shader link failed: " + program->getErrorString());
+            auto program = std::make_unique<CShaderProgram>(
+                getVertexShaderObject(vertex), getTessControlShaderObject(tessControl),
+                getTessEvalShaderObject(tessEval), getGeometryShaderObject(geometry),
+                getFragmentShaderObject(fragment));
+            if (!program->isValid())
+                throw std::runtime_error("Shader link failed: " + program->getErrorString());
             m_shaderPrograms[id] = std::move(program);
         }
         break;
 
+    case EListenerEvent::Delete:
+        m_shaderPrograms.erase(id);
+        break;
 
-	case EListenerEvent::Delete:
-		m_shaderPrograms.erase(id);
-		break;
-
-	default:
-		// TODO Log error on unknown event?
-		break;
-	}
+    default:
+        // TODO Log error on unknown event?
+        break;
+    }
 }
 
 void CGraphicsResourceManager::handleStringEvent(ResourceId id, EListenerEvent event,
-	IResourceManager* resourceManager)
+                                                 IResourceManager *resourceManager)
 {
-	if (event == EListenerEvent::Delete) { m_vertexShader.erase(id); m_tessConstrolShader.erase(id); m_tessEvalShader.erase(id); m_geometryShader.erase(id); m_fragmentShader.erase(id); }
+    if (event == EListenerEvent::Delete)
+    {
+        m_vertexShader.erase(id);
+        m_tessConstrolShader.erase(id);
+        m_tessEvalShader.erase(id);
+        m_geometryShader.erase(id);
+        m_fragmentShader.erase(id);
+    }
 }
 
-CTexture* CGraphicsResourceManager::getColorTexture(ResourceId id, IResourceManager* manager, bool srgb)
+CTexture *CGraphicsResourceManager::getColorTexture(ResourceId id, IResourceManager *manager,
+                                                    bool srgb)
 {
-    if (!srgb || id == invalidResource) return getTexture(id);
+    if (!srgb || id == invalidResource)
+        return getTexture(id);
     if (!m_colorTextures.contains(id))
     {
         std::vector<unsigned char> pixels;
-        unsigned int width, height; EColorFormat format;
-        if (!manager->getImage(id, pixels, width, height, format)) throw std::runtime_error("Missing base-color image");
+        unsigned int width, height;
+        EColorFormat format;
+        if (!manager->getImage(id, pixels, width, height, format))
+            throw std::runtime_error("Missing base-color image");
         m_colorTextures[id] = std::make_unique<CTexture>(pixels, width, height, format, true, true);
     }
     return m_colorTextures.at(id).get();

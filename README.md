@@ -134,3 +134,5 @@ Godray with lense flare
 * Lense flare
 * View frustum culling (bounding sphere based)
 * State based game system
+
+Audio setup, bundled assets and loading behavior are described in [doc/audio.md](doc/audio.md).

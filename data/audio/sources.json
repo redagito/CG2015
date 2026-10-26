@@ -1,0 +1,119 @@
+{
+  "sfx/shot_0.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "laserSmall_000.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "b9fd65caf0a5b568aafdb01a9e76112db5b0e700dd24f4f5db9e485982013578"
+  },
+  "sfx/shot_1.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "laserSmall_001.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "0e7ec271a7c008ea757c9ee547261c81d480436b1d80731afb7812c25a047456"
+  },
+  "sfx/shot_2.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "laserSmall_002.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "a0e54ad57367dd4c6156c0dca25332da28e3146f98b207dfb1fffab373714732"
+  },
+  "sfx/hit_0.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "impactMetal_000.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "c018c88021136b85a36392842432b2a8d9579c4209ae93895223e6ba46bfab37"
+  },
+  "sfx/hit_1.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "impactMetal_001.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "1e01953d8093b2f8f8b7f3a82bd97b1ca479723f4dbd4ed8c0c926769a5d4ed0"
+  },
+  "sfx/hit_2.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "impactMetal_002.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "767015c6a6a38f7e0007d5d43738d459584fb33dcd14ac61d9f17441bf438bab"
+  },
+  "sfx/explosion_0.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "explosionCrunch_000.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "d5f5ea78cbe2602740c4f4c9565b8a1f9d0f558a85756382184705e08157c195"
+  },
+  "sfx/explosion_1.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "explosionCrunch_001.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "a3ff1e567c72851c5da158717e4da7dc3b9d611734faeede10c4830c193533ff"
+  },
+  "sfx/ufo_engine.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "spaceEngineLarge_000.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "daf5cd4ed295ec666a61766b9889dce33be704f48f1bb0572d8e0ba9bf4d493b"
+  },
+  "sfx/player_engine.wav": {
+    "author": "Kenney",
+    "source": "https://kenney.nl/assets/sci-fi-sounds",
+    "original": "spaceEngineSmall_000.ogg",
+    "license": "CC0-1.0",
+    "processing": "mono, level normalization, edge fades or loop crossfade",
+    "sha256": "72a335351d8fe60afe071828dca8b40cbc69e6ea350dd889fa45085bf3926dec"
+  },
+  "music/outer_space.flac": {
+    "author": "wipics",
+    "source": "https://opengameart.org/content/outer-space-loop",
+    "original": "outer_space.mp3",
+    "license": "CC0-1.0",
+    "processing": "trim encoder silence, short seam crossfade, level normalization, FLAC",
+    "sha256": "ee83b6cd9eea51443a675b28c30c9dad0cc3a13e14ebfda75d73d0d711e7a59e"
+  },
+  "music/space_adventure.flac": {
+    "author": "MintoDog",
+    "source": "https://opengameart.org/content/space-adventure",
+    "original": "space_adventure.mp3",
+    "license": "CC0-1.0",
+    "processing": "trim encoder silence, short seam crossfade, level normalization, FLAC",
+    "sha256": "92f7b92fcdd07b05b414f16b7223ccf415b780c26a3b85a46acd841f2af83ef3"
+  },
+  "sfx/confirm.wav": {
+    "author": "CG2015 project",
+    "source": "scripts/prepare_audio_assets.py",
+    "license": "CC0-1.0",
+    "processing": "original oscillator synthesis",
+    "sha256": "007228e0fab3326fd077335760c78e92ac75b24a82e3d41da921f237a1eb2931"
+  },
+  "sfx/victory.wav": {
+    "author": "CG2015 project",
+    "source": "scripts/prepare_audio_assets.py",
+    "license": "CC0-1.0",
+    "processing": "original oscillator synthesis",
+    "sha256": "4f66f14313f3973ba7b19cb2996fec0ed4642ca7ee44bb97a5960601b71d589a"
+  },
+  "sfx/defeat.wav": {
+    "author": "CG2015 project",
+    "source": "scripts/prepare_audio_assets.py",
+    "license": "CC0-1.0",
+    "processing": "original oscillator synthesis",
+    "sha256": "f51fb57b5f071983ce64c47fdb66b600f227c2ded15117e43dcebcdb9ad92d10"
+  }
+}

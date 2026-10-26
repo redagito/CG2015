@@ -1,19 +1,10 @@
 #pragma once
+#include "SMaterialSettings.h"
 
 #include <cstdint>
 
 typedef int64_t ResourceId;
 static const ResourceId invalidResource = -1;
-
-enum class AlphaMode { Opaque, Mask, Blend };
-struct SMaterialSettings
-{
-    AlphaMode alphaMode = AlphaMode::Opaque;
-    float alphaCutoff = 0.5f;
-    float opacity = 1.f;
-    bool srgb = true;
-    bool background = false;
-};
 
 /**
  * \brief Resource types.
@@ -25,13 +16,14 @@ enum class EResourceType
     String,
     Shader,
     Material,
-	Model
+    Model,
+    Audio
 };
 
 /**
-* \brief Primitive type for vertex data.
-* NOTE GL_QUAD is deprecated.
-*/
+ * \brief Primitive type for vertex data.
+ * NOTE GL_QUAD is deprecated.
+ */
 enum class EPrimitiveType
 {
     Point = 1,
@@ -41,8 +33,8 @@ enum class EPrimitiveType
 };
 
 /**
-* \brief Color format for texture data.
-*/
+ * \brief Color format for texture data.
+ */
 enum class EColorFormat
 {
     GreyScale8 = 1,

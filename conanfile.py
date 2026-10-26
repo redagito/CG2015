@@ -9,6 +9,7 @@ class CG2015(ConanFile):
         "glfw/3.4", "glad/2.0.8", "glm/1.0.3", "jsoncpp/1.9.8",
         "tinyobjloader/2.0.0-rc10", "lodepng/cci.20260102",
         "spdlog/1.17.0",
+        "miniaudio/0.11.25",
     )
     default_options = {
         "*:shared": False,

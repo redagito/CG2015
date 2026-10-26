@@ -1,0 +1,20 @@
+Bundled audio credits
+
+Kenney - Sci-Fi Sounds (shots, impacts, explosions and engines)
+https://kenney.nl/assets/sci-fi-sounds
+License: CC0 1.0. Original pack notice: licenses/kenney.txt
+
+wipics - Outer Space Loop (title music)
+https://opengameart.org/content/outer-space-loop
+License: CC0 1.0
+
+MintoDog - Space Adventure (combat music)
+https://opengameart.org/content/space-adventure
+License: CC0 1.0
+
+Confirmation, victory and defeat cues were synthesized for this project.
+
+CC0 dedication: https://creativecommons.org/publicdomain/zero/1.0/
+Files were normalized, converted and given fades/loop crossfades.
+Per-file origins, processing and SHA-256 checksums: sources.json
+The miniaudio library license is bundled in ../licenses/miniaudio.txt.

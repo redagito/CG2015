@@ -63,6 +63,10 @@
     {
       "kind": "mesh",
       "file": "data/mesh/ring_animation.obj"
+    },
+    {
+      "kind": "audio_bank",
+      "file": "data/audio/cues.json"
     }
   ]
 }
