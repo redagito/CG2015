@@ -1,70 +1,32 @@
-#version 330 core
-
-layout(location = 0) out vec4 light_data;
-
-// Light parameters
-uniform vec3 light_direction;
-uniform vec3 light_color;
-uniform float light_intensity;
-
-// Screen size
-uniform float screen_width;
-uniform float screen_height;
-
-// Transforms to world coords
-uniform mat4 inverse_view_projection;
-uniform mat4 shadow_view_projection_bias;
-
-// Depth, normal and specularity
-uniform sampler2D depth_texture;
-uniform sampler2D normal_specular_texture;
-
-// Shadow texture for shadow mapping
+#version 460 core
+#include "lighting.glsl"
+layout(location=0) out vec4 light_data;
+layout(location=1) out vec3 specular_data;
+uniform vec3 light_direction,light_color,camera_position;
+uniform float light_intensity,screen_width,screen_height;
+uniform mat4 inverse_view_projection,shadow_view_projection_bias;
+uniform sampler2D depth_texture,normal_specular_texture;
 uniform sampler2DShadow shadow_map;
-
-vec3 getWorldPosition(vec2 uv)
+uniform bool shadows_enabled=true;
+uniform float shadow_bias=0.0005;
+void main()
 {
-	float z = texture(depth_texture, uv).x;
-	vec4 sPos = vec4(uv * 2 - 1, z * 2 - 1, 1.0);
-	sPos = inverse_view_projection * sPos;
-	return (sPos.xyz / sPos.w);
-}
-
-void main(void)
-{
-	// Calculate screen position of the fragment [0-1]
-	vec2 normalized_screen_coordinates = vec2(gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height);
-	// Calculate world position of affected fragment
-	vec3 fragment_world_position = getWorldPosition(normalized_screen_coordinates);
-	
-	// Hard coded world boundaries, hacky fix for skybox
-	// TODO REMOVE THIIIIIIS IT HUUURTS
-	if (fragment_world_position.x > 400.0 || fragment_world_position.x < -400.0 ||
-		fragment_world_position.y > 400.0 || fragment_world_position.z < -400.0 ||
-		fragment_world_position.z > 400.0 || fragment_world_position.z < -400.0)
-	{
-		light_data = vec4(2.0, 2.0, 2.0, 0.0);
-		return;
-	}
-
-	// Temp storage for single texture fetch
-	vec4 temp = texture(normal_specular_texture, normalized_screen_coordinates);
-
-	// Store world space normal vector
-	vec3 surface_normal_world = normalize(temp.xyz);
-
-	// Specularity value
-	float specular = temp.w;
-
-	// Lambertian factor based on surface normal
-	float lambert_factor = max(0.0, dot(surface_normal_world, -light_direction));
-	float bias = 0.005f;
-
-    // apply shadow map
-    vec4 shadow_coordinates = shadow_view_projection_bias * vec4(fragment_world_position, 1);
-    float visibility = texture(shadow_map, vec3(shadow_coordinates.xy, (shadow_coordinates.z - bias) / shadow_coordinates.w));
-
-	// Calculate diffuse light contribution
-	vec3 diffuse_light = lambert_factor * light_color * light_intensity;
-    light_data = vec4(diffuse_light, 0.0) * visibility;
+    vec2 uv=gl_FragCoord.xy/vec2(screen_width,screen_height);
+    float depth=texture(depth_texture,uv).r;
+    if(depth>=1.0) {light_data=vec4(0); specular_data=vec3(0); return;}
+    vec4 world=inverse_view_projection*vec4(uv*2.0-1.0,depth*2.0-1.0,1.0);
+    vec3 position=world.xyz/world.w;
+    vec4 surface=texture(normal_specular_texture,uv);
+    vec4 projected=shadow_view_projection_bias*vec4(position,1);
+    vec3 coord=projected.xyz/projected.w;
+    float visibility=1.0;
+    if(shadows_enabled && all(greaterThanEqual(coord,vec3(0))) && all(lessThanEqual(coord,vec3(1)))) {
+        float bias=shadow_bias*(1.0+2.0*(1.0-max(dot(safeDirection(surface.xyz),-light_direction),0.0)));
+        vec2 texel=1.0/vec2(textureSize(shadow_map,0));
+        visibility=0.0;
+        for(int x=-1;x<=1;++x) for(int y=-1;y<=1;++y) visibility+=texture(shadow_map,vec3(coord.xy+vec2(x,y)*texel,coord.z-bias))/9.0;
+    }
+    vec3 diffuse,specular;
+    surfaceLight(surface.xyz,camera_position-position,-light_direction,light_color*light_intensity*visibility,surface.a,diffuse,specular);
+    light_data=vec4(diffuse,0); specular_data=specular;
 }

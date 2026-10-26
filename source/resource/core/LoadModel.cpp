@@ -3,7 +3,7 @@
 #include "io/JsonUtil.h"
 #include "io/JsonDeserialize.h"
 #include "util/StringUtil.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 bool load(const std::string& file, CResourceManager& manager, SModel& model)
 {
@@ -19,7 +19,7 @@ bool load(const std::string& file, CResourceManager& manager, SModel& model)
 	}
 	else
 	{
-		LOG_ERROR("Invalid or unknown model file format.");
+		SPDLOG_ERROR("Invalid or unknown model file format.");
 		return false;
 	}
 
@@ -27,15 +27,15 @@ bool load(const std::string& file, CResourceManager& manager, SModel& model)
 	ResourceId meshId = manager.loadMesh(mesh);
 	if (meshId == invalidResource)
 	{
-		LOG_ERROR("Failed to load mesh.");
+		SPDLOG_ERROR("Failed to load mesh.");
 		return false;
 	}
 
 	// Load material
 	ResourceId materialId = manager.loadMaterial(material);
-	if (meshId == invalidResource)
+	if (materialId == invalidResource)
 	{
-		LOG_ERROR("Failed to load material.");
+		SPDLOG_ERROR("Failed to load material.");
 		return false;
 	}
 
@@ -55,12 +55,12 @@ bool loadModelFromJson(const std::string& file, std::string& meshFile, std::stri
 
 	if (!deserialize(root["mesh"], meshFile))
 	{
-		LOG_ERROR("Failed to load mesh node.");
+		SPDLOG_ERROR("Failed to load mesh node.");
 		return false;
 	}
 	if (!deserialize(root["material"], materialFile))
 	{
-		LOG_ERROR("Failed to load material node.");
+		SPDLOG_ERROR("Failed to load material node.");
 		return false;
 	}
 	return true;

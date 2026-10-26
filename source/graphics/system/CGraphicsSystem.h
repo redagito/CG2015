@@ -13,6 +13,7 @@
 #include "graphics/CDebugInfoDisplay.h"
 
 #include "SGraphicsSettings.h"
+#include "graphics/ui/CUiRenderer.h"
 
 class CGraphicsSystem : public IGraphicsSystem
 {
@@ -27,17 +28,18 @@ public:
 	void setActiveScene(IScene* scene);
 
 	ICamera* createCamera();
-	void setActiveCamera(const ICamera* camera);
+	void setActiveCamera(ICamera* camera);
 
 	void toggleDebugOverlay();
 	void toggleDebugOverlayTransparency();
-	void toggleWireframeMode();
 	void toggleViewFrustumCulling();
 
 	void draw(IWindow& window);
-	
+    void setUiOverlay(const UiDocument& document) override { m_uiDocument=document; }
+
 private:
-	bool m_wireframeMode = false; /**< Wireframe mode flag. */
+    CUiRenderer m_uiRenderer;
+    UiDocument m_uiDocument;
 	bool m_viewFrustumClunningMode = true; /**< View frustum culling mode flag. */
 
 	bool m_drawDebugOverlay = false;
@@ -55,10 +57,9 @@ private:
 	IScene* m_activeScene = nullptr;
 
 	std::list<std::unique_ptr<ICamera>> m_cameras;
-	const ICamera* m_activeCamera = nullptr;
+	ICamera* m_activeCamera = nullptr;
 
 	std::unique_ptr<IRenderer> m_deferredRenderer = nullptr;
-	std::unique_ptr<IRenderer> m_forwardRenderer = nullptr;
 	IRenderer* m_activeRenderer = nullptr;
 
 	std::unique_ptr<IGraphicsResourceManager> m_resourceManager = nullptr;

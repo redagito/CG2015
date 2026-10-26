@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 uniform sampler2D scene_texture;
 uniform float screen_width;
@@ -52,7 +52,7 @@ void main()
 		texture(scene_texture, gl_FragCoord.xy  * inverse_buffer_size + dir * 0.5).xyz);
 
 	float lumaB = dot(rgbB, luma);
-	
+
 	if ((lumaB < lumaMin) || (lumaB > lumaMax)) 
 	{
 		color = rgbA;

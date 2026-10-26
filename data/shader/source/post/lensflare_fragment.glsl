@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 uniform sampler2D scene_texture;
 uniform float screen_width;

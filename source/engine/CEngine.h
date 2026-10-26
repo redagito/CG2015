@@ -31,19 +31,20 @@ public:
 	/**
 	* \brief Initialize demo from config file.
 	*/
-    bool init(const char* configFile);
+    bool init(const char* configFile, bool visible = true) override;
 
 	/**
 	* \brief Run demo.
 	*/
-    void run();
+    void run(unsigned int frameLimit = 0) override;
 
 private:
+    bool m_visible = true;
 	/**
 	* \brief Creates and initializes the application window.
 	*/
     bool initWindow(unsigned int width, unsigned int height, const std::string& title);
-	
+
 	/**
 	* \brief Creates and initializes the game system.
 	*/
@@ -59,7 +60,7 @@ private:
 	std::shared_ptr<CGameSystem> m_gameSystem = nullptr; /**< Game system. */
 	std::shared_ptr<IGraphicsSystem> m_graphicsSystem = nullptr; /**< Graphics system. */
     std::shared_ptr<IResourceManager> m_resourceManager = nullptr; /**< Resource loader and manager. */
-    
+
 	// TODO Should use interface instead of concrete class
 	std::shared_ptr<CGlfwWindow> m_window = nullptr; /**< Application window. */
 	std::shared_ptr<IInputProvider> m_inputProvider = nullptr; /**< User input provider. */

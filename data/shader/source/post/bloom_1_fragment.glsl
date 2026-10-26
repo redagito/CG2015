@@ -1,4 +1,4 @@
-#version 400
+#version 460 core
 
 uniform sampler2D scene_texture;
 uniform float screen_width;
@@ -25,13 +25,13 @@ void main()
 {
 	// Calculate screen position of the fragment [0-1]
 	vec2 screen_coords = vec2(gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height);
-	
+
 	// Get scene texel
 	vec3 texel = texture(scene_texture, screen_coords).rgb;
 
 	// Should be uniform
 	float threshold = 1.4f;
-	
+
 	// Perform brightpass filter, write result to texture
 	color = brightpass(texel, threshold) * texel;
 }

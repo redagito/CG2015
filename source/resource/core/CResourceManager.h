@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <list>
 #include <string>
+#include <thread>
+#include <json/json.h>
 
 #include "resource/IResourceManager.h"
 
@@ -20,6 +22,19 @@
 class CResourceManager : public IResourceManager
 {
 public:
+    AsyncLoadId loadAsync(const std::vector<AssetRequest>& requests) override;
+    AsyncLoadId loadManifestAsync(const std::string& file) override;
+    AsyncLoadStatus getLoadStatus(AsyncLoadId id) const override;
+    void cancelLoad(AsyncLoadId id) override;
+    void pumpAsyncLoads(double budgetMilliseconds=2.0) override;
+    bool loadJsonDocument(const std::string& file,Json::Value& output) override;
+    void setCacheOnly(bool enabled) override {ensureOwner();m_cacheOnly=enabled;}
+    SMaterialSettings getMaterialSettings(ResourceId id) const override;
+    bool setMaterialSettings(ResourceId id, const SMaterialSettings& settings) override;
+    bool updateString(ResourceId id, const std::string& text) override;
+    bool reloadShader(ResourceId id) override;
+    bool reloadResource(EResourceType type, ResourceId id) override;
+    bool removeResource(EResourceType type, ResourceId id) override;
 	CResourceManager();
 	~CResourceManager();
 
@@ -78,6 +93,16 @@ public:
     void notifyResourceListeners(EResourceType type, ResourceId id, EListenerEvent event);
 
    private:
+    struct AsyncState;
+    std::unique_ptr<AsyncState> m_async;
+    AsyncLoadId beginAsync(std::vector<AssetRequest> requests,std::string manifest);
+    void stopAsync();
+    void ensureOwner() const;
+    void requireCacheHit(const std::string& file) const;
+    const std::thread::id m_owner=std::this_thread::get_id();
+    bool m_cacheOnly=false;
+    std::function<void()> m_onPrepared;
+    std::unordered_map<std::string,Json::Value> m_documents;
     ResourceId m_nextMeshId = 0;     /**< Next free mesh id. */
 	ResourceId m_nextImageId = 0;    /**< Next free image id. */
 	ResourceId m_nextMaterialId = 0; /**< Next free material id. */

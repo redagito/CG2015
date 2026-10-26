@@ -8,6 +8,9 @@
 class CFreeCamera : public IControllableCamera
 {
    public:
+    float getFieldOfView() const override { return m_fieldOfView; }
+    float getZNear() const override { return m_zNear; }
+    float getZFar() const override { return m_zFar; }
     CFreeCamera(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up,
                 float fieldOfView, float aspectRatio, float zNear, float zFar);
 

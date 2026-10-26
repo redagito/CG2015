@@ -5,7 +5,7 @@
 #include "graphics/camera/CFirstPersonCamera.h"
 #include "io/CSceneLoader.h"
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 const std::string gameStr = "game";
 
@@ -33,16 +33,18 @@ bool CTitleState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputPro
 		4.f / 3.f, 0.01f, 1000.f);
 
 	m_camera->getFeatureInfoForWrite().godRayActive = false;
+	m_camera->getFeatureInfoForWrite().lenseFlareActive = false;
+	m_camera->getFeatureInfoForWrite().dofActive = false;
 
 	// Create new scene object
 	m_scene = m_graphicsSystem->createScene();
 
 	// Load scene from file	
-	LOG_INFO("Loading scene from file %s.", m_sceneFile.c_str());
+	SPDLOG_INFO("Loading scene from file {}.", m_sceneFile.c_str());
 	CSceneLoader loader(*resourceManager);
 	if (!loader.load(m_sceneFile, *m_scene, m_animationWorld))
 	{
-		LOG_ERROR("Failed to load scene file %s.", m_sceneFile.c_str());
+		SPDLOG_ERROR("Failed to load scene file {}.", m_sceneFile.c_str());
 		return false;
 	}
 	return true;
@@ -50,34 +52,46 @@ bool CTitleState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputPro
 
 void CTitleState::onEnter()
 {
-	m_fadeInTime = 3.f;
+	m_enterWasDown = m_inputProvider->isKeyPressed(GLFW_KEY_ENTER);
 	m_graphicsSystem->setActiveCamera(m_camera.get());
 	m_graphicsSystem->setActiveScene(m_scene);
+    updateOverlay();
 }
 
 bool CTitleState::update(float dtime)
 {
-	// Ignore user input for some time
-	if (m_fadeInTime > 0.0f)
-	{
-		m_fadeInTime -= dtime;
-	}
-	else
-	{
-		// Start game on enter key
-		if (m_inputProvider->isKeyPressed(GLFW_KEY_ENTER))
-		{
-			
-			return false;
-		}
-	}
+    const bool enter=m_inputProvider->isKeyPressed(GLFW_KEY_ENTER);
+    const bool start=enter && !m_enterWasDown;
+    m_enterWasDown=enter;
+    if(start) return false;
 	m_animationWorld.update(dtime);
 	return true;
 }
 
 void CTitleState::onExit()
 {
-	// Nothing
+	m_graphicsSystem->setUiOverlay({});
+}
+
+void CTitleState::updateOverlay()
+{
+    const glm::vec4 white(0.95f,0.97f,1.f,1.f),cyan(0.38f,0.86f,0.93f,1.f);
+    UiDocument ui;
+    // A quiet title area and a keyboard action, independent of the 3D camera.
+    ui.rectangles={
+        {{0.5f,0.105f},{780,148},{0.015f,0.025f,0.04f,0.64f}},
+        {{0.5f,0.218f},{120,2},cyan},
+        {{0.5f,0.865f},{326,58},{0.018f,0.04f,0.055f,0.94f}},
+        {{0.5f,0.826f},{326,1},cyan},
+        {{0.5f,0.904f},{326,1},{0.15f,0.36f,0.4f,0.9f}}
+    };
+    ui.texts={
+        {"DEFENDERS",{0.5f,0.075f},66,white,7,0.88f},
+        {"of CTHEDRA",{0.5f,0.16f},34,cyan,3,0.8f},
+        {"BEGIN DEFENSE   [ ENTER ]",{0.5f,0.86f},25,white,1,0.86f},
+        {"ESC  /  EXIT",{0.5f,0.956f},16,{0.6f,0.67f,0.73f,1.f},2,0.8f}
+    };
+    m_graphicsSystem->setUiOverlay(ui);
 }
 
 const std::string& CTitleState::getNextState() const

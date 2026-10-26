@@ -1,31 +1,27 @@
 #pragma once
 
-#include <list>
+#include <vector>
 #include <map>
 #include <string>
 
-#include "ILogListener.h"
 
 /**
  * \brief Stores debug data.
- * Stores log events in a ring buffer and key/value debug data pairs.
+ * Stores an overlay snapshot and key/value debug data pairs.
  */
-class CDebugInfo : public ILogListener
+class CDebugInfo
 {
    public:
-    void notify(const std::string& level, const std::string& file, unsigned int line,
-                const std::string& function, const std::string& text);
+    void setLog(std::vector<std::string> lines);
 
-    const std::list<std::string>& getLog() const;
+    const std::vector<std::string>& getLog() const;
 
-    void setLogBufferSize(size_t size);
     size_t getLogBufferSize() const;
 
     void setValue(const std::string& key, const std::string& value);
     const std::map<std::string, std::string>& getValues() const;
 
    private:
-    size_t m_logBufferSize = 10;        /**< Maximum number of log events stored. */
-    std::list<std::string> m_logBuffer; /**< Log buffer with latest log events. */
+    std::vector<std::string> m_logBuffer; /**< Main-thread snapshot of the spdlog ring sink. */
     std::map<std::string, std::string> m_values; /**< Stores debug key/value pairs. */
 };

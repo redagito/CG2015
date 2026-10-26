@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 // Depth of field parameters
 uniform float focus_near; // Closest non-blurry distance
@@ -37,7 +37,7 @@ void main(void)
 {
 	// Calculate screen position of the fragment [0-1]
 	vec2 normalized_screen_coordinates = vec2(gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height);
-	
+
 	// Calculate world position of affected fragment
 	vec3 fragment_world_position = getWorldPosition(normalized_screen_coordinates);
 
@@ -47,12 +47,12 @@ void main(void)
 	// Apply blur
 	if (distance < focus_near)
 	{
-		float a = min(1.0, blur_near / distance);
+		float a = clamp((focus_near - distance) / max(focus_near - blur_near, 0.000001), 0.0, 1.0);
 		color = mix(texture(scene_texture, normalized_screen_coordinates).xyz, texture(blur_texture, normalized_screen_coordinates).xyz, a);
 	}
 	else if (distance > focus_far)
 	{
-		float a = min(1.0, (distance - focus_far) / (blur_far - focus_far));
+		float a = clamp((distance - focus_far) / max(blur_far - focus_far, 0.000001), 0.0, 1.0);
 		color = mix(texture(scene_texture, normalized_screen_coordinates).xyz, texture(blur_texture, normalized_screen_coordinates).xyz, a);
 	}
 	else

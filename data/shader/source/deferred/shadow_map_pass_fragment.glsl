@@ -1,15 +1,6 @@
-#version 330 core
-
-// Material textures
-uniform sampler2D diffuse_texture;
-uniform sampler2D normal_texture;
-uniform sampler2D specular_texture;
-uniform sampler2D glow_texture;
-
-// Actually not needed here
+#version 460 core
+in vec2 uv;
 uniform sampler2D alpha_texture;
-
-void main(void)
-{
-
-}
+uniform int alpha_mode=0;
+uniform float alpha_cutoff=0.5,opacity=1.0;
+void main() { if(alpha_mode==1 && texture(alpha_texture,uv).r*opacity<alpha_cutoff) discard; }

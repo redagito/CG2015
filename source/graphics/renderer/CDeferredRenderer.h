@@ -1,393 +1,103 @@
 #pragma once
-
-#include <memory>
-#include <list>
-
-// Required by inheritance
 #include "graphics/IRenderer.h"
+#include "DeferredRenderTargets.h"
+#include "pass/deferred/ShadowPass.h"
+#include "pass/deferred/PresentationPass.h"
+#include "pass/deferred/GeometryPass.h"
+#include "pass/deferred/LightingPass.h"
+#include "pass/deferred/CompositionPass.h"
+#include "pass/deferred/BackgroundPass.h"
+#include "pass/deferred/TransparencyPass.h"
+#include "pass/deferred/PostProcessPass.h"
 
-#include "CFrameBuffer.h"
-#include "SRenderRequest.h"
-#include "math/CTransformer.h"
-
-#include "resource/ResourceConfig.h"
-
-#include "pass/CScreenQuadPass.h"
-
-class CShaderProgram;
-class IResourceManager;
-class ISceneQuery;
-
-/**
-* \brief Deferred renderer implementation.
-*/
+// Coordinates the fixed deferred pipeline. Passes own shaders; named targets
+// own framebuffer storage and expose the producer/consumer attachment contract.
 class CDeferredRenderer : public IRenderer
 {
 public:
-    CDeferredRenderer();
-    ~CDeferredRenderer();
-
+    CDeferredRenderer() = default;
+    ~CDeferredRenderer() = default;
+    const CRenderProfiler& profiler() const { return m_profiler; }
     bool init(IResourceManager& manager);
-
     void draw(const IScene& scene, const ICamera& camera, const IWindow& window,
               const IGraphicsResourceManager& manager);
-
     static CDeferredRenderer* create(IResourceManager& manager);
-
 protected:
-    /**
-    * \brief Writes geometry data into g-buffer.
-    */
-    void geometryPass(const IScene& scene, const ICamera& camera, const IWindow& window,
-                      const IGraphicsResourceManager& manager, ISceneQuery& query);
-
-    /**
-    * \brief Performs shadow map calculation.
-    */
-    void shadowMapPass(const IScene& scene, const ICamera& camera, const IWindow& window,
-                       const IGraphicsResourceManager& manager);
-
-    /**
-     * \brief Performs shadow cube calculation.
-     */
-    void shadowCubePass(const IScene& scene, const ICamera& camera, const IWindow& window,
-                        const IGraphicsResourceManager& manager);
-
-    /**
-    * \brief Writes light data into l-buffer.
-    */
-    void lightPass(const IScene& scene, const ICamera& camera, const IWindow& window,
-                   const IGraphicsResourceManager& manager, ISceneQuery& query);
-
-    /**
-    * \brief Writes point light data to l-buffer.
-    */
-    void pointLightPass(const IScene& scene, const ICamera& camera, const IWindow& window,
-                        const IGraphicsResourceManager& manager, ISceneQuery& query);
-
-    /**
-    * \brief Writes directional light data to l-buffer.
-    */
-    void directionalLightPass(const IScene& scene, const ICamera& camera, const IWindow& window,
-                              const IGraphicsResourceManager& manager, ISceneQuery& query);
-
-    /**
-    * \brief Performs scene illumination and tone mapping.
-    */
-    void illuminationPass(const IScene& scene, const ICamera& camera, const IWindow& window,
-                          const IGraphicsResourceManager& manager, ISceneQuery& query);
-
-    /**
-    * \brief Performs post processing of lit scene.
-    */
-    void postProcessPass(const ICamera& camera, const IWindow& window,
-                         const IGraphicsResourceManager& manager,
-                         const std::shared_ptr<CTexture>& texture);
-
-    void fogPass(const ICamera& camera, const IWindow&, const IGraphicsResourceManager& manager,
-                 const std::shared_ptr<CTexture>& texture);
-
-    /**
-    * \brief FXAA Pass.
-    */
-    void fxaaPass(const IWindow& window, const IGraphicsResourceManager& manager,
-                  const std::shared_ptr<CTexture>& texture);
-
-    /**
-    * \brief Vertical gauss blur pass.
-    */
-    void gaussBlurVerticalPass(const IWindow& window, const IGraphicsResourceManager& manager,
-                               const std::shared_ptr<CTexture>& texture);
-
-    /**
-    * \brief Horizontal gauss blur pass.
-    */
-    void gaussBlurHorizontalPass(const IWindow& window, const IGraphicsResourceManager& manager,
-                                 const std::shared_ptr<CTexture>& texture);
-
-    void depthOfFieldPass(const ICamera& camera, const IWindow& window,
-                          const IGraphicsResourceManager& manager,
-                          const std::shared_ptr<CTexture>& sceneTexture,
-                          const std::shared_ptr<CTexture>& blurTexture);
-
-    /**
-    * \brief Draws scene texture to main FBO.
-    */
-    void displayPass(const IWindow& window, const IGraphicsResourceManager& manager,
-                     const std::shared_ptr<CTexture>& texture);
-
-    void passthroughPass(const IWindow& window, const IGraphicsResourceManager& manager,
-                         const std::shared_ptr<CTexture>& texture);
-
-    void godRayPass1(const IWindow& window, const IGraphicsResourceManager& manager,
-                     const std::shared_ptr<CTexture>& texture);
-
-    void godRayPass2(const IWindow& window, const IGraphicsResourceManager& manager,
-                     const std::shared_ptr<CTexture>& texture,
-                     const std::shared_ptr<CTexture>& godrayTexture);
-
-    /**
-    * \brief Depth visualization pass.
-    *
-    * For debugging.
-    */
-    void visualizeDepthPass(const ICamera& camera, const IWindow& window,
-                            const IGraphicsResourceManager& manager);
-
-	/**
-	* \brief Vignette blur pass.
-	*/
-	void vignetteBlurPass(const IWindow& window, const IGraphicsResourceManager& manager,
-						  const std::shared_ptr<CTexture>& texture);
-
-	/**
-	* \brief Bloom pass 1, writes blooom texture.
-	*/
-	void bloomPass1(const IWindow& window, const IGraphicsResourceManager& manager,
-					const std::shared_ptr<CTexture>& texture);
-
-	/**
-	* \brief Bloom pass 2, blends bloom texture on scene texture.
-	*/
-	void bloomPass2(const IWindow& window, const IGraphicsResourceManager& manager,
-					const std::shared_ptr<CTexture>& texture,
-					const std::shared_ptr<CTexture>& bloomTexture);
-
-	/**
-	* \brief Lens flare pass, blends lens flare texture on scene texture.
-	*/
-	void lensFlarePass(const IWindow& window, const IGraphicsResourceManager& manager,
-				    const std::shared_ptr<CTexture>& texture);
-
-	void lensFlarePass2(const IWindow& window, const IGraphicsResourceManager& manager,
-		const std::shared_ptr<CTexture>& texture);
-
-	void lensFlarePass3(const IWindow& window, const IGraphicsResourceManager& manager,
-		const std::shared_ptr<CTexture>& texture,
-		const std::shared_ptr<CTexture>& lensTexture);
-
-	/**
-	* \brief Cel pass, blends Cel texture on scene texture.
-	*/
-	void celPass(const IWindow& window, const IGraphicsResourceManager& manager,
-		const std::shared_ptr<CTexture>& texture);
-
-	/**
-	* \brief Tone map pass for HDR to LDR conversion.
-	*
-	* This pass should be done at the end of the post porcessing pipeline.
-	*/
-	void toneMapPass(const IWindow& window, const IGraphicsResourceManager& manager,
-					const std::shared_ptr<CTexture>& texture);
-
-    /**
-    * \brief Initializes resources for geometry pass.
-    */
-    bool initGeometryPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes resources for point light pass.
-    */
-    bool initPointLightPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes resources for directional light pass.
-    */
-    bool initDirectionalLightPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes resources for illumination pass.
-    */
-    bool initIlluminationPass(IResourceManager& manager);
-
-    /**
-     * \brief Initializes resources for shadow map pass
-     */
-    bool initShadowMapPass(IResourceManager& manager);
-
-    /**
-     * \brief Initializes resources for shadow map pass
-     */
-    bool initShadowCubePass(IResourceManager& manager);
-
-    /**
-     * \brief Initializes post processing pass.
-     */
-    bool initPostProcessPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes post process pass for depth of field.
-    *
-    * Called by initPostProcesPass.
-    */
-    bool initDepthOfFieldPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes vertical gauss blur pass.
-    */
-    bool initGaussBlurVerticalPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes horizontal gauss blur pass.
-    */
-    bool initGaussBlurHorizontalPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes FXAA pass for post processing.
-    */
-    bool initFxaaPass(IResourceManager& manager);
-
-    /**
-    * \brief Initializes fog pass for post processing.
-    */
-    bool initFogPass(IResourceManager& manager);
-
-    bool initGodRayPass1(IResourceManager& manager);
-    bool initGodRayPass2(IResourceManager& manager);
-
-    /**
-    * \brief Display pass draws final image to screen.
-    */
-    bool initDisplayPass(IResourceManager& manager);
-
-    bool initVisualizeDepthPass(IResourceManager& manager);
-
-	/**
-	* \brief Initializes distortion pass.
-	*/
-	bool initVignetteBlurPass(IResourceManager& manager);
-
-	/**
-	* \brief Bloom technique. 
-	*/
-	bool initBloomPass1(IResourceManager& manager);
-	bool initBloomPass2(IResourceManager& manager);
-
-	/**
-	* \brief Lens flare technique.
-	*/
-	bool initLensFlarePass(IResourceManager& manager);
-
-	/**
-	* \brief Lens flare technique.
-	*/
-	bool initLensFlarePass2(IResourceManager& manager);
-
-	/**
-	* \brief Lens flare technique.
-	*/
-	bool initLensFlarePass3(IResourceManager& manager);
-
-	/**
-	* \brief Lens flare technique.
-	*/
-	bool initCelPass(IResourceManager& manager);
-
-	/**
-	* \brief Tone mapping pass.
-	*/
-	bool initToneMapPass(IResourceManager& manager);
-
-    void draw(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
-              const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager,
-              CShaderProgram* shader);
-
-   private:
-    CTransformer m_transformer; /**< Stores current transformation matrices. */
-
-    // Geometry pass
-    // TODO Put into geometry pass class
-    CFrameBuffer m_geometryBuffer;                      /**< GBuffer. */
-    std::shared_ptr<CTexture> m_depthTexture = nullptr; /**< Depth texture attachment. */
-    std::shared_ptr<CTexture> m_diffuseGlowTexture =
-        nullptr; /**< Diffuse texture with glow as alpha. */
-    std::shared_ptr<CTexture>
-        m_normalSpecularTexture; /**< Normal texture with specularity as alpha. */
-	ResourceId m_geometryPassShaderId = invalidResource;
-
-    // Shadow map pass
-	ResourceId m_shadowMapPassShaderId = invalidResource;
-    CFrameBuffer m_shadowMapBuffer;
-    std::shared_ptr<CTexture> m_shadowDepthTexture = nullptr;
-
-    // Shadow cube pass
-	ResourceId m_shadowCubePassShaderId = invalidResource;
-    CFrameBuffer m_shadowCubeBuffer;
-    std::shared_ptr<CTexture> m_shadowCubeDepthTexture = nullptr;
-    std::shared_ptr<CTexture> m_shadowCubeTexture = nullptr;
-
-    // Light pass common resources
-    // TODO Put into light pass class
-    CFrameBuffer m_lightPassFrameBuffer; /**< Stores lit scene and depth. */
-    std::shared_ptr<CTexture> m_lightPassTexture = nullptr;
-
-    // Point light pass
-	ResourceId m_pointLightPassShaderId = invalidResource;
-	ResourceId m_pointLightSphereId = invalidResource;
-
-    // Directional light pass
-	ResourceId m_directionalLightPassShaderId = invalidResource;
-	ResourceId m_directionalLightScreenQuadId = invalidResource;
-
-    // Illumination pass
-	ResourceId m_illuminationPassShaderId = invalidResource;
-	ResourceId m_illuminationPassScreenQuadId = invalidResource;
-    CFrameBuffer m_illumationPassFrameBuffer;
-    std::shared_ptr<CTexture> m_illuminationPassTexture = nullptr;
-
-    // Post processing pass
-	ResourceId m_postProcessScreenQuadId = invalidResource;
-    CFrameBuffer m_postProcessPassFrameBuffer0;
-    CFrameBuffer m_postProcessPassFrameBuffer1;
-    CFrameBuffer m_postProcessPassFrameBuffer2;
-
-    std::shared_ptr<CTexture> m_postProcessPassTexture0 = nullptr;
-    std::shared_ptr<CTexture> m_postProcessPassTexture1 = nullptr;
-    std::shared_ptr<CTexture> m_postProcessPassTexture2 = nullptr;
-    std::shared_ptr<CTexture> m_postProcessPassOutputTexture = nullptr;
-
-    // Gauss blur pass
-	ResourceId m_gaussBlurVerticalShaderId = invalidResource;
-	ResourceId m_gaussBlurHorizontalShaderId = invalidResource;
-
-    // FXAA pass
-	ResourceId m_fxaaPassShaderId = invalidResource;
-
-    // Fog pass
-	ResourceId m_fogPassShaderId = invalidResource;
-
-    // Depth-of-field pass
-	ResourceId m_depthOfFieldPassShaderId = invalidResource;
-
-    // Godray pass
-	ResourceId m_godRayPass1ShaderId = invalidResource;
-	ResourceId m_godRayPass2ShaderId = invalidResource;
-
-    // Display pass for final screen draw
-	ResourceId m_displayPassShaderId = invalidResource;
-
-    // Depth visualization pass
-	ResourceId m_visualizeDepthPassShaderId = invalidResource;
-
-	// Vignette blur pass
-	ResourceId m_vignetteBlurPassShaderId = invalidResource;
-
-	// Bloom pass
-	ResourceId m_bloomPass1ShaderId = invalidResource;
-	ResourceId m_bloomPass2ShaderId = invalidResource;
-
-	// Lens flare Pass
-	ResourceId m_lensFlarePassShaderId = invalidResource;
-	ResourceId m_lensFlarePass2ShaderId = invalidResource;
-	ResourceId m_lensFlarePass3ShaderId = invalidResource;
-
-	//Cel Pass
-	ResourceId m_celPassShaderId = invalidResource;
-
-	// Tonemap pass
-	ResourceId m_toneMapPassShaderId = invalidResource;
-
-    // Fullscreen draw pass
-    CScreenQuadPass m_screenQuadPass;
-    std::list<SRenderRequest> m_customShaderMeshes; /**< Render requests with custom shaders. */
+    // Narrow compatibility hooks for numerical pass regression tests.
+    void geometryPass(
+        const IScene& scene,
+        const ICamera& camera,
+        const IWindow& window,
+        const IGraphicsResourceManager& manager,
+        ISceneQuery& query)
+    {
+        m_geometry.render(scene, camera, window, manager, query);
+    }
+    void lightPass(
+        const IScene& scene,
+        const ICamera& camera,
+        const IWindow& window,
+        const IGraphicsResourceManager& manager,
+        ISceneQuery& query)
+    {
+        m_lightingPass.render(scene, camera, window, manager, query);
+    }
+    void illuminationPass(
+        const IScene& scene,
+        const ICamera& camera,
+        const IWindow& window,
+        const IGraphicsResourceManager& manager,
+        ISceneQuery& query)
+    {
+        m_composition.render(scene, camera, window, manager, query);
+    }
+    void backgroundPass(
+        const IScene& scene,
+        const ICamera& camera,
+        const IWindow& window,
+        const IGraphicsResourceManager& manager)
+    {
+        m_background.render(scene, camera, window, manager);
+    }
+    void transparencyPass(
+        const IScene& scene,const ICamera& camera,const IWindow& window,const IGraphicsResourceManager& manager)
+    {
+        m_transparency.render(scene, camera, window, manager);
+    }
+    void postProcessPass(
+        const ICamera& camera,
+        const IWindow& window,
+        const IGraphicsResourceManager& manager,
+        const std::shared_ptr<CTexture>& texture)
+    {
+        m_postProcess.render(camera, window, manager, texture);
+    }
+    void lensFlarePass2(
+        const IWindow& window,
+        const IGraphicsResourceManager& manager,
+        const std::shared_ptr<CTexture>& sceneTexture)
+    {
+        m_postProcess.lensFlarePass2(window, manager, sceneTexture);
+    }
+    void godRayPass1(
+        const IWindow& window,
+        const IGraphicsResourceManager& manager,
+        const std::shared_ptr<CTexture>& texture)
+    {
+        m_postProcess.godRayPass1(window, manager, texture);
+    }
+private:
+    DeferredRenderTargets m_targets;
+    DeferredFrameState m_frame;
+    SunState m_sun;
+    FullscreenResources m_fullscreen;
+    CRenderProfiler m_profiler;
+    ShadowPass m_shadowPass{m_targets.shadows};
+    PresentationPass m_presentation{m_targets.gbuffer, m_fullscreen, m_profiler};
+    GeometryPass m_geometry{m_targets.gbuffer, m_frame};
+    LightingPass m_lightingPass{m_targets.gbuffer, m_targets.lighting, m_targets.shadows, m_frame, m_profiler, m_shadowPass};
+    CompositionPass m_composition{m_targets.gbuffer, m_targets.lighting, m_targets.sceneColor, m_fullscreen};
+    BackgroundPass m_background{m_targets.sceneColor, m_sun, m_fullscreen};
+    TransparencyPass m_transparency{m_targets.sceneColor, m_targets.shadows};
+    PostProcessPass m_postProcess{m_targets.gbuffer, m_targets.post, m_frame, m_sun, m_fullscreen, m_profiler, m_presentation};
 };

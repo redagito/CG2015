@@ -3,7 +3,7 @@
 #include <lodepng.h>
 
 #include "LoadImage.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 bool load(const std::string& file, EColorFormat format, SImage& image)
 {
@@ -11,7 +11,7 @@ bool load(const std::string& file, EColorFormat format, SImage& image)
 	{
 		return loadPng(file, format, image);
 	}
-	LOG_ERROR("The image file %s has an invalid or unknown format.", file.c_str());
+	SPDLOG_ERROR("The image file {} has an invalid or unknown format.", file.c_str());
 	return false;
 }
 
@@ -31,7 +31,7 @@ bool loadPng(const std::string& file, EColorFormat format, SImage& image)
 		colorType = LCT_RGBA;
 		break;
 	default:
-		LOG_ERROR("Unknown color format encountered while loading image file %s.", file.c_str());
+		SPDLOG_ERROR("Unknown color format encountered while loading image file {}.", file.c_str());
 		return false;
 		break;
 	}
@@ -40,7 +40,7 @@ bool loadPng(const std::string& file, EColorFormat format, SImage& image)
 	unsigned int err = lodepng::decode(image.m_data, image.m_width, image.m_height, file, colorType);
 	if (err != 0)
 	{
-		LOG_ERROR("An error occured while decoding the image file %s: %s", file.c_str(), lodepng_error_text(err));
+		SPDLOG_ERROR("An error occured while decoding the image file {}: {}", file.c_str(), lodepng_error_text(err));
 		return false;
 	}
 	image.m_format = format;

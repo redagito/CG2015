@@ -24,8 +24,10 @@ struct SSceneObject
 	ResourceId m_material = invalidResource;
 	ResourceId m_model = invalidResource;
 	glm::vec3 m_position = glm::vec3(0.f);
-	glm::quat m_rotation = glm::quat(0.f, 0.f, 0.f, 0.f);
+	glm::quat m_rotation = glm::quat(1.f, 0.f, 0.f, 0.f);
 	glm::vec3 m_scale = glm::vec3(1.f);
 	bool m_visible = true;
 	CBoundingSphere boundingSphere; /**< Translated and scaled bounding sphere. */
+private:
+    CBoundingSphere m_localBoundingSphere;
 };

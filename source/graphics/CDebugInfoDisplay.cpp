@@ -1,7 +1,7 @@
 #include "CDebugInfoDisplay.h"
 
 #include "debug/CDebugInfo.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 #include "renderer/core/CVertexArrayObject.h"
 #include "renderer/core/CVertexBuffer.h"
@@ -19,7 +19,7 @@ bool loadShader(const std::string& path, IResourceManager& resourceManager,
     ResourceId shaderId = resourceManager.loadShader(path);
 	if (shaderId == invalidResource)
 	{
-		LOG_ERROR("Failed to load shader from %s, invalid id returned.", path.c_str());
+		SPDLOG_ERROR("Failed to load shader from {}, invalid id returned.", path.c_str());
 	}
     ResourceId vertexShaderId, tessellationControlShaderId, tessellationEvaluationShaderId,
         geometryShaderId, fragmentShaderId;
@@ -27,7 +27,7 @@ bool loadShader(const std::string& path, IResourceManager& resourceManager,
                                     tessellationEvaluationShaderId, geometryShaderId,
                                     fragmentShaderId))
     {
-        LOG_ERROR("Error on retrieving shader code from %s.", path.c_str());
+        SPDLOG_ERROR("Error on retrieving shader code from {}.", path.c_str());
         return false;
     }
 
@@ -37,21 +37,21 @@ bool loadShader(const std::string& path, IResourceManager& resourceManager,
     resourceManager.getString(fragmentShaderId, fragmentShaderText);
     if (vertexShaderText.empty() || fragmentShaderText.empty())
     {
-		LOG_ERROR("Error on retrieving shader code from %s.", path.c_str());
+		SPDLOG_ERROR("Error on retrieving shader code from {}.", path.c_str());
         return false;
     }
 
     TShaderObject<GL_VERTEX_SHADER> vertexShader(vertexShaderText);
     if (!vertexShader.isValid())
     {
-        LOG_ERROR("%s", vertexShader.getErrorString().c_str());
+        SPDLOG_ERROR("{}", vertexShader.getErrorString().c_str());
         return false;
     }
 
     TShaderObject<GL_FRAGMENT_SHADER> fragmentShader(fragmentShaderText);
     if (!fragmentShader.isValid())
     {
-        LOG_ERROR("%s", fragmentShader.getErrorString().c_str());
+        SPDLOG_ERROR("{}", fragmentShader.getErrorString().c_str());
         return false;
     }
 
@@ -84,7 +84,7 @@ bool CDebugInfoDisplay::loadFont(const std::string &path, IResourceManager& reso
     EColorFormat colorFormat;
 	if (!resourceManager.getImage(imageId, data, width, height, colorFormat))
     {
-        LOG_ERROR("Error on retrieving data from image.");
+        SPDLOG_ERROR("Error on retrieving data from image.");
         return false;
     }
     m_texture.reset(new CTexture(data, width, height, colorFormat, false));
@@ -165,49 +165,49 @@ void CDebugInfoDisplay::draw(const CDebugInfo &info, bool transparent)
     // ===
     // render overlays
     // ===
-    
+
 	// TODO Can be cached?
     std::vector<float> overlayVertices;
-    
+
     overlayVertices.push_back(0.f);
     overlayVertices.push_back(0.f);
     overlayVertices.push_back(800.f);
     overlayVertices.push_back((float) vOffsetLog);
     overlayVertices.push_back(0.f);
 	overlayVertices.push_back((float) vOffsetLog);
-    
+
     overlayVertices.push_back(0.f);
     overlayVertices.push_back(0.f);
     overlayVertices.push_back(800.f);
     overlayVertices.push_back(0.f);
     overlayVertices.push_back(800.f);
 	overlayVertices.push_back((float) vOffsetLog);
-    
+
 	overlayVertices.push_back((float) hOffsetKeys);
 	overlayVertices.push_back((float) vOffsetKeyValues);
 	overlayVertices.push_back((float) hOffsetKeys);
 	overlayVertices.push_back((float) (vOffsetKeyValues - m_fontSize * info.getValues().size()));
 	overlayVertices.push_back(800.f);
 	overlayVertices.push_back((float) vOffsetKeyValues);
-    
+
     overlayVertices.push_back(800.f);
 	overlayVertices.push_back((float) vOffsetKeyValues);
 	overlayVertices.push_back((float) hOffsetKeys);
 	overlayVertices.push_back((float) (vOffsetKeyValues - m_fontSize * info.getValues().size()));
     overlayVertices.push_back(800.f);
 	overlayVertices.push_back((float) (vOffsetKeyValues - m_fontSize * info.getValues().size()));
-    
+
     m_overlaysBuffer->setData(overlayVertices);
-    
+
     m_overlayShader->setActive();
     m_overlayShader->setUniform("color", glm::vec4(0.0f, 0.0f, 0.0f, 0.6f));
-    
+
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, m_overlaysBuffer->getId());
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
-    
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei) overlayVertices.size());
-    
+
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(overlayVertices.size() / 2));
+
     glDisableVertexAttribArray(0);
 
 	// Set transparency for text, otherwise we get white blocks
@@ -258,7 +258,7 @@ void CDebugInfoDisplay::draw(const CDebugInfo &info, bool transparent)
     glBindBuffer(GL_ARRAY_BUFFER, m_uvsBuffer->getId());
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void *)0);
 
-    glDrawArrays(GL_TRIANGLES, 0, (GLsizei) vertices.size());
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)(vertices.size() / 2));
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);

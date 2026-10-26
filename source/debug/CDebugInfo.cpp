@@ -1,27 +1,13 @@
 #include "CDebugInfo.h"
 
-void CDebugInfo::notify(const std::string& level, const std::string& file, unsigned int line,
-                        const std::string& function, const std::string& text)
+void CDebugInfo::setLog(std::vector<std::string> lines)
 {
-    m_logBuffer.push_back("[" + level + "]: " + text);
-    if (m_logBuffer.size() > m_logBufferSize)
-    {
-        m_logBuffer.pop_front();
-    }
+    m_logBuffer=std::move(lines);
 }
 
-const std::list<std::string>& CDebugInfo::getLog() const { return m_logBuffer; }
+const std::vector<std::string>& CDebugInfo::getLog() const { return m_logBuffer; }
 
-void CDebugInfo::setLogBufferSize(size_t size)
-{
-    m_logBufferSize = size;
-    while (m_logBufferSize > m_logBuffer.size())
-    {
-        m_logBuffer.pop_front();
-    }
-}
-
-size_t CDebugInfo::getLogBufferSize() const { return m_logBufferSize; }
+size_t CDebugInfo::getLogBufferSize() const { return 10; }
 
 void CDebugInfo::setValue(const std::string& key, const std::string& value)
 {

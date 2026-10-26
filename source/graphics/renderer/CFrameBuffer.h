@@ -11,12 +11,15 @@
 class CTexture;
 class CRenderBuffer;
 
-/**
+    /**
 * \brief Represents a frame buffer (rendering target).
 */
 class CFrameBuffer
 {
    public:
+
+    CFrameBuffer(const CFrameBuffer&) = delete;
+    CFrameBuffer& operator=(const CFrameBuffer&) = delete;
     CFrameBuffer();
     ~CFrameBuffer();
 
@@ -43,9 +46,9 @@ class CFrameBuffer
 	* Not const because the returned texture can be modified.
 	*/
 	std::shared_ptr<CTexture> getTexture(ETextureSemantic semantic);
-	
+
     static void setDefaultActive();
-	
+
 private:
 
     std::vector<GLenum> m_drawBuffers; /**< Stores draw buffer attachments. */

@@ -1,5 +1,5 @@
 #include "CMesh.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 #include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/renderer/debug/RendererDebug.h"
@@ -24,10 +24,18 @@ bool CMesh::init(const std::vector<float>& vertices, const std::vector<unsigned 
                  const std::vector<float>& normals, const std::vector<float>& uvs,
                  EPrimitiveType type)
 {
-    if (vertices.empty() || type == EPrimitiveType::Invalid)
+    if (vertices.empty() || vertices.size() % 3 != 0 || type == EPrimitiveType::Invalid ||
+        (!normals.empty() && normals.size() != vertices.size()) ||
+        (!uvs.empty() && uvs.size() != vertices.size() / 3 * 2))
     {
         return false;
     }
+    for (auto index : indices)
+        if (index >= vertices.size() / 3) return false;
+    // Reinitializing with missing streams must not keep buffers from the old mesh.
+    m_indices.reset();
+    m_normals.reset();
+    m_uvs.reset();
     // Set vertex data
     m_vertices.reset(new CVertexBuffer(vertices));
 
@@ -99,7 +107,7 @@ bool CMesh::init(const std::vector<float>& vertices, const std::vector<unsigned 
     std::string error;
     if (hasGLError(error))
     {
-        LOG_ERROR("GL Error: %s", error.c_str());
+        SPDLOG_ERROR("GL Error: {}", error.c_str());
     }
 
 	// Build bounding sphere
@@ -132,13 +140,13 @@ GLenum CMesh::toGLPrimitive(EPrimitiveType type)
         return GL_POINTS;
         break;
     case EPrimitiveType::Line:
-        return GL_LINE;
+        return GL_LINES;
         break;
     case EPrimitiveType::Triangle:
         return GL_TRIANGLES;
         break;
     default:
-        LOG_ERROR("Invalid or unknown primitive type, default triangle type used.");
+        SPDLOG_ERROR("Invalid or unknown primitive type, default triangle type used.");
         // Default
         return GL_TRIANGLES;
     }
@@ -158,7 +166,7 @@ unsigned int CMesh::getPrimitiveSize(EPrimitiveType type)
         return 3;
         break;
     default:
-        LOG_ERROR("Invalid or unknown primitive type");
+        SPDLOG_ERROR("Invalid or unknown primitive type");
         return 0;
     }
 }

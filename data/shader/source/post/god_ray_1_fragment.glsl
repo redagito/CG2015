@@ -1,83 +1,20 @@
-#version 330 core
-
-// Light source position
-uniform vec2 light_position_screen;
-
-// Input scene texture
-uniform sampler2D scene_texture;
+#version 460 core
 uniform sampler2D depth_texture;
-
-// Screen parameters
-uniform float screen_width;
-uniform float screen_height;
-
-// Inverse projection matrix
-uniform mat4 inverse_projection;
-
-layout(location = 0) out vec3 color;
-
-const float exposure = 0.6;
-const float decay = 0.94;
-const float density = 0.96;
-const float weight = 0.2;
-const int NUM_SAMPLES = 100;
-const float clampMax = 1.0;
-
-vec3 getCameraSpacePosition(vec2 uv)
-{
-	float z = texture(depth_texture, uv).x;
-	vec4 sPos = vec4(uv * 2 - 1, z * 2 - 1, 1.0);
-	sPos = inverse_projection * sPos;
-	return (sPos.xyz / sPos.w);
+uniform vec2 light_position_screen;
+uniform bool sun_active=false;
+uniform vec3 sun_color=vec3(1);
+uniform float screen_width,screen_height;
+layout(location=0) out vec3 color;
+float source(vec2 coord) {
+    if(any(lessThan(coord,vec2(0))) || any(greaterThan(coord,vec2(1)))) return 0.0;
+    vec2 delta=coord-light_position_screen; delta.x*=screen_width/screen_height;
+    float disc=1.0-smoothstep(0.008,0.02,length(delta));
+    return texture(depth_texture,coord).r>=0.999999 ? disc : 0.0;
 }
-
-// God ray pass
-// References
-// http://http.developer.nvidia.com/GPUGems3/gpugems3_ch13.html
-// http://fabiensanglard.net/lightScattering/
-void main()
-{
-	vec2 uv = vec2(gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height);
-
-	vec2 deltaTexCoord = uv - light_position_screen;
-	deltaTexCoord *= 1.0 / float(NUM_SAMPLES) * density;
-
-	// Initial sample
-	color = texture(scene_texture, uv).xyz;
-	if (color.x > 0.8 && color.y > 0.8 && color.z > 0.8)
-	{
-		color = vec3(1.0);
-	}
-	else
-	{
-		color = vec3(0.0);
-	}
-
-	vec2 coord = uv;
-	
-	float illuminationDecay = 1.0;
-
-
-	for (int i = 0; i < NUM_SAMPLES; ++i)
-	{
-		// Step on ray
-		coord -= deltaTexCoord;
-		// Get sample
-		vec3 texel = texture2D(scene_texture, coord).xyz;
-		if (texel.x > 0.8 && texel.y > 0.8 && texel.z > 0.8)
-		{
-			texel = vec3(1.0);
-		}
-		else
-		{
-			texel = vec3(0.0);
-		}
-
-		texel *= illuminationDecay * weight;
-		color += texel;
-
-		illuminationDecay *= decay;
-	}
-
-	color *= exposure;
+void main() {
+    color=vec3(0); if(!sun_active) return;
+    vec2 uv=gl_FragCoord.xy/vec2(screen_width,screen_height),step=(uv-light_position_screen)*0.96/100.0;
+    float sum=0.0,decay=1.0;
+    for(int i=0;i<100;++i) {uv-=step;sum+=source(uv)*decay*0.05;decay*=0.97;}
+    color=sun_color*sum;
 }

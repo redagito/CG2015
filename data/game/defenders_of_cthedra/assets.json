@@ -1,0 +1,68 @@
+{
+  "assets": [
+    {
+      "kind": "scene",
+      "file": "data/world/intro_1.json"
+    },
+    {
+      "kind": "scene",
+      "file": "data/world/game_1.json"
+    },
+    {
+      "kind": "scene",
+      "file": "data/world/lose.json"
+    },
+    {
+      "kind": "scene",
+      "file": "data/world/win.json"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/bullet.obj"
+    },
+    {
+      "kind": "material",
+      "file": "data/material/white.json"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/ship_2.obj"
+    },
+    {
+      "kind": "material",
+      "file": "data/material/line_metal.json"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/mothership.obj"
+    },
+    {
+      "kind": "material",
+      "file": "data/material/mothership.json"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/piramyde.obj"
+    },
+    {
+      "kind": "material",
+      "file": "data/material/sand.json"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/enemy.obj"
+    },
+    {
+      "kind": "material",
+      "file": "data/material/enemy.json"
+    },
+    {
+      "kind": "material",
+      "file": "data/material/metallic_galvanized.json"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/ring_animation.obj"
+    }
+  ]
+}

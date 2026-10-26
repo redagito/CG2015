@@ -1,0 +1,142 @@
+{
+  "assets": [
+    {
+      "kind": "shader",
+      "file": "data/shader/debug/visualize_depth_buffer_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/deferred/background.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/deferred/directional_light_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/deferred/geometry_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/deferred/illumination_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/deferred/point_light_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/deferred/transparency.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/display_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/bloom_1_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/bloom_2_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/cel_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/depth_of_field_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/fog_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/fxaa_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/gauss_blur_horizontal_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/gauss_blur_vertical_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/god_ray_1_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/god_ray_2_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/lens_flare_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/lens_flare_pass2.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/lens_flare_pass3.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/tonemap_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/post/vignette_blur_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/shader_display_overlay.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/shader_display_text.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/shadow_cube_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/shadow_map_pass.ini"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/ui.ini"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/screen_quad.obj"
+    },
+    {
+      "kind": "mesh",
+      "file": "data/mesh/sphere.obj"
+    },
+    {
+      "kind": "image",
+      "file": "data/image/font1.png",
+      "format": "rgba"
+    },
+    {
+      "kind": "image",
+      "file": "data/ui/font.png",
+      "format": "gray"
+    },
+    {
+      "kind": "json",
+      "file": "data/ui/font.json"
+    },
+    {
+      "kind": "scene",
+      "file": "data/world/load_1.json"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 // Scene texture
 uniform sampler2D scene_texture;
@@ -63,7 +63,7 @@ void main(void)
 {
 	// Get screen position for uv texture lookup
 	vec2 normalized_screen_coordinates = vec2(gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height);
-	
+
 	// Perform tone mapping
 	color = filmicTonemap(texture(scene_texture, normalized_screen_coordinates).rgb);
 }

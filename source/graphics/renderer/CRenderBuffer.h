@@ -2,12 +2,15 @@
 
 #include "graphics/renderer/core/RendererCoreConfig.h"
 
-/**
+    /**
 * \brief Write-only render buffer target as frame buffer attachement.
 */
 class CRenderBuffer
 {
    public:
+
+    CRenderBuffer(const CRenderBuffer&) = delete;
+    CRenderBuffer& operator=(const CRenderBuffer&) = delete;
     /**
     * \brief Creates render buffer resource.
     */
@@ -26,7 +29,7 @@ class CRenderBuffer
 
     /**
     * \brief Resizes render buffer.
-    * Wrapps init, render buffer is destroyed and recreated. FBO attachments need to be updated.
+    * Reallocates storage while preserving the object and framebuffer attachments.
     */
     bool resize(unsigned int width, unsigned int height);
 
@@ -47,7 +50,7 @@ class CRenderBuffer
 
    private:
     GLuint m_bufferId = 0;     /**< Render buffer id. */
-    GLenum m_format;           /**< Buffer format. */
+    GLenum m_format = 0;       /**< Buffer format. */
     unsigned int m_width = 0;  /**< Buffer width. */
     unsigned int m_height = 0; /**< Buffer height. */
     bool m_init = false;

@@ -1,6 +1,13 @@
 {
     "scene_objects" :  [
         {
+            "mesh": "data/mesh/skybox.obj",
+            "material": "data/material/black_background.json",
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0],
+            "scale": [500, 500, 500]
+        },
+        {
             "mesh" :  "data/mesh/sphere.obj",
             "material" : "data/material/black.json",
             "position" :  [ 0, 0, 0 ],

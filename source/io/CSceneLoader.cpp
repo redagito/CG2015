@@ -11,7 +11,7 @@
 #include "JsonUtil.h"
 #include "JsonDeserialize.h"
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 #include "animation/CAnimationWorld.h"
 #include "animation/CRotationController.h"
@@ -27,37 +27,37 @@ bool CSceneLoader::load(const std::string& file, IScene& scene, CAnimationWorld&
 {
     Json::Value root;
 
-	if (!::load(file, root))
+	if (!m_resourceManager.loadJsonDocument(file, root))
 	{
-		LOG_ERROR("Failed to load scene.");
+		SPDLOG_ERROR("Failed to load scene.");
 		return false;
 	}
 
     // Load scene objects
     if (!loadSceneObjects(root["scene_objects"], scene, animationWorld))
     {
-        LOG_ERROR("Error while loading scene objects from scene file %s.", file.c_str());
+        SPDLOG_ERROR("Error while loading scene objects from scene file {}.", file.c_str());
         return false;
     }
 
     // Load point lights
     if (!loadPointLights(root["point_lights"], scene, animationWorld))
     {
-        LOG_ERROR("Error while loading point lights from scene file %s.", file.c_str());
+        SPDLOG_ERROR("Error while loading point lights from scene file {}.", file.c_str());
         return false;
     }
 
     // Load directional lights
     if (!loadDirectionalLights(root["directional_lights"], scene, animationWorld))
     {
-        LOG_ERROR("Error while loading ambient light from scene file &s.", file.c_str());
+        SPDLOG_ERROR("Error while loading ambient light from scene file {}.", file.c_str());
         return false;
     }
 
     // Load ambient light
     if (!loadAmbientLight(root["ambient_light"], scene))
     {
-        LOG_ERROR("Error while loading ambient light from scene file &s.", file.c_str());
+        SPDLOG_ERROR("Error while loading ambient light from scene file {}.", file.c_str());
         return false;
     }
 
@@ -70,14 +70,14 @@ bool CSceneLoader::loadSceneObjects(const Json::Value& node, IScene& scene,
     // Node empty?
     if (node.empty())
     {
-        LOG_INFO("Missing or empty 'scene_objects' node. No scene objects are loaded.");
+        SPDLOG_INFO("Missing or empty 'scene_objects' node. No scene objects are loaded.");
         return true;
     }
 
     // Node is array type
     if (!node.isArray())
     {
-        LOG_ERROR("The node 'scene_objects' must be array type.");
+        SPDLOG_ERROR("The node 'scene_objects' must be array type.");
         return false;
     }
 
@@ -130,7 +130,7 @@ bool CSceneLoader::loadSceneObject(const Json::Value& node, IScene& scene,
     ResourceId meshId = m_resourceManager.loadMesh(mesh);
     if (meshId == -1)
     {
-        LOG_ERROR("Failed to load mesh file %s.", mesh.c_str());
+        SPDLOG_ERROR("Failed to load mesh file {}.", mesh.c_str());
         return false;
     }
 
@@ -138,7 +138,7 @@ bool CSceneLoader::loadSceneObject(const Json::Value& node, IScene& scene,
     ResourceId materialId = m_resourceManager.loadMaterial(material);
     if (materialId == -1)
     {
-        LOG_ERROR("Failed to load material file %s.", material.c_str());
+        SPDLOG_ERROR("Failed to load material file {}.", material.c_str());
         return false;
     }
 
@@ -149,7 +149,7 @@ bool CSceneLoader::loadSceneObject(const Json::Value& node, IScene& scene,
 	if (!loadAnimationControllers(node["animations"], scene, animationWorld, objectId,
                                   AnimationObjectType::Model))
     {
-        LOG_ERROR("Failed to load animation controller.");
+        SPDLOG_ERROR("Failed to load animation controller.");
         return false;
     }
 
@@ -162,14 +162,14 @@ bool CSceneLoader::loadPointLights(const Json::Value& node, IScene& scene,
     // Node empty?
     if (node.empty())
     {
-        LOG_INFO("Missing or empty 'point_lights' node. No point lights are loaded.");
+        SPDLOG_INFO("Missing or empty 'point_lights' node. No point lights are loaded.");
         return true;
     }
 
     // Node is array type
     if (!node.isArray())
     {
-        LOG_ERROR("The node 'point_lights' must be array type.");
+        SPDLOG_ERROR("The node 'point_lights' must be array type.");
         return false;
     }
 
@@ -226,7 +226,7 @@ bool CSceneLoader::loadPointLight(const Json::Value& node, IScene& scene,
 	if (!loadAnimationControllers(node["animations"], scene, animationWorld, objectId,
                                   AnimationObjectType::PointLight))
     {
-        LOG_ERROR("Failed to load animation controller.");
+        SPDLOG_ERROR("Failed to load animation controller.");
         return false;
     }
     return true;
@@ -238,14 +238,14 @@ bool CSceneLoader::loadDirectionalLights(const Json::Value& node, IScene& scene,
     // Node empty?
     if (node.empty())
     {
-        LOG_INFO("Missing or empty 'directional_lights' node. No directional lights are loaded.");
+        SPDLOG_INFO("Missing or empty 'directional_lights' node. No directional lights are loaded.");
         return true;
     }
 
     // Node is array type
     if (!node.isArray())
     {
-        LOG_ERROR("The node 'directional_lights' must be array type.");
+        SPDLOG_ERROR("The node 'directional_lights' must be array type.");
         return false;
     }
 
@@ -297,7 +297,7 @@ bool CSceneLoader::loadAmbientLight(const Json::Value& node, IScene& scene)
 {
     if (node.empty())
     {
-        LOG_INFO("Missing or empty 'ambient_light' node. No ambient light is loaded.");
+        SPDLOG_INFO("Missing or empty 'ambient_light' node. No ambient light is loaded.");
         return true;
     }
 
@@ -324,14 +324,14 @@ bool CSceneLoader::loadAnimationControllers(const Json::Value& node, IScene& sce
 {
     if (node.empty())
     {
-        // LOG_INFO("Missing or empty 'animations' node. No animation controllers where loaded.");
+        // SPDLOG_INFO("Missing or empty 'animations' node. No animation controllers where loaded.");
         return true;
     }
 
     // Node is array type
     if (!node.isArray())
     {
-        LOG_ERROR("The node 'animations' must be array type.");
+        SPDLOG_ERROR("The node 'animations' must be array type.");
         return false;
     }
 
@@ -401,7 +401,7 @@ bool CSceneLoader::load(const Json::Value& node, const std::string& name, float&
 {
     if (!deserialize(node[name], f))
     {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+        SPDLOG_ERROR("Failed to load '{}' parameter.", name.c_str());
         return false;
     }
     return true;
@@ -411,7 +411,7 @@ bool CSceneLoader::load(const Json::Value& node, const std::string& name, bool& 
 {
     if (!deserialize(node[name], b))
     {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+        SPDLOG_ERROR("Failed to load '{}' parameter.", name.c_str());
         return false;
     }
     return true;
@@ -421,7 +421,7 @@ bool CSceneLoader::load(const Json::Value& node, const std::string& name, glm::v
 {
     if (!deserialize(node[name], vec))
     {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+        SPDLOG_ERROR("Failed to load '{}' parameter.", name.c_str());
         return false;
     }
     return true;
@@ -431,7 +431,7 @@ bool CSceneLoader::load(const Json::Value& node, const std::string& name, std::s
 {
     if (!deserialize(node[name], str))
     {
-        LOG_ERROR("Failed to load '%s' parameter.", name.c_str());
+        SPDLOG_ERROR("Failed to load '{}' parameter.", name.c_str());
         return false;
     }
     return true;

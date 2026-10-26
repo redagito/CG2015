@@ -18,6 +18,7 @@
 class CGraphicsResourceManager : public IGraphicsResourceManager, public IResourceListener
 {
    public:
+    CTexture* getColorTexture(ResourceId id, IResourceManager* manager, bool srgb);
     /**
     * \brief Sets resource callbacks.
     */
@@ -179,6 +180,7 @@ class CGraphicsResourceManager : public IGraphicsResourceManager, public IResour
 
     std::unordered_map<ResourceId, std::unique_ptr<CTexture>>
         m_textures; /**< Maps image id from resource manager to GPU side texture. */
+    std::unordered_map<ResourceId, std::unique_ptr<CTexture>> m_colorTextures;
 
     std::unordered_map<ResourceId, std::unique_ptr<CMaterial>>
         m_materials; /**< Maps material id from resource manager to cached material. */

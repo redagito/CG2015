@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "graphics/ui/UiDocument.h"
 
 class IScene;
 class IWindow;
@@ -11,7 +12,8 @@ class IGraphicsSystem
 {
 public:
     virtual ~IGraphicsSystem();
-	
+    virtual void setUiOverlay(const UiDocument& document) = 0;
+
 	/**
 	* \brief Initializes graphics system and sets resource manager listener.
 	*/
@@ -34,7 +36,7 @@ public:
 	/**
 	* \brief Sets active camera.
 	*/
-	virtual void setActiveCamera(const ICamera* camera) = 0;
+	virtual void setActiveCamera(ICamera* camera) = 0;
 
 	/**
 	* \brief Toggles debug overlay on/off.
@@ -49,13 +51,6 @@ public:
 	* Default is on.
 	*/
 	virtual void toggleDebugOverlayTransparency() = 0;
-
-	/**
-	* \brief Toggles wireframe mode on/off.
-	*
-	* Default is off.
-	*/
-	virtual void toggleWireframeMode() = 0;
 
 	virtual void toggleViewFrustumCulling() = 0;
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "IGameState.h"
 #include "graphics/IGraphicsSystem.h"
@@ -31,6 +32,7 @@ public:
 	* \brief Updates the game objects
 	*/
 	bool update(float dtime);
+    const std::string& activeStateName() const {return m_activeName;}
 
 	/**
 	* \brief Initialize game system with startup config file.
@@ -50,6 +52,11 @@ public:
 	void removeState(const std::string& name);
 
 private:
+    IGraphicsSystem* m_graphics=nullptr;
+    IInputProvider* m_input=nullptr;
+    IResourceManager* m_resources=nullptr;
+    std::unordered_set<std::string> m_initialized;
+    std::string m_activeName;
 	std::unordered_map<std::string, std::unique_ptr<IGameState>> m_gameStates; /**< Game states stored by name. */
 	IGameState* m_activeState; /**< Current game state. */
 };

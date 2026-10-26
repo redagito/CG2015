@@ -1,6 +1,8 @@
 #include "CFrameBuffer.h"
 
 #include <cassert>
+#include <algorithm>
+#include <stdexcept>
 
 #include "graphics/resource/CTexture.h"
 #include "graphics/renderer/CRenderBuffer.h"
@@ -18,7 +20,10 @@ CFrameBuffer::~CFrameBuffer()
 bool CFrameBuffer::init()
 {
     GLuint bufferId;
-    glGenFramebuffers(1, &bufferId);
+    if (m_valid) return true;
+    glCreateFramebuffers(1, &bufferId);
+    glNamedFramebufferDrawBuffer(bufferId, GL_NONE);
+    glNamedFramebufferReadBuffer(bufferId, GL_NONE);
 
     m_fboId = bufferId;
     m_valid = true;
@@ -31,8 +36,8 @@ bool CFrameBuffer::isValid() const { return m_valid; }
 std::string CFrameBuffer::getState()
 {
     assert(m_valid);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
-    GLenum state = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    GLenum state = glCheckNamedFramebufferStatus(m_fboId, GL_FRAMEBUFFER);
 
     switch (state)
     {
@@ -72,51 +77,47 @@ void CFrameBuffer::setActive(GLenum target)
 {
     assert(m_valid);
     glBindFramebuffer(target, m_fboId);
-    // Set draw buffers
-    if (!m_drawBuffers.empty())
-    {
-        glDrawBuffers((GLsizei)m_drawBuffers.size(), m_drawBuffers.data());
-    }
+    if (glCheckNamedFramebufferStatus(m_fboId, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        throw std::runtime_error("Incomplete framebuffer: " + getState());
 }
 
 void CFrameBuffer::setInactive(GLenum target) { glBindFramebuffer(target, 0); }
 
 void CFrameBuffer::resize(unsigned int width, unsigned int height)
 {
+    if (!width || !height) return;
     for (auto& entry : m_textures)
     {
         entry.second->resize(width, height);
     }
     for (auto& entry : m_renderBuffers)
-    {
-		// Need renderbuffer connot be resized
-		// Instead they are recreated and reattached
-		if (entry.second->resize(width, height))
-		{
-			attach(entry.second, entry.first);
-		}
-    }
+        entry.second->resize(width, height);
 }
 
 void CFrameBuffer::attach(const std::shared_ptr<CTexture>& texture, GLenum attachment, ETextureSemantic semantic)
 {
 	// Bind
     assert(m_valid);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+
     // Attach
-    glFramebufferTexture(GL_FRAMEBUFFER, attachment, texture->getId(), 0);
+    glNamedFramebufferTexture(m_fboId, attachment, texture->getId(), 0);
     // Add color attachments to draw buffers
     if (attachment != GL_DEPTH_ATTACHMENT && attachment != GL_STENCIL_ATTACHMENT &&
         attachment != GL_DEPTH_STENCIL_ATTACHMENT)
     {
-        m_drawBuffers.push_back(attachment);
+        const size_t index = attachment - GL_COLOR_ATTACHMENT0;
+        if (m_drawBuffers.size() <= index) m_drawBuffers.resize(index + 1, GL_NONE);
+        m_drawBuffers[index] = attachment;
+        glNamedFramebufferDrawBuffers(m_fboId, static_cast<GLsizei>(m_drawBuffers.size()), m_drawBuffers.data());
+        glNamedFramebufferReadBuffer(m_fboId, attachment);
     }
+    m_renderBuffers.erase(attachment);
     m_textures[attachment] = texture;
 	if (semantic != ETextureSemantic::Unknown)
 	{
 		m_texturesBySemantic[semantic] = texture;
 	}
-    setInactive(GL_FRAMEBUFFER);
+
 }
 
 void CFrameBuffer::attach(const std::shared_ptr<CTexture>& texture, GLenum attachment)
@@ -139,17 +140,22 @@ void CFrameBuffer::attach(const std::shared_ptr<CRenderBuffer>& renderBuffer, GL
 {
     // Bind
     assert(m_valid);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fboId);
+
     // Attach
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, renderBuffer->getId());
+    glNamedFramebufferRenderbuffer(m_fboId, attachment, GL_RENDERBUFFER, renderBuffer->getId());
     // Add color attachments to draw buffers
     if (attachment != GL_DEPTH_ATTACHMENT && attachment != GL_STENCIL_ATTACHMENT &&
         attachment != GL_DEPTH_STENCIL_ATTACHMENT)
     {
-        m_drawBuffers.push_back(attachment);
+        const size_t index = attachment - GL_COLOR_ATTACHMENT0;
+        if (m_drawBuffers.size() <= index) m_drawBuffers.resize(index + 1, GL_NONE);
+        m_drawBuffers[index] = attachment;
+        glNamedFramebufferDrawBuffers(m_fboId, static_cast<GLsizei>(m_drawBuffers.size()), m_drawBuffers.data());
+        glNamedFramebufferReadBuffer(m_fboId, attachment);
     }
+    m_textures.erase(attachment);
     m_renderBuffers[attachment] = renderBuffer;
-    setInactive(GL_FRAMEBUFFER);
+
 }
 
 std::shared_ptr<CTexture> CFrameBuffer::getTexture(ETextureSemantic semantic)

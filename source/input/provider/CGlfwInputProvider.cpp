@@ -4,7 +4,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 #include "input/IInputListener.h"
 
 std::unordered_map<GLFWwindow*, CGlfwInputProvider*> CGlfwInputProvider::s_instances;
@@ -29,7 +29,7 @@ void CGlfwInputProvider::glfwKeyCallback(GLFWwindow* window, int key, int scanco
             eventType = EKeyEventType::KEY_RELEASED;
             break;
         default:
-            LOG_WARNING("Ignored unknown action '%ui' for glfwKeyCallback.", action);
+            SPDLOG_WARN("Ignored unknown action '{}' for glfwKeyCallback.", action);
             return;
         }
 
@@ -81,7 +81,7 @@ void CGlfwInputProvider::glfwMouseButtonCallback(GLFWwindow* window, int button,
             eventType = EMouseButtonEventType::MOUSE_BUTTON_RELEASED;
             break;
         default:
-            LOG_WARNING("Ignored unknown action '%ui' for glfwMouseButtonCallback.", action);
+            SPDLOG_WARN("Ignored unknown action '{}' for glfwMouseButtonCallback.", action);
             return;
         }
 

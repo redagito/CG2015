@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 // Screen size
 uniform float screen_width;
@@ -27,6 +27,6 @@ void main(void)
 	// Based on http://www.geeks3d.com/20091216/geexlab-how-to-visualize-the-depth-buffer-in-glsl/
 	float z_n = getNormalizedDepth(normalized_screen_coordinates);
 	float z_linear = (2.0 * camera_z_near) / (camera_z_far + camera_z_near - z_n * (camera_z_far - camera_z_near));
-	
+
 	color = vec3(z_linear, z_linear, z_linear);
 }

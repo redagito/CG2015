@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 uniform sampler2D scene_texture;
 uniform float screen_width;
@@ -37,6 +37,9 @@ void main() {
 	// ghost vector to image centre:
     vec2 ghostVec = (vec2(0.5) - inv_coords) * uDispersal;
 	vec3 distortion = vec3(-texelSize.x * uDistortion, 0.0, texelSize.x * uDistortion);
+	// The optical center has no direction. normalize(vec2(0)) is undefined.
+	float ghostLength = length(ghostVec);
+	vec2 ghostDirection = ghostLength > 0.000001 ? ghostVec / ghostLength : vec2(0.0);
 
 	vec4 result = vec4(0.0);
 	for (int i = 0; i < uGhosts; ++i) { 
@@ -47,18 +50,18 @@ void main() {
 		result += textureDistorted(
 			scene_texture,
 			offset,
-			normalize(ghostVec),
+			ghostDirection,
 			distortion
 			) * weight;
     }
 
-	vec2 haloVec = normalize(ghostVec) * uHaloWidth;
+	vec2 haloVec = ghostDirection * uHaloWidth;
 	float weight = length(vec2(0.5) - fract(inv_coords + haloVec)) / length(vec2(0.5));
 	weight = pow(1.0 - weight, 2.0);
 	result += textureDistorted(
 		scene_texture,
 		fract(inv_coords + haloVec),
-		normalize(ghostVec),
+		ghostDirection,
 		distortion
 	) * weight;
 

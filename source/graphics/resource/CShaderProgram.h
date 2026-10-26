@@ -10,12 +10,15 @@
 
 class CTexture;
 
-/**
+    /**
 * \brief Represents a linked shader program.
 */
 class CShaderProgram
 {
 public:
+
+    CShaderProgram(const CShaderProgram&) = delete;
+    CShaderProgram& operator=(const CShaderProgram&) = delete;
     /**
     * \brief Creates shader program from shader objects.
     * Unused shader objects are represented by nullptr. All used shader objects
@@ -54,7 +57,7 @@ public:
     * \brief Sets the shader program as active program for vertex processing.
     */
 	void setActive();
-	
+
 	/**
 	* \brief Sets shader program inactive.
 	*/
@@ -101,9 +104,7 @@ public:
 	bool setUniform(CTexture& texture, const std::string& textureName, GLint textureUnit);
 
 private:
-    static GLuint s_activeShaderProgram; /**< Stores currently active shader id to prevent
-                                                                             unnecessary calls to
-                                            setActive. */
+
     mutable std::unordered_map<std::string, GLint>
         m_uniformLocations; /**< Caches uniform location ids. */
     std::string m_infoLog;

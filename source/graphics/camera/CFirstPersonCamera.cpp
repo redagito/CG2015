@@ -76,12 +76,13 @@ void CFirstPersonCamera::yaw(float amount)
 
 void CFirstPersonCamera::lookAt(const glm::vec3& target, const glm::vec3& /* up */)
 {
-    glm::vec3 forward = glm::normalize(target - m_position);
-    m_pitch = -std::asin(forward.y / std::sqrt(2.f));
-
-    m_forward.x = forward.x;
-    m_forward.y = forward.z;
-    m_forward = glm::normalize(m_forward);
+    const auto delta = target - m_position;
+    if (glm::dot(delta, delta) < 0.00000001f) return;
+    glm::vec3 forward = glm::normalize(delta);
+    m_pitch = -std::asin(glm::clamp(forward.y, -1.f, 1.f));
+    const glm::vec2 horizontal(forward.x, forward.z);
+    if (glm::dot(horizontal, horizontal) > 0.00000001f)
+        m_forward = glm::normalize(horizontal);
 
     updateView();
 }
@@ -109,7 +110,7 @@ void CFirstPersonCamera::setProjection(float fieldOfView, float aspectRatio, flo
     m_aspectRatio = aspectRatio;
     m_zNear = zNear;
     m_zFar = zFar;
-    m_proj = glm::perspective(fieldOfView, aspectRatio, zNear, zFar);
+    m_proj = glm::perspective(glm::radians(fieldOfView), aspectRatio, zNear, zFar);
 }
 
 void CFirstPersonCamera::updateView()
@@ -119,5 +120,6 @@ void CFirstPersonCamera::updateView()
 
     forward = TransformUtils::rotate(axis, m_pitch, forward);
 
-    m_view = glm::lookAt(m_position, m_position + forward, glm::vec3(0.0, 1.0f, 0.0f));
+    const glm::vec3 up = std::abs(forward.y) > 0.9999f ? glm::vec3(0.f, 0.f, 1.f) : glm::vec3(0.f, 1.f, 0.f);
+    m_view = glm::lookAt(m_position, m_position + forward, up);
 }

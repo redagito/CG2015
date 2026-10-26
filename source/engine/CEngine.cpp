@@ -2,12 +2,13 @@
 
 #include <string>
 #include <vector>
+#include <thread>
+#include <chrono>
 
 // Debug
 #include "debug/CDebugInfo.h"
-#include "debug/Log.h"
-#include "debug/CLogger.h"
-#include "debug/Profile.h"
+#include <spdlog/spdlog.h>
+#include "debug/Logging.h"
 
 // Graphics
 #include "graphics/system/CGraphicsSystem.h"
@@ -20,7 +21,7 @@
 #include "graphics/camera/CFreeCamera.h"
 
 // Renderer types
-#include "graphics/renderer/CForwardRenderer.h"
+
 #include "graphics/renderer/CDeferredRenderer.h"
 
 // Resource system
@@ -59,25 +60,27 @@ CEngine::CEngine() {}
 CEngine::~CEngine() 
 {
 	m_gameSystem = nullptr;
+    m_graphicsSystem.reset();
+    m_resourceManager.reset();
+    m_inputProvider.reset();
+    m_window.reset();
 
-	LOG_DEBUG("Profiler info: %s", CProfiler::toString().c_str());
 }
 
-bool CEngine::init(const char* configFile)
+bool CEngine::init(const char* configFile, bool visible)
 {
+    m_visible = visible;
     // Init log file
     std::string logFile = "log/" + createTimeStamp() + ".log";
-    if (!CLogger::initLogFile(logFile))
-    {
-        LOG_WARNING("Failed to create log file at %s.", logFile.c_str());
-    }
+    try {logging::initialize(logFile);}
+    catch(const std::exception& error) {SPDLOG_WARN("Cannot create log file {}: {}",logFile,error.what());}
 
 	// Config data with default values
 	std::string modeType = "demo"; // Startup mode for the application
 	std::string sceneFile = "data/world/test_1.json"; // Scene file to load and render if mode is demo
 	std::string gameFile = "data/game/defenders_of_cthedra/game.json"; // Game file to load if mode is game
 	std::string rendererType = "deferred"; // Renderer type to use
-	
+
 	// Window parameters
 	unsigned int windowWidth = 800;
 	unsigned int windowHeight = 600;
@@ -94,10 +97,10 @@ bool CEngine::init(const char* configFile)
 			modeType = configIni.getValue("mode", "type", "demo");
 			sceneFile = configIni.getValue("scene", "file", "data/world/test_1.json");
 			gameFile = configIni.getValue("game", "file", "data/game/defenders_of_cthedra/game.json");
-			rendererType = configIni.getValue("renderer", "type", "forward");
+			rendererType = configIni.getValue("renderer", "type", "deferred");
 			windowWidth = configIni.getValue("window", "width", 800);
 			windowHeight = configIni.getValue("window", "height", 600);
-			windowTitle = configIni.getValue("window", "type", "CG 2015");
+			windowTitle = configIni.getValue("window", "title", "CG 2015");
 			loadSuccess = true;
 		}
 	}
@@ -124,20 +127,20 @@ bool CEngine::init(const char* configFile)
 	}
 	else
 	{
-		LOG_WARNING("The config file %s has an unknown file extension.");
+		SPDLOG_WARN("The config file {} has an unknown file extension.", configFile);
 	}
 
 	// Check if config loaded successfully
 	if (!loadSuccess)
 	{
-		LOG_WARNING("Failed to load config file %s. Starting with default settings.", configFile);
+		SPDLOG_WARN("Failed to load config file {}. Starting with default settings.", configFile);
 		// TODO Return if no config exists?
 	}
 
     // Create window for rendering
     if (!initWindow(windowWidth, windowHeight, windowTitle))
     {
-        LOG_ERROR("Failed to initialize window.");
+        SPDLOG_ERROR("Failed to initialize window.");
         return false;
     }
 	// TODO GLFW handle not properly wrapped away, GFLW should not be used directly
@@ -147,17 +150,40 @@ bool CEngine::init(const char* configFile)
     m_resourceManager.reset(createResourceManager());
     if (m_resourceManager == nullptr)
     {
-        LOG_ERROR("Failed to initialize resource manager.");
+        SPDLOG_ERROR("Failed to initialize resource manager.");
         return false;
     }
+
+    // Even bootstrap PNG/OBJ/shader parsing happens on a CPU worker. Before the
+    // renderer exists, keep the native window responsive with a plain black frame.
+    auto awaitBootstrap=[&](AsyncLoadId request) {
+        for(;;) {
+            m_resourceManager->pumpAsyncLoads(2.0);
+            const auto status=m_resourceManager->getLoadStatus(request);
+            if(status.phase==LoadPhase::Ready) return true;
+            if(status.phase==LoadPhase::Failed || status.phase==LoadPhase::Cancelled) {
+                SPDLOG_ERROR("Bootstrap loading failed: {}",status.error.c_str());return false;
+            }
+            if(glfwWindowShouldClose(m_window->getGlfwHandle()) || glfwGetKey(m_window->getGlfwHandle(),GLFW_KEY_ESCAPE)==GLFW_PRESS) {
+                m_resourceManager->cancelLoad(request);return false;
+            }
+            glClearColor(0,0,0,1);glClear(GL_COLOR_BUFFER_BIT);
+            m_window->swapBuffer();glfwPollEvents();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+    };
+    if(!awaitBootstrap(m_resourceManager->loadManifestAsync("data/bootstrap-assets.json"))) return false;
+    if(modeType=="demo" && !awaitBootstrap(m_resourceManager->loadAsync({{AssetKind::Scene,sceneFile}}))) return false;
+    m_resourceManager->setCacheOnly(true);
 
 	// Create and initialize graphics system
 	m_graphicsSystem = std::make_shared<CGraphicsSystem>();
 	if (!m_graphicsSystem->init(*m_resourceManager))
 	{
-		LOG_ERROR("Failed to initialize graphics system.");
+		SPDLOG_ERROR("Failed to initialize graphics system.");
 		return false;
 	}
+	m_graphicsSystem->setActiveRenderer(rendererType);
 
 	// Legacy stuff to keep demo mode working
 	// TODO Should be removed
@@ -165,7 +191,7 @@ bool CEngine::init(const char* configFile)
 	{
 		if (!initDemo(sceneFile))
 		{
-			LOG_ERROR("Failed to initialize demo mode.");
+			SPDLOG_ERROR("Failed to initialize demo mode.");
 			return false;
 		}
 	}
@@ -173,19 +199,18 @@ bool CEngine::init(const char* configFile)
 	{
 		if (!initGameSystem(gameFile))
 		{
-			LOG_ERROR("Failed to initialize game system.");
+			SPDLOG_ERROR("Failed to initialize game system.");
 			return false;
 		}
 	}
     return true;
 }
 
-void CEngine::run()
+void CEngine::run(unsigned int frameLimit)
 {
 	// Fn key cooldown values
     double f1Cooldown = 0.0;
 	double f2Cooldown = 0.0;
-	double f3Cooldown = 0.0;
 	double f4Cooldown = 0.0;
 	double f5Cooldown = 0.0;
 	double f6Cooldown = 0.0;
@@ -195,8 +220,6 @@ void CEngine::run()
 
 	// Numeric key cooldown values
 	double k1Cooldown = 0.0;
-	double k2Cooldown = 0.0;
-	double k3Cooldown = 0.0;
 	double k4Cooldown = 0.0;
 	double k5Cooldown = 0.0;
 
@@ -204,8 +227,9 @@ void CEngine::run()
 	bool running = true;
 
 	// Activate mouse capture as default
-    m_window->toggleMouseCapture();
-    
+    if (m_visible) m_window->toggleMouseCapture();
+    unsigned int frameCount = 0;
+
     do
     {
         double startTime = glfwGetTime();
@@ -213,7 +237,6 @@ void CEngine::run()
         // Cooldown calculations
         f1Cooldown -= timeDiff;
 		f2Cooldown -= timeDiff;
-		f3Cooldown -= timeDiff;
 		f4Cooldown -= timeDiff;
 		f5Cooldown -= timeDiff;
 		f6Cooldown -= timeDiff;
@@ -222,8 +245,6 @@ void CEngine::run()
 		f9Cooldown -= timeDiff;
 
 		k1Cooldown -= timeDiff;
-		k2Cooldown -= timeDiff;
-		k3Cooldown -= timeDiff;
 		k4Cooldown -= timeDiff;
 		k5Cooldown -= timeDiff;
 
@@ -241,14 +262,6 @@ void CEngine::run()
 			f2Cooldown = 0.3f;
 			// Turns debug overlay on / off
 			m_graphicsSystem->toggleDebugOverlay();
-		}
-
-		// Key F3
-		if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_F3) == GLFW_PRESS && f3Cooldown <= 0.f)
-		{
-			f3Cooldown = 0.3f;
-			// Turns wireframe mode on / off
-			m_graphicsSystem->toggleWireframeMode();
 		}
 
 		// Key F4
@@ -304,22 +317,6 @@ void CEngine::run()
 			m_window->toggleMouseCapture();
 		}
 
-		// Key 2
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_2) == GLFW_PRESS && k2Cooldown <= 0.f)
-        {
-            k2Cooldown = 0.3f;
-			// Sets active rendering device to deferred renderer
-			m_graphicsSystem->setActiveRenderer("deferred");
-        }
-
-		// Key 3
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_3) == GLFW_PRESS && k3Cooldown <= 0.f)
-        {
-            k3Cooldown = 0.3f;
-			// Sets active rendering device to forward renderer
-			m_graphicsSystem->setActiveRenderer("forward");
-        }
-
 		// Game system update
 		if (!m_gameSystem->update((float)timeDiff))
 		{
@@ -339,10 +336,12 @@ void CEngine::run()
 		// Frame time
         timeDiff = glfwGetTime() - startTime;
 
-    } while (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_ESCAPE) != GLFW_PRESS &&
+        ++frameCount;
+    } while ((frameLimit == 0 || frameCount < frameLimit) &&
+             glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_ESCAPE) != GLFW_PRESS &&
              glfwWindowShouldClose(m_window->getGlfwHandle()) == 0 && running);
 
-    glfwTerminate();
+
     return;
 }
 
@@ -354,16 +353,16 @@ bool CEngine::initWindow(unsigned int width, unsigned int height, const std::str
         return true;
     }
 
-    LOG_INFO("Initializing application window.");
-    LOG_INFO("Window width: %u.", width);
-    LOG_INFO("Window height: %u.", height);
-    LOG_INFO("Window title: %s.", title.c_str());
+    SPDLOG_INFO("Initializing application window.");
+    SPDLOG_INFO("Window width: {}.", width);
+    SPDLOG_INFO("Window height: {}.", height);
+    SPDLOG_INFO("Window title: {}.", title.c_str());
 
     // Create window
     CGlfwWindow* window = new CGlfwWindow;
-    if (!window->init(width, height, title))
+    if (!window->init(width, height, title, m_visible))
     {
-        LOG_ERROR("Failed to initialize GLFW window wrapper.");
+        SPDLOG_ERROR("Failed to initialize GLFW window wrapper.");
         delete window;
         return false;
     }
@@ -379,17 +378,17 @@ bool CEngine::initGameSystem(const std::string& gameFile)
 	m_gameSystem = std::make_shared<CGameSystem>();
 
 	// TODO Load from game file
-	m_gameSystem->addState("load", new CLoadState("data/world/load_1.json", 10.f));
+	m_gameSystem->addState("load", new CLoadState("data/world/load_1.json", "data/game/defenders_of_cthedra/assets.json"));
 	m_gameSystem->addState("title", new CTitleState("data/world/intro_1.json"));
 	m_gameSystem->addState("game", new CGamePlayState());
 	m_gameSystem->addState("lose", new CLoseState("data/world/lose.json"));
 	m_gameSystem->addState("win", new CWinState("data/world/win.json"));
 	if (!m_gameSystem->init("load", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
 	{
-		LOG_ERROR("Failed to initialize game system.");
+		SPDLOG_ERROR("Failed to initialize game system.");
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -402,7 +401,7 @@ bool CEngine::initDemo(const std::string& sceneFile)
 	m_gameSystem->addState("demo", new CDemoState(sceneFile));
 	if (!m_gameSystem->init("demo", m_graphicsSystem.get(), m_inputProvider.get(), m_resourceManager.get()))
 	{
-		LOG_ERROR("Failed to initialize game system.");
+		SPDLOG_ERROR("Failed to initialize game system.");
 		return false;
 	}
 	return true;

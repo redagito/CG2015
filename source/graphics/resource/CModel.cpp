@@ -1,14 +1,16 @@
 #include "CModel.h"
 
-CModel::CModel(const CMesh* mesh, const CMaterial* material)
+CModel::CModel(const CMesh* mesh, const CMaterial* material, ResourceId meshId, ResourceId materialId)
 	:
 	m_mesh(mesh),
 	m_material(material)
 {
+    m_meshId = meshId;
+    m_materialId = materialId;
 	return;
 }
 
-bool CModel::init(const CMesh* mesh, const CMaterial* material)
+bool CModel::init(const CMesh* mesh, const CMaterial* material, ResourceId meshId, ResourceId materialId)
 {
 	if (mesh == nullptr || material == nullptr)
 	{
@@ -16,6 +18,8 @@ bool CModel::init(const CMesh* mesh, const CMaterial* material)
 	}
 	m_mesh = mesh;
 	m_material = material;
+    m_meshId = meshId;
+    m_materialId = materialId;
 	return true;
 }
 

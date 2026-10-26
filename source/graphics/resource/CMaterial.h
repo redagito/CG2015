@@ -13,6 +13,7 @@
 class CMaterial
 {
 public:
+    SMaterialSettings settings;
     CMaterial(const CTexture* diffuse, const CTexture* normal, const CTexture* specular,
               const CTexture* glow, const CTexture* alpha);
 

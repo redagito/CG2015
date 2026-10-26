@@ -1,16 +1,17 @@
 #include <cassert>
 
 #include "Draw.h"
+#include "graphics/renderer/debug/RendererDebug.h"
 
 #include "graphics/resource/CMesh.h"
 
 void draw(CMesh& mesh)
 {
+    validateFramebufferFeedback();
     mesh.getVertexArray()->setActive();
 
     // Set primitive draw mode
     GLenum mode = CMesh::toGLPrimitive(mesh.getPrimitiveType());
-    unsigned int primitiveSize = CMesh::getPrimitiveSize(mesh.getPrimitiveType());
 
     // Decide on draw method based on the stored data
     if (mesh.hasIndexBuffer())
@@ -23,7 +24,8 @@ void draw(CMesh& mesh)
     else
     {
         // Slowest draw method
-        glDrawArrays(mode, 0, mesh.getVertexBuffer()->getSize() / primitiveSize);
+        // Positions always have three floats, regardless of primitive topology.
+        glDrawArrays(mode, 0, mesh.getVertexBuffer()->getSize() / 3);
     }
     mesh.getVertexArray()->setInactive();
 }

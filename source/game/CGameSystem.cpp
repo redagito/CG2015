@@ -1,28 +1,30 @@
 #include <cassert>
 
 #include "CGameSystem.h"
+#include "resource/IResourceManager.h"
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 CGameSystem::~CGameSystem()
 {
-	LOG_DEBUG("Game system destroyed.");
+	SPDLOG_DEBUG("Game system destroyed.");
 }
 
 CGameSystem::CGameSystem()
 	:
 	m_activeState(nullptr)
 {
-	LOG_DEBUG("Game system created.");
+	SPDLOG_DEBUG("Game system created.");
 }
 
 // Updates game objects
 bool CGameSystem::update(float dtime)
 {
+    if(m_resources) m_resources->pumpAsyncLoads(2.0);
 	// Exit if state not set
 	if (m_activeState == nullptr)
 	{
-		LOG_ERROR("No active state is set.");
+		SPDLOG_ERROR("No active state is set.");
 		return false;
 	}
 
@@ -38,7 +40,14 @@ bool CGameSystem::update(float dtime)
 			return false;
 		}
 		// Set next state
-		m_activeState = m_gameStates.at(m_activeState->getNextState()).get();
+        const auto next=m_activeState->getNextState();
+        auto* destination=m_gameStates.at(next).get();
+        if(!m_initialized.contains(next)) {
+            if(!destination->init(m_graphics,m_input,m_resources)) return false;
+            m_initialized.insert(next);
+        }
+		m_activeState = destination;
+        m_activeName=next;
 		m_activeState->onEnter();
 	}
 	// Update success
@@ -47,22 +56,19 @@ bool CGameSystem::update(float dtime)
 
 bool CGameSystem::init(const std::string& initialState, IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager)
 {
-	LOG_DEBUG("Initializing game system.");
-	LOG_DEBUG("Game system initial state set to %s.", initialState.c_str());
+	SPDLOG_DEBUG("Initializing game system.");
+	SPDLOG_DEBUG("Game system initial state set to {}.", initialState.c_str());
 
-	// Initialize game states
-	for (auto& entry : m_gameStates)
-	{
-		if (!entry.second->init(graphicsSystem, inputProvider, resourceManager))
-		{
-			LOG_ERROR("Failed to initialize game state %s.", entry.first.c_str());
-			return false;
-		}
-	}
+    m_graphics=graphicsSystem;m_input=inputProvider;m_resources=resourceManager;
+    if(!m_gameStates.contains(initialState)) return false;
+    // Other states assemble their scenes from prepared resources on first entry.
+    if(!m_gameStates.at(initialState)->init(graphicsSystem,inputProvider,resourceManager)) return false;
+    m_initialized.insert(initialState);
 
 	// Set initial state active
 	assert(m_gameStates.count(initialState) != 0);
 	m_activeState = m_gameStates.at(initialState).get();
+    m_activeName=initialState;
 
 	// On enter state trigger
 	m_activeState->onEnter();
@@ -75,12 +81,14 @@ bool CGameSystem::addState(const std::string& name, IGameState* state)
 	if (m_gameStates.count(name) != 0)
 	{
 		// State with name already exists
-		LOG_WARNING("Overwriting game state %s.", name.c_str());
+		SPDLOG_WARN("Overwriting game state {}.", name.c_str());
 	}
 
 	// Add state
+    m_initialized.erase(name);
+    if(m_activeName==name) {m_activeState=nullptr;m_activeName.clear();}
 	m_gameStates[name] = std::unique_ptr<IGameState>(state);
-	LOG_DEBUG("Added game state %s to game system.", name.c_str());
+	SPDLOG_DEBUG("Added game state {} to game system.", name.c_str());
 	return true;
 }
 
@@ -88,9 +96,11 @@ void CGameSystem::removeState(const std::string& name)
 {
 	if (m_gameStates.count(name) == 0)
 	{
-		LOG_WARNING("Could not remove state %s, the state does not exist.", name.c_str());
+		SPDLOG_WARN("Could not remove state {}, the state does not exist.", name.c_str());
 		return;
 	}
+    m_initialized.erase(name);
+    if(m_activeName==name) {m_activeState=nullptr;m_activeName.clear();}
 	m_gameStates.erase(name);
-	LOG_DEBUG("Removed game state %s from game system.", name.c_str());
+	SPDLOG_DEBUG("Removed game state {} from game system.", name.c_str());
 }

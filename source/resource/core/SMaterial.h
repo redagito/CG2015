@@ -7,6 +7,7 @@
  */
 struct SMaterial
 {
+    SMaterialSettings settings;
     SMaterial();
     SMaterial(ResourceId base, ResourceId normal, ResourceId specular, ResourceId glow, ResourceId alpha);
 

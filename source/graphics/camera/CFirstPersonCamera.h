@@ -49,6 +49,6 @@ class CFirstPersonCamera : public IControllableCamera
 
     glm::vec3 m_position;
 
-    float m_pitch;
-    glm::vec2 m_forward;
+    float m_pitch = 0.f;
+    glm::vec2 m_forward = glm::vec2(0.f, 1.f);
 };

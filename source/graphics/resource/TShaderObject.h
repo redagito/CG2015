@@ -5,15 +5,18 @@
 
 #include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/renderer/debug/RendererDebug.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
-/**
+    /**
 * \brief Represents a compiled shader object.
 */
 template <GLenum ShaderType>
 class TShaderObject
 {
    public:
+
+    TShaderObject(const TShaderObject&) = delete;
+    TShaderObject& operator=(const TShaderObject&) = delete;
     /**
     * \brief Creates shader object from shader type and source code.
     */
@@ -116,7 +119,7 @@ bool TShaderObject<ShaderType>::init(const std::string& source)
     std::string error;
     if (hasGLError(error))
     {
-        LOG_ERROR("GL Error: %s", error.c_str());
+        SPDLOG_ERROR("GL Error: {}", error.c_str());
     }
 
     return true;

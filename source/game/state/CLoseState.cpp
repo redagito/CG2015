@@ -5,7 +5,7 @@
 #include "graphics/camera/CFirstPersonCamera.h"
 #include "io/CSceneLoader.h"
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 const std::string gameStr = "game";
 
@@ -40,11 +40,11 @@ bool CLoseState::init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProv
 
 
 	// Load scene from file	
-	LOG_INFO("Loading scene from file %s.", m_sceneFile.c_str());
+	SPDLOG_INFO("Loading scene from file {}.", m_sceneFile.c_str());
 	CSceneLoader loader(*resourceManager);
 	if (!loader.load(m_sceneFile, *m_scene, m_animationWorld))
 	{
-		LOG_ERROR("Failed to load scene file %s.", m_sceneFile.c_str());
+		SPDLOG_ERROR("Failed to load scene file {}.", m_sceneFile.c_str());
 		return false;
 	}
 	return true;

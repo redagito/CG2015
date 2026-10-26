@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 // Vertex data streams
 layout (location = 0) in vec3 vertexPositionModelSpace;
@@ -17,9 +17,11 @@ uniform mat4 projection;
 
 out vec4 world_pos;
 
+out vec2 uv;
 void main(void)
 {
     // Calculate vertex position in camera space
+    uv=vertexUV;
     gl_Position = projection * view * model * vec4(vertexPositionModelSpace, 1.f);
     world_pos = model * vec4(vertexPositionModelSpace, 1.0f);
 }

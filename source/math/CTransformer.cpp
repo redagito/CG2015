@@ -18,7 +18,8 @@ void CTransformer::setPosition(const glm::vec3& position)
 
 void CTransformer::setRotation(const glm::quat& rotation)
 {
-    m_rotationQuat = rotation;
+    m_rotationQuat = glm::dot(rotation, rotation) > 0.00000001f
+        ? glm::normalize(rotation) : glm::quat(1.f, 0.f, 0.f, 0.f);
 
     m_rotation.m_matrixDirty = true;
     m_rotation.m_inverseDirty = true;

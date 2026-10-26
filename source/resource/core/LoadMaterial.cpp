@@ -1,7 +1,8 @@
 #include "LoadMaterial.h"
+#include "util/StringUtil.h"
 
 #include "CResourceManager.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 #include "io/CIniFile.h"
 #include "io/JsonUtil.h"
 #include "io/JsonDeserialize.h"
@@ -40,7 +41,7 @@ bool load(const std::string& file, CResourceManager& manager, SMaterial& materia
 		baseId = manager.loadImage(base, EColorFormat::RGB24);
 		if (baseId == invalidResource)
 		{
-			LOG_ERROR("Failed to load base.");
+			SPDLOG_ERROR("Failed to load base.");
 			return false;
 		}
 	}
@@ -52,7 +53,7 @@ bool load(const std::string& file, CResourceManager& manager, SMaterial& materia
 		normalId = manager.loadImage(normal, EColorFormat::RGB24);
 		if (normalId == invalidResource)
 		{
-			LOG_ERROR("Failed to load normal texture.");
+			SPDLOG_ERROR("Failed to load normal texture.");
 			return false;
 		}
 	}
@@ -64,7 +65,7 @@ bool load(const std::string& file, CResourceManager& manager, SMaterial& materia
 		specularId = manager.loadImage(specular, EColorFormat::GreyScale8);
 		if (specularId == invalidResource)
 		{
-			LOG_ERROR("Failed to load specular texture.");
+			SPDLOG_ERROR("Failed to load specular texture.");
 			return false;
 		}
 	}
@@ -76,7 +77,7 @@ bool load(const std::string& file, CResourceManager& manager, SMaterial& materia
 		glowId = manager.loadImage(glow, EColorFormat::GreyScale8);
 		if (glowId == invalidResource)
 		{
-			LOG_ERROR("Failed to load glow texture.");
+			SPDLOG_ERROR("Failed to load glow texture.");
 			return false;
 		}
 	}
@@ -88,7 +89,7 @@ bool load(const std::string& file, CResourceManager& manager, SMaterial& materia
 		alphaId = manager.loadImage(alpha, EColorFormat::GreyScale8);
 		if (alphaId == invalidResource)
 		{
-			LOG_ERROR("Failed to load alpha texture.");
+			SPDLOG_ERROR("Failed to load alpha texture.");
 			return false;
 		}
 	}
@@ -99,17 +100,33 @@ bool load(const std::string& file, CResourceManager& manager, SMaterial& materia
 	material.m_specular = specularId;
 	material.m_glow = glowId;
 	material.m_alpha = alphaId;
+    if (alphaId != invalidResource) material.settings.alphaMode = AlphaMode::Mask;
+    if (getFileExtension(file) == "json")
+    {
+        Json::Value root;
+        if (!load(file, root)) return false;
+        const auto mode = root.get("alpha_mode", alphaId == invalidResource ? "opaque" : "mask").asString();
+        if (mode == "opaque") material.settings.alphaMode = AlphaMode::Opaque;
+        else if (mode == "mask") material.settings.alphaMode = AlphaMode::Mask;
+        else if (mode == "blend") material.settings.alphaMode = AlphaMode::Blend;
+        else { SPDLOG_ERROR("Unknown alpha_mode in {}", file.c_str()); return false; }
+        material.settings.alphaCutoff = root.get("alpha_cutoff", 0.5).asFloat();
+        material.settings.opacity = root.get("opacity", 1.0).asFloat();
+        material.settings.srgb = root.get("color_space", "srgb").asString() == "srgb";
+        material.settings.background = root.get("background", false).asBool();
+        if (material.settings.alphaCutoff < 0.f || material.settings.alphaCutoff > 1.f || material.settings.opacity < 0.f || material.settings.opacity > 1.f) return false;
+    }
 	return true;
 }
 
 bool loadMaterialFromIni(const std::string& file, std::string& base, std::string& normal, std::string& specular,
 	std::string& glow, std::string& alpha)
 {
-	LOG_DEBUG("Loading material from file %s.", file.c_str());
+	SPDLOG_DEBUG("Loading material from file {}.", file.c_str());
 	CIniFile ini;
 	if (!ini.load(file))
 	{
-		LOG_ERROR("Failed to load material file %s as ini file.", file.c_str());
+		SPDLOG_ERROR("Failed to load material file {} as ini file.", file.c_str());
 		return false;
 	}
 
@@ -128,15 +145,15 @@ bool loadMaterialFromJson(const std::string& file, std::string& base, std::strin
 	Json::Value root;
 	if (!load(file, root))
 	{
-		LOG_ERROR("Failed to load material file %s as json file.", file.c_str());
+		SPDLOG_ERROR("Failed to load material file {} as json file.", file.c_str());
 		return false;
 	}
 
-	// Load from json
-	deserialize(root["base"], base);
-	deserialize(root["normal"], normal);
-	deserialize(root["specular"], specular);
-	deserialize(root["glow"], glow);
-	deserialize(root["alpha"], alpha);
-	return true;
+    // Texture maps are optional; present entries must still be valid strings.
+    const auto map = [&root](const char* name, std::string& value) {
+        value.clear();
+        return !root.isMember(name) || deserialize(root[name], value);
+    };
+    return root.isObject() && map("base", base) && map("normal", normal) &&
+        map("specular", specular) && map("glow", glow) && map("alpha", alpha);
 }

@@ -25,7 +25,7 @@ public:
 
 	const glm::mat4& getRotationMatrix() const;
 	const glm::mat4& getInverseRotationMatrix() const;
-	
+
 	const glm::mat4& getScaleMatrix() const;
 	const glm::mat4& getInverseScaleMatrix() const;
 
@@ -46,7 +46,7 @@ public:
 
 private:
 	glm::vec3 m_positionVector = glm::vec3(0.f);
-	glm::quat m_rotationQuat = glm::quat(0.f, 0.f, 0.f, 0.f);
+	glm::quat m_rotationQuat = glm::quat(1.f, 0.f, 0.f, 0.f);
 	glm::vec3 m_scaleVector = glm::vec3(1.f);
 
 	struct STransfrom

@@ -19,6 +19,7 @@ class IGraphicsResourceManager;
 class CScene : public IScene
 {
    public:
+    bool removeObject(SceneObjectId id) override;
     CScene(const IGraphicsResourceManager* resourceManager);
     ~CScene();
 

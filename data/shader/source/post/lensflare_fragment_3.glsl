@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 uniform sampler2D scene_texture;
 uniform sampler2D lens_texture;
@@ -23,14 +23,13 @@ void main()
 {
 	// Calculate screen position of the fragment [0.0 - 1.0]
 	vec2 screen_coords = vec2(gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height);
-	
+
 	// Retrieve scene texel and lens texel
 	vec3 sceneTexel = vec3(texture(scene_texture, screen_coords));
-	vec3 lensTexel = vec3(texture2D(lens_texture, screen_coords));
+	vec3 lensTexel = vec3(texture(lens_texture, screen_coords));
 
 	//lensTexel = brightpass(lensTexel, 1.4) * lensTexel;
-	
+
 	// Add bloom to scene
 	color = sceneTexel + lensTexel * 0.4f;
 }
-

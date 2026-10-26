@@ -1,7 +1,7 @@
 #include "LoadShader.h"
 
 #include "CResourceManager.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 #include "io/JsonUtil.h"
 #include "io/JsonDeserialize.h"
 #include "io/CIniFile.h"
@@ -30,28 +30,27 @@ bool load(const std::string& file, CResourceManager& manager, SShader& shader)
 	}
 	else
 	{
-		LOG_ERROR("Unknown or invalid shader file format.");
+		SPDLOG_ERROR("Unknown or invalid shader file format.");
 		return false;
 	}
 
 	// Requires vertex and fragment shader files
 	if (vertex.empty())
 	{
-		LOG_ERROR("The shader program file %s is missing a vertex shader source file specifier.", file.c_str());
+		SPDLOG_ERROR("The shader program file {} is missing a vertex shader source file specifier.", file.c_str());
 		return false;
 	}
 
 	if (fragment.empty())
 	{
-		LOG_ERROR("The shader program file %s is missing a vertex shader source file specifier.", file.c_str());
+		SPDLOG_ERROR("The shader program file {} is missing a vertex shader source file specifier.", file.c_str());
 		return false;
 	}
 
 	ResourceId vertexId = manager.loadString(vertex, true);
 	if (vertexId == invalidResource)
 	{
-		LOG_ERROR(
-			"The vertex shader source file %s, specified in the shader program file %s could not "
+		SPDLOG_ERROR("The vertex shader source file {}, specified in the shader program file {} could not "
 			"be loaded.", vertex.c_str(), file.c_str());
 		return false;
 	}
@@ -59,8 +58,7 @@ bool load(const std::string& file, CResourceManager& manager, SShader& shader)
 	ResourceId fragmentId = manager.loadString(fragment, true);
 	if (fragmentId == invalidResource)
 	{
-		LOG_ERROR(
-			"The fragment shader source file %s, specified in the shader program file %s could not "
+		SPDLOG_ERROR("The fragment shader source file {}, specified in the shader program file {} could not "
 			"be loaded.", fragment.c_str(), file.c_str());
 		return false;
 	}
@@ -71,8 +69,7 @@ bool load(const std::string& file, CResourceManager& manager, SShader& shader)
 		tessCtrlId = manager.loadString(tessControl, true);
 		if (tessCtrlId == invalidResource)
 		{
-			LOG_ERROR(
-				"The tessellation control shader source file %s, specified in the shader program "
+			SPDLOG_ERROR("The tessellation control shader source file {}, specified in the shader program "
 				"file %s could not be loaded.",	tessControl.c_str(), file.c_str());
 			return false;
 		}
@@ -84,8 +81,7 @@ bool load(const std::string& file, CResourceManager& manager, SShader& shader)
 		tessEvalId = manager.loadString(tessEval, true);
 		if (tessEvalId == invalidResource)
 		{
-			LOG_ERROR(
-				"The tessellation evaluation shader source file %s, specified in the shader "
+			SPDLOG_ERROR("The tessellation evaluation shader source file {}, specified in the shader "
 				"program file %s could not be loaded.", tessEval.c_str(), file.c_str());
 			return false;
 		}
@@ -97,8 +93,7 @@ bool load(const std::string& file, CResourceManager& manager, SShader& shader)
 		geometryId = manager.loadString(geometry, true);
 		if (geometryId == invalidResource)
 		{
-			LOG_ERROR(
-				"The geometry shader source file %s, specified in the shader program file %s could "
+			SPDLOG_ERROR("The geometry shader source file {}, specified in the shader program file {} could "
 				"not be loaded.", geometry.c_str(), file.c_str());
 			return false;
 		}
@@ -119,7 +114,7 @@ bool loadShaderFromIni(const std::string& file, std::string& vertex, std::string
 	CIniFile ini;
 	if (!ini.load(file))
 	{
-		LOG_ERROR("Failed to load shader program file %s", file.c_str());
+		SPDLOG_ERROR("Failed to load shader program file {}", file.c_str());
 		return false;
 	}
 
@@ -135,6 +130,6 @@ bool loadShaderFromIni(const std::string& file, std::string& vertex, std::string
 bool loadShaderFromJson(const std::string& file, std::string& vertex, std::string& tessControl,
 	std::string& tessEval, std::string& geometry, std::string& fragment)
 {
-	LOG_DEBUG("Not implemented");
+	SPDLOG_DEBUG("Not implemented");
 	return false;
 }

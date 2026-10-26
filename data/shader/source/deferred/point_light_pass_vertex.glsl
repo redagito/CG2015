@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 // Vertex data streams
 layout (location = 0) in vec3 vertex_position_model_space;

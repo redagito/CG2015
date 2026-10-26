@@ -5,7 +5,8 @@
 #include "graphics/renderer/core/RendererCoreConfig.h"
 #include <GLFW/glfw3.h>
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
+#include "graphics/renderer/debug/RendererDebug.h"
 
 std::unordered_map<GLFWwindow*, CGlfwWindow*> CGlfwWindow::s_windows; /**< Window mapping. */
 
@@ -18,52 +19,61 @@ CGlfwWindow::~CGlfwWindow()
 {
     // Remove mapping
     s_windows.erase(m_window);
+    if (m_window) glfwDestroyWindow(m_window);
+    if (s_windows.empty()) glfwTerminate();
 }
 
-bool CGlfwWindow::init(unsigned int width, unsigned int height, const std::string& name)
+bool CGlfwWindow::init(unsigned int width, unsigned int height, const std::string& name, bool visible)
 {
+    glfwSetErrorCallback([](int code, const char* message) {
+        SPDLOG_ERROR("GLFW error {}: {}", code, message);
+    });
     if (!glfwInit())
     {
-        LOG_ERROR("Failed to initialize GLFW.");
+        SPDLOG_ERROR("Failed to initialize GLFW.");
         return false;
     }
 
     glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, FLEXT_MAJOR_VERSION);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, FLEXT_MINOR_VERSION);
+    glfwWindowHint(GLFW_VISIBLE, visible ? GLFW_TRUE : GLFW_FALSE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     // Create window from parameters
-	LOG_INFO("Creating GLFW window for OpenGL version %u.%u.", FLEXT_MAJOR_VERSION, FLEXT_MINOR_VERSION);
+	SPDLOG_INFO("Creating OpenGL 4.6 core debug context.");
     m_window = glfwCreateWindow(width, height, name.c_str(), NULL, NULL);
     if (m_window == nullptr)
     {
-        LOG_ERROR("Failed to create GLFW window.");
+        SPDLOG_ERROR("Failed to create GLFW window.");
         glfwTerminate();
         return false;
     }
-    
+
     int framebufferWidth;
     int framebufferHeight;
-    
+
     glfwGetFramebufferSize(m_window, &framebufferWidth, &framebufferHeight);
-    
+
     m_width = framebufferWidth;
     m_height = framebufferHeight;
 
     glfwMakeContextCurrent(m_window);
     glfwSetInputMode(m_window, GLFW_STICKY_KEYS, GL_FALSE);
 
-// Load OpenGL extensions
-#ifndef __APPLE__
-    if (flextInit() != GL_TRUE)
+    // glad is generated for OpenGL 4.6 core and resolves functions through GLFW.
+    const int version = gladLoadGL(reinterpret_cast<GLADloadfunc>(glfwGetProcAddress));
+    if (version == 0 || !GLAD_GL_VERSION_4_6 || !initializeOpenGLDebug())
     {
-        glfwTerminate();
-        LOG_ERROR("Failed to initialize flextGL.");
+        SPDLOG_ERROR("Failed to initialize OpenGL 4.6 core debug support.");
+        glfwDestroyWindow(m_window);
+        m_window = nullptr;
+        if (s_windows.empty()) glfwTerminate();
         return false;
     }
-#endif
+    glfwSwapInterval(1);
 
     // Add mapping
     s_windows[m_window] = this;
@@ -111,8 +121,8 @@ void CGlfwWindow::removeListener(IGlfwWindowListener* l) { m_listeners.erase(l);
 
 void CGlfwWindow::resizeCallback(GLFWwindow* window, int width, int height)
 {
-    assert(width > 0);
-    assert(height > 0);
+    // Minimized windows have zero-sized framebuffers.
+    if (width <= 0 || height <= 0) return;
     if (s_windows.count(window) != 0)
     {
         CGlfwWindow* win = s_windows.at(window);

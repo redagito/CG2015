@@ -10,7 +10,7 @@
 #include "core/RendererCoreConfig.h"
 
 #include "debug/RendererDebug.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 void CNullRenderer::draw(const IScene& scene, const ICamera& camera, const IWindow& window, const IGraphicsResourceManager& manager)
 {

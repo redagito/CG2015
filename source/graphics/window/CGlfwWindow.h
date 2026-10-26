@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <string>
 #include <list>
 #include <set>
 
@@ -15,16 +16,19 @@ class IGlfwWindowListener
     virtual void handleResizeEvent(int width, int height) = 0;
 };
 
-/**
+    /**
  * \brief GLFW based implementation of the window interface.
  */
 class CGlfwWindow : public IWindow
 {
    public:
+
+    CGlfwWindow(const CGlfwWindow&) = delete;
+    CGlfwWindow& operator=(const CGlfwWindow&) = delete;
     CGlfwWindow();
     ~CGlfwWindow();
 
-    bool init(unsigned int width, unsigned int height, const std::string& name);
+    bool init(unsigned int width, unsigned int height, const std::string& name, bool visible = true);
 
     void setWidth(unsigned int width);
     void setHeight(unsigned int height);
@@ -47,7 +51,7 @@ class CGlfwWindow : public IWindow
     void toggleMouseCapture();
 
     GLFWwindow* getGlfwHandle() const;
-    
+
     void addListener(IGlfwWindowListener* l);
     void removeListener(IGlfwWindowListener* l);
 

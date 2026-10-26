@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 // Vertex data streams
 layout (location = 0) in vec3 vertexPositionModelSpace;
@@ -24,10 +24,10 @@ void main(void)
 {
 	// Calculate vertex position in camera space
 	gl_Position = projection * view * model * vec4(vertexPositionModelSpace, 1.f);
-	
+
 	// Forward texture coordinates
 	uv = vertexUV;
-    
-    vertexWorldSpace = normalize(rotation * vec4(vertexPositionModelSpace, 0.f)).xyz;
-    normalVectorWorldSpace = normalize(rotation * vec4(vertexNormalModelSpace, 0.f)).xyz;
+
+    vertexWorldSpace = (model * vec4(vertexPositionModelSpace, 1.0)).xyz;
+    normalVectorWorldSpace = normalize(transpose(inverse(mat3(model))) * vertexNormalModelSpace);
 }

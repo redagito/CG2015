@@ -1,110 +1,86 @@
-# Minimum cmake version
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.28...4.4)
+project(CG2015 VERSION 0.2.0 LANGUAGES CXX)
 
-# Project name
-project(CG2015)
+if(APPLE)
+    message(FATAL_ERROR "CG2015 requires OpenGL 4.6 core; macOS only supports OpenGL 4.1.")
+endif()
+find_package(OpenGL REQUIRED)
+find_package(Threads REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+find_package(jsoncpp CONFIG REQUIRED)
+find_package(tinyobjloader CONFIG REQUIRED)
+find_package(lodepng CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
-# Required packages
-find_package (OpenGL REQUIRED)
-
-# GLFW options
-option(GLFW_BUILD_DOCS OFF)
-option(GLFW_BUILD_EXAMPLES OFF)
-option(GLFW_BUILD_TESTS OFF)
-option(GLFW_INSTALL OFF)
-
-# Add glfw
-add_subdirectory(external/glfw)
-include_directories(external/glfw/include)
-
-# Add tinyobj
-add_subdirectory(external/tinyobj)
-include_directories(external/tinyobj)
-
-# JsonCpp options
-option(JSONCPP_WITH_TESTS OFF)
-option(JSONCPP_WITH_POST_BUILD_UNITTEST OFF)
-option(JSONCPP_WITH_PKGCONFIG_SUPPORT OFF)
-option(JSONCPP_WITH_WARNING_AS_ERROR OFF)
-
-# Add jsoncpp
-add_subdirectory(external/jsoncpp)
-include_directories(external/jsoncpp/include)
-
-# Add glm
-# Fix for 32 bit alignment issue in 9.6.0 branch
-add_definitions(-DGLM_FORCE_PURE)
-include_directories(external/glm)
-
-# Add lodepng
-file(GLOB LODEPNG_SOURCES ${CMAKE_SOURCE_DIR}/external/lodepng/lodepng.cpp)
-set(THIRD_PARTY_SOURCES ${THIRD_PARTY_SOURCES} ${LODEPNG_SOURCES})
-include_directories(external/lodepng)
-
-# Add flextgl 4.3 core
-file(GLOB FLEXTGL_SOURCES ${CMAKE_SOURCE_DIR}/external/flextgl/*.cpp)
-set(THIRD_PARTY_SOURCES ${THIRD_PARTY_SOURCES} ${FLEXTGL_SOURCES})
-include_directories(external/flextgl)
-
-# Add irrklang
-include_directories(external/irrklang/irrKlang-1.5.0/include)
-
-# Windows only, TODO fix
-link_directories(
-	external/irrklang/irrKlang-1.5.0/lib/Win32-visualStudio
-	external/irrklang/irrKlang-1.5.0/lib/Win32-gcc
-)
-
-# Add zlib
-add_subdirectory(external/zlib)
-include_directories(externa/zlib)
-
-# Include
-include_directories(
-	${CMAKE_SOURCE_DIR}/source/
-	${CMAKE_BINARY_DIR}/source/
-)
-
-# Sources
-file(GLOB_RECURSE SRC_FILES
-	${CMAKE_SOURCE_DIR}/source/*.cpp
-	${CMAKE_SOURCE_DIR}/source/*.h
-	${CMAKE_BINARY_DIR}/source/*.cpp
-	${CMAKE_BINARY_DIR}/source/*.h
-)
-
-# Add third party sources
-set(SRC_FILES ${SRC_FILES} ${THIRD_PARTY_SOURCES})
-
-# Flags
-# TODO Only for g++
-if (UNIX)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DDEBUG")
-endif (UNIX)
-
-
-# Add library
-add_executable(CG2015 ${SRC_FILES})
-
-# Link dependencies
-target_link_libraries(CG2015
-	${OPENGL_LIBRARY}
-	glfw
-	${GLFW_LIBRARIES}
-    tinyobjloader
-    jsoncpp_lib_static
-	zlibstatic
-)
-
-if (UNIX)
-target_link_libraries(CG2015
-	dl
-)
-endif (UNIX)
-
-if (WIN32)
-target_link_libraries(CG2015
-	irrKlang
-)
-endif (WIN32)
+file(GLOB_RECURSE CG2015_SOURCES CONFIGURE_DEPENDS source/*.cpp source/*.h)
+list(REMOVE_ITEM CG2015_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/source/Main.cpp")
+add_library(cg2015_engine STATIC ${CG2015_SOURCES})
+option(CG2015_VALIDATE_PASSES "Validate sampled textures against draw attachments" ON)
+if(CG2015_VALIDATE_PASSES)
+    target_compile_definitions(cg2015_engine PUBLIC CG2015_VALIDATE_PASSES)
+endif()
+target_compile_features(cg2015_engine PUBLIC cxx_std_23)
+set_target_properties(cg2015_engine PROPERTIES CXX_EXTENSIONS OFF)
+target_include_directories(cg2015_engine PUBLIC source)
+target_compile_definitions(cg2015_engine PUBLIC
+    GLFW_INCLUDE_NONE GLM_ENABLE_EXPERIMENTAL GLM_FORCE_CTOR_INIT
+    $<$<CONFIG:Debug>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG>
+    $<$<NOT:$<CONFIG:Debug>>:SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_INFO>
+    $<$<CONFIG:Debug>:DEBUG>
+    $<$<CXX_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS;NOMINMAX>)
+target_link_libraries(cg2015_engine PUBLIC OpenGL::GL glfw glad::glad glm::glm
+    JsonCpp::JsonCpp tinyobjloader::tinyobjloader lodepng::lodepng Threads::Threads spdlog::spdlog)
+if(MSVC)
+    target_compile_options(cg2015_engine PRIVATE /W4 /permissive- /utf-8)
+else()
+    target_compile_options(cg2015_engine PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_executable(CG2015 source/Main.cpp)
+target_link_libraries(CG2015 PRIVATE cg2015_engine)
+set_target_properties(CG2015 PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+include(CTest)
+option(CG2015_GPU_TESTS "Enable hidden-window tests requiring an OpenGL 4.6 GPU" OFF)
+if(BUILD_TESTING)
+    add_executable(cg2015_tests tests/RegressionTests.cpp)
+    target_link_libraries(cg2015_tests PRIVATE cg2015_engine)
+    add_test(NAME regression COMMAND cg2015_tests)
+    add_executable(cg2015_async_tests tests/AsyncLoadingTests.cpp)
+    target_link_libraries(cg2015_async_tests PRIVATE cg2015_engine)
+    add_test(NAME async_loading COMMAND cg2015_async_tests)
+    add_executable(cg2015_logging_tests tests/LoggingTests.cpp)
+    target_link_libraries(cg2015_logging_tests PRIVATE cg2015_engine)
+    add_test(NAME logging COMMAND cg2015_logging_tests)
+    set_tests_properties(logging PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" TIMEOUT 60)
+    set_tests_properties(async_loading PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" TIMEOUT 60)
+    set_tests_properties(regression PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    if(CG2015_GPU_TESTS)
+        add_executable(cg2015_graphics_tests tests/GraphicsTests.cpp tests/PostProcessTests.cpp tests/RenderResourceTests.cpp tests/ShaderTests.cpp tests/RemainingRenderingTests.cpp tests/UiTests.cpp tests/LoadingScreenTests.cpp)
+        target_link_libraries(cg2015_graphics_tests PRIVATE cg2015_engine)
+        add_test(NAME graphics COMMAND cg2015_graphics_tests)
+        add_test(NAME post_process COMMAND cg2015_graphics_tests --post-process)
+        add_test(NAME render_resources COMMAND cg2015_graphics_tests --resources)
+        add_test(NAME shaders COMMAND cg2015_graphics_tests --shaders)
+        add_test(NAME remaining_rendering COMMAND cg2015_graphics_tests --remaining)
+        add_test(NAME ui COMMAND cg2015_graphics_tests --ui)
+        add_test(NAME loading_screen COMMAND cg2015_graphics_tests --loading)
+        add_test(NAME graphics_fail_fast COMMAND ${CMAKE_COMMAND}
+            -DPROGRAM=$<TARGET_FILE:cg2015_graphics_tests> -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/ExpectDebugFailure.cmake)
+        add_test(NAME smoke_game COMMAND CG2015 --hidden --frames 3)
+        set_tests_properties(smoke_game PROPERTIES FAIL_REGULAR_EXPRESSION "\\[error\\];\\[critical\\];Fatal error:")
+        foreach(renderer IN ITEMS deferred)
+            foreach(scene RANGE 1 6)
+                set(config "${CMAKE_CURRENT_BINARY_DIR}/smoke-${renderer}-${scene}.ini")
+                file(WRITE "${config}" "[mode]\ntype=demo\n[scene]\nfile=data/world/test_${scene}.json\n[renderer]\ntype=${renderer}\n[window]\nwidth=640\nheight=480\n")
+                add_test(NAME smoke_${renderer}_${scene} COMMAND CG2015 --hidden --frames 3 --config "${config}")
+                set_tests_properties(smoke_${renderer}_${scene} PROPERTIES FAIL_REGULAR_EXPRESSION "\\[error\\];\\[critical\\];Fatal error:")
+            endforeach()
+        endforeach()
+        get_property(all_tests DIRECTORY PROPERTY TESTS)
+        set_tests_properties(${all_tests} PROPERTIES
+            WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" RUN_SERIAL TRUE TIMEOUT 60)
+    endif()
+endif()
+install(TARGETS CG2015 RUNTIME DESTINATION .)
+install(DIRECTORY data DESTINATION .)

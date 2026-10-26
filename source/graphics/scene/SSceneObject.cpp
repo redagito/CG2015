@@ -9,7 +9,7 @@ SSceneObject::SSceneObject()
 
 SSceneObject::SSceneObject(ResourceId mesh, ResourceId material, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale, bool visible, const CBoundingSphere& sphere)
-	: m_mesh(mesh), m_material(material), m_position(position), m_rotation(rotation), m_scale(scale), m_visible(visible), boundingSphere(sphere)
+	: m_mesh(mesh), m_material(material), m_position(position), m_rotation(rotation), m_scale(scale), m_visible(visible), m_localBoundingSphere(sphere)
 {
 	updateBoundingSphere();
 	return;
@@ -17,7 +17,7 @@ SSceneObject::SSceneObject(ResourceId mesh, ResourceId material, const glm::vec3
 
 SSceneObject::SSceneObject(ResourceId model, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale, bool visible, const CBoundingSphere& sphere)
-	: m_model(model), m_position(position), m_rotation(rotation), m_scale(scale), m_visible(visible), boundingSphere(sphere)
+	: m_model(model), m_position(position), m_rotation(rotation), m_scale(scale), m_visible(visible), m_localBoundingSphere(sphere)
 {
 	updateBoundingSphere();
 	return;
@@ -26,7 +26,9 @@ SSceneObject::SSceneObject(ResourceId model, const glm::vec3& position,
 void SSceneObject::updateBoundingSphere()
 {
 	// Translate
-	boundingSphere.setPosition(m_position);
+    boundingSphere = m_localBoundingSphere;
+	boundingSphere.setPosition(m_position + m_rotation * (boundingSphere.getPosition() * m_scale));
 	// Scale sphere by highest scaling factor
-	boundingSphere.setRadius(boundingSphere.getRadius() * std::max(std::max(m_scale.x, m_scale.y), m_scale.z));
+	const auto magnitude = glm::abs(m_scale);
+	boundingSphere.setRadius(boundingSphere.getRadius() * std::max({magnitude.x, magnitude.y, magnitude.z}));
 }

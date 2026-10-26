@@ -1,4 +1,4 @@
-#version 330 core
+#version 460 core
 
 uniform sampler2D scene_texture;
 uniform float screen_width;
@@ -16,13 +16,13 @@ float toonify(in float intensity) {
     else
         return 0.1;
 }
- 
+
 void main(){
 
 	// Calculate screen position of the fragment [0-1]
 	vec2 screen_coords = vec2(gl_FragCoord.x / screen_width, gl_FragCoord.y / screen_height);
 
-    vec4 help_color = texture2D(scene_texture, screen_coords);
+    vec4 help_color = texture(scene_texture, screen_coords);
     float factor = toonify(max(help_color.r, max(help_color.g, help_color.b)));
     color = vec4(factor*help_color.rgb, help_color.a);
 }

@@ -1,59 +1,51 @@
 #include "CGraphicsSystem.h"
+#include "graphics/IWindow.h"
 
 #include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/scene/CScene.h"
 #include "graphics/resource/CGraphicsResourceManager.h"
 #include "graphics/camera/CCamera.h"
+#include "graphics/camera/IControllableCamera.h"
 #include "graphics/renderer/CDeferredRenderer.h"
-#include "graphics/renderer/CForwardRenderer.h"
+
 
 #include "resource/IResourceManager.h"
 
 #include "util/Time.h"
-#include "debug/Log.h"
-#include "debug/CLogger.h"
+#include <spdlog/spdlog.h>
+#include "debug/Logging.h"
 
 CGraphicsSystem::CGraphicsSystem()
 {
-	// Add debug info as log listener
-	CLogger::addListener(&m_debugInfo);
+    logging::initialize();
 }
 
 CGraphicsSystem::~CGraphicsSystem()
 {
-	// Remove debug info log listener
-	CLogger::removeListener(&m_debugInfo);
 }
 
 bool CGraphicsSystem::init(IResourceManager& manager)
 {
 	// Create graphics resource manager and register as listener to resource manager
 	CGraphicsResourceManager* grm = new CGraphicsResourceManager;
-	manager.addResourceListener(grm);
 	m_resourceManager.reset(grm);
-	
+	manager.addResourceListener(grm);
+
 	// Create renderers
 	// Deferred renderer
 	m_deferredRenderer.reset(CDeferredRenderer::create(manager));
 	if (m_deferredRenderer == nullptr)
 	{
-		LOG_ERROR("Failed to initialize deferred renderer.");
+		SPDLOG_ERROR("Failed to initialize deferred renderer.");
 		return false;
 	}
-	
-	// Forward renderer
-	m_forwardRenderer.reset(CForwardRenderer::create(manager));
-	if (m_forwardRenderer == nullptr)
-	{
-		LOG_ERROR("Failed to initialize forward renderer.");
-		return false;
-	}
-	
+
 	// Set default active renderer
 	m_activeRenderer = m_deferredRenderer.get();
 
 	// Set debug overlay renderer
 	m_debugInfoDisplay.reset(new CDebugInfoDisplay(manager));
+    if (!m_uiRenderer.init(manager)) return false;
 
 	// Init ok
 	return true;
@@ -61,23 +53,10 @@ bool CGraphicsSystem::init(IResourceManager& manager)
 
 void CGraphicsSystem::setActiveRenderer(const std::string& renderer)
 {
-	// Deferred renderer does not support wireframe mode, force forward renderer
-	if (renderer == "deferred" && !m_wireframeMode)
-	{
-		m_activeRenderer = m_deferredRenderer.get();
-	}
-	else if (renderer == "forward")
-	{
-		m_activeRenderer = m_forwardRenderer.get();
-	}
-	else
-	{
-		// Use default
-		LOG_WARNING("Invalid or unknown renderer type %s. Setting renderer to default.", renderer.c_str());
-		m_activeRenderer = m_deferredRenderer.get();
-	}
+    if (renderer != "deferred")
+        SPDLOG_WARN("Renderer '{}' is unavailable; using deferred.", renderer.c_str());
+    m_activeRenderer = m_deferredRenderer.get();
 }
-
 IScene* CGraphicsSystem::createScene()
 {
 	// TODO Refactor
@@ -98,7 +77,7 @@ ICamera* CGraphicsSystem::createCamera()
 	return camera;
 }
 
-void CGraphicsSystem::setActiveCamera(const ICamera* camera)
+void CGraphicsSystem::setActiveCamera(ICamera* camera)
 {
 	m_activeCamera = camera;
 }
@@ -113,35 +92,16 @@ void CGraphicsSystem::toggleDebugOverlayTransparency()
 	m_transparentDebugOverlay = !m_transparentDebugOverlay;
 }
 
-void CGraphicsSystem::toggleWireframeMode()
-{
-	m_wireframeMode = !m_wireframeMode;
-	if (m_wireframeMode)
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		// Only supported for forward renderer
-		// TODO Implement rendering parameters for IRenderer interface
-		// Force usage of forward renderer
-		setActiveRenderer("forward");
-	}
-	else
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		// Reset renderer
-		setActiveRenderer("deferred");
-	}
-}
-
 void CGraphicsSystem::toggleViewFrustumCulling()
 {
 	CScene::setViewFrustumCulling(!CScene::getViewFrustumCulling());
 	if (CScene::getViewFrustumCulling())
 	{
-		LOG_INFO("View frustum culling enabled.");
+		SPDLOG_INFO("View frustum culling enabled.");
 	}
 	else
 	{
-		LOG_INFO("View frustum culling disabled.");
+		SPDLOG_INFO("View frustum culling disabled.");
 	}
 }
 
@@ -184,18 +144,26 @@ void CGraphicsSystem::draw(IWindow& window)
 	// Scene draw
 	if (m_activeScene != nullptr && m_activeCamera != nullptr)
 	{
-		m_activeRenderer->draw(*m_activeScene, *m_activeCamera, window, *m_resourceManager);
+		if (auto* camera = dynamic_cast<IControllableCamera*>(m_activeCamera))
+            if (window.getWidth() && window.getHeight())
+                camera->setProjection(camera->getFieldOfView(), static_cast<float>(window.getWidth()) / window.getHeight(), camera->getZNear(), camera->getZFar());
+        m_activeRenderer->draw(*m_activeScene, *m_activeCamera, window, *m_resourceManager);
 	}
 
+    m_uiRenderer.draw(m_uiDocument,window.getWidth(),window.getHeight(),*m_resourceManager);
 	// Debug overlay draw
-	if (m_drawDebugOverlay)
+	if (m_drawDebugOverlay && m_activeCamera != nullptr)
 	{
 		// Update debug info
+        m_debugInfo.setLog(logging::overlaySink()->last_formatted(m_debugInfo.getLogBufferSize()));
 		m_debugInfo.setValue("TimeDiff", std::to_string(timeDiff));
 		m_debugInfo.setValue("Camera x", std::to_string(m_activeCamera->getPosition().x));
 		m_debugInfo.setValue("Camera y", std::to_string(m_activeCamera->getPosition().y));
 		m_debugInfo.setValue("Camera z", std::to_string(m_activeCamera->getPosition().z));
 		m_debugInfo.setValue("FPS", std::to_string(m_lastFrameCount));
+        const auto& profiler = static_cast<CDeferredRenderer*>(m_deferredRenderer.get())->profiler();
+        for (const auto& [name,ms] : profiler.gpuMilliseconds()) if (name.find('.')==std::string::npos) m_debugInfo.setValue("GPU ms: " + name,std::to_string(ms));
+        for (const auto& [name,ms] : profiler.cpuMilliseconds()) if (name.find('.')==std::string::npos) m_debugInfo.setValue("CPU ms: " + name,std::to_string(ms));
 		m_debugInfo.setValue("Culled objects", std::to_string(m_activeCamera->getFeatureInfo().culledObjectCount));
 		m_debugInfoDisplay->draw(m_debugInfo, m_transparentDebugOverlay);
 	}

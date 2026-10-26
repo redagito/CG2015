@@ -10,8 +10,10 @@
 #include "graphics/IGraphicsResourceManager.h"
 #include "graphics/ICamera.h"
 #include "graphics/resource/CMesh.h"
+#include "graphics/resource/CModel.h"
+#include <stdexcept>
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 bool CScene::getViewFrustumCulling()
 {
@@ -32,15 +34,18 @@ CScene::~CScene() {}
 SceneObjectId CScene::createObject(ResourceId model, const glm::vec3& position,
 	const glm::quat& rotation, const glm::vec3& scale)
 {
-	//const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
-	m_objects.push_back(SSceneObject(model, position, rotation, scale, true, CBoundingSphere()));
-	return m_objects.size() - 1;
+    const auto* resource = m_resourceManager->getModel(model);
+    if (!resource || !resource->hasMesh()) throw std::runtime_error("Invalid model handle");
+    const auto id = createObject(resource->getMeshId(), resource->getMaterialId(), position, rotation, scale);
+    m_objects.at(id).m_model = model;
+    return id;
 }
 
 SceneObjectId CScene::createObject(ResourceId meshId, ResourceId material, const glm::vec3& position,
                                    const glm::quat& rotation, const glm::vec3& scale)
 {
 	const CMesh* meshPtr = m_resourceManager->getMesh(meshId);
+    if (!meshPtr) throw std::runtime_error("Invalid mesh handle");
 	m_objects.push_back(SSceneObject(meshId, material, position, rotation, scale, true, meshPtr->getBoundingSphere()));
     return m_objects.size() - 1;
 }
@@ -57,6 +62,11 @@ bool CScene::getObject(SceneObjectId id, ResourceId& mesh, ResourceId& material,
     // Write data
     mesh = m_objects.at(id).m_mesh;
     material = m_objects.at(id).m_material;
+    if (m_objects.at(id).m_model != invalidResource) {
+        const auto* model = m_resourceManager->getModel(m_objects.at(id).m_model);
+        if (!model || !model->hasMesh()) return false;
+        mesh = model->getMeshId(); material = model->getMaterialId();
+    }
     position = m_objects.at(id).m_position;
     rotation = m_objects.at(id).m_rotation;
     scale = m_objects.at(id).m_scale;
@@ -175,7 +185,7 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 
 	// Hackyyy
 	camera.getFeatureInfo().culledObjectCount = 0;
-    
+
 	// TODO Occlusion culling, better data structure for objects
     for (unsigned int i = 0; i < m_objects.size(); ++i)
     {
@@ -183,7 +193,12 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
 		if (m_objects.at(i).m_visible)
 		{
 			// Check the objects bounding sphere against the view frustum or do not cull if disabled
-			if (!s_useViewFrustumCulling || viewFrustum.isInsideOrIntersects(m_objects.at(i).boundingSphere))
+            ResourceId meshId,materialId;glm::vec3 position,scale;glm::quat rotation;bool visible;
+            if (!getObject(i,meshId,materialId,position,rotation,scale,visible)) continue;
+            const auto* mesh = m_resourceManager->getMesh(meshId);
+            if (!mesh) continue;
+            const SSceneObject current(meshId,materialId,position,rotation,scale,visible,mesh->getBoundingSphere());
+			if (!s_useViewFrustumCulling || !camera.getFeatureInfo().frustumCullingActive || viewFrustum.isInsideOrIntersects(current.boundingSphere))
 			{
 				// Object is (at least partially) visible, add to query result
 				// Counter variable is object id
@@ -200,7 +215,7 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
     for (unsigned int i = 0; i < m_pointLights.size(); ++i)
     {
         // Check light volume against view frustum for point light culling
-		if (!s_useViewFrustumCulling || viewFrustum.isInsideOrIntersects(CBoundingSphere(m_pointLights.at(i).m_position, m_pointLights.at(i).m_radius)))
+		if (!s_useViewFrustumCulling || !camera.getFeatureInfo().frustumCullingActive || viewFrustum.isInsideOrIntersects(CBoundingSphere(m_pointLights.at(i).m_position, m_pointLights.at(i).m_radius)))
 		{
 			// Counter variable is light id
 			query.addPointLight(i);
@@ -215,4 +230,12 @@ void CScene::getVisibleObjects(const ICamera& camera, ISceneQuery& query) const
         query.addDirectionalLight(i);
     }
 	return;
+}
+
+bool CScene::removeObject(SceneObjectId id)
+{
+    if (id<0 || static_cast<size_t>(id)>=m_objects.size()) return false;
+    m_objects[id]=SSceneObject{};
+    m_objects[id].m_visible=false;
+    return true;
 }

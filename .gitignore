@@ -1,4 +1,8 @@
 # Compiled Object files
+/build/
+/.conan2/
+/log/
+/CMakeUserPresets.json
 *.slo
 *.lo
 *.o

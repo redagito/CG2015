@@ -5,30 +5,33 @@
 #include "graphics/renderer/core/RendererCoreConfig.h"
 #include "resource/ResourceConfig.h"
 
-/**
+    /**
  * \brief Texture class.
  */
 class CTexture
 {
    public:
+
+    CTexture(const CTexture&) = delete;
+    CTexture& operator=(const CTexture&) = delete;
     CTexture();
 
     /**
      * \brief Create from image data.
      */
     CTexture(const std::vector<unsigned char>& imageData, unsigned int width, unsigned int height,
-             EColorFormat format, bool createMipmaps = true);
+             EColorFormat format, bool createMipmaps = true, bool srgb = false);
 
     /**
      * \brief Creates empty texture.
      */
     CTexture(unsigned int width, unsigned int height, EColorFormat format,
-             bool createMipmaps = true);
+             bool createMipmaps = true, bool srgb = false);
 
     // TODO remove this and introduce ability to create cubetextures (necessary for point light
     // shadows)
     CTexture(GLint id, bool hasMipmaps, unsigned int width, unsigned int height, GLint format,
-             GLenum externalFormat);
+             GLenum externalFormat, GLenum target = GL_TEXTURE_2D);
 
     ~CTexture();
 
@@ -36,7 +39,7 @@ class CTexture
     * \brief Initializes texture data.
     */
     bool init(const std::vector<unsigned char>& imageData, unsigned int width, unsigned int height,
-              EColorFormat format, bool createMipmaps = true);
+              EColorFormat format, bool createMipmaps = true, bool srgb = false);
 
     bool init(unsigned int width, unsigned int height, GLint format);
 
@@ -82,4 +85,5 @@ class CTexture
     unsigned int m_height;
     GLint m_format;
     GLenum m_externalFormat;
+    GLenum m_target = GL_TEXTURE_2D;
 };

@@ -6,10 +6,10 @@
 
 #include "CTexture.h"
 #include "graphics/renderer/debug/RendererDebug.h"
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 
-GLuint CShaderProgram::s_activeShaderProgram = 0;
+namespace { bool isCurrentProgram(GLuint id) { GLint current = 0; glGetIntegerv(GL_CURRENT_PROGRAM, &current); return static_cast<GLuint>(current) == id; } }
 
 CShaderProgram::CShaderProgram(TShaderObject<GL_VERTEX_SHADER>* vertex,
                                TShaderObject<GL_TESS_CONTROL_SHADER>* tessControl,
@@ -25,6 +25,7 @@ CShaderProgram::~CShaderProgram()
 {
     if (m_valid)
     {
+        if (isCurrentProgram(m_programId)) setInactive();
         glDeleteProgram(m_programId);
     }
 }
@@ -91,7 +92,7 @@ bool CShaderProgram::init(TShaderObject<GL_VERTEX_SHADER>* vertex,
     {
         // Set info log size
         GLint size;
-        glGetShaderiv(programId, GL_INFO_LOG_LENGTH, &size);
+        glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &size);
         if (size > 0)
         {
             // Create buffer
@@ -108,7 +109,8 @@ bool CShaderProgram::init(TShaderObject<GL_VERTEX_SHADER>* vertex,
     // Delete old shader object
     if (m_valid)
     {
-        glDeleteShader(m_programId);
+        if (isCurrentProgram(m_programId)) setInactive();
+        glDeleteProgram(m_programId);
     }
     // Set new id
     m_programId = programId;
@@ -121,7 +123,7 @@ bool CShaderProgram::init(TShaderObject<GL_VERTEX_SHADER>* vertex,
     std::string error;
     if (hasGLError(error))
     {
-        LOG_ERROR("GL Error: %s", error.c_str());
+        SPDLOG_ERROR("GL Error: {}", error.c_str());
     }
 
     return true;
@@ -130,20 +132,18 @@ bool CShaderProgram::init(TShaderObject<GL_VERTEX_SHADER>* vertex,
 void CShaderProgram::setActive()
 {
 	assert(isValid());
-	if (s_activeShaderProgram != m_programId)
+	if (!isCurrentProgram(m_programId))
 	{
 		glUseProgram(m_programId);
-		s_activeShaderProgram = m_programId;
 	}
 }
 
 void CShaderProgram::setInactive()
 {
 	assert(isValid());
-	if (s_activeShaderProgram == m_programId)
+	if (isCurrentProgram(m_programId))
 	{
 		glUseProgram(0);
-		s_activeShaderProgram = 0;
 	}
 }
 
@@ -163,7 +163,7 @@ GLint CShaderProgram::getUniformLocation(const std::string& uniformName) const
 		// Invalid location, uniform name does not exist in shader
 		if (location == -1)
 		{
-			LOG_ERROR("Failed to retrieve uniform name %s from shader program.", uniformName.c_str());
+			SPDLOG_DEBUG("Uniform {} is absent or optimized out.", uniformName.c_str());
 		}
         m_uniformLocations[uniformName] = location;
         return location;

@@ -1,9 +1,12 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <functional>
 
 #include "ResourceConfig.h"
+#include "AsyncLoading.h"
+namespace Json { class Value; }
 
 class IResourceListener; /**< Listener class. */
 
@@ -15,6 +18,22 @@ class IResourceListener; /**< Listener class. */
 class IResourceManager
 {
    public:
+    // Queue CPU-only work. Publication/listener callbacks run only in pumpAsyncLoads.
+    virtual AsyncLoadId loadAsync(const std::vector<AssetRequest>& requests) = 0;
+    virtual AsyncLoadId loadManifestAsync(const std::string& file) = 0;
+    virtual AsyncLoadStatus getLoadStatus(AsyncLoadId id) const = 0;
+    virtual void cancelLoad(AsyncLoadId id) = 0;
+    virtual void pumpAsyncLoads(double budgetMilliseconds=2.0) = 0;
+    virtual bool loadJsonDocument(const std::string& file,Json::Value& output) = 0;
+    // Fail on an unprepared asset instead of silently blocking the render thread.
+    virtual void setCacheOnly(bool enabled) = 0;
+    virtual SMaterialSettings getMaterialSettings(ResourceId id) const = 0;
+    virtual bool setMaterialSettings(ResourceId id, const SMaterialSettings& settings) = 0;
+    virtual bool updateString(ResourceId id, const std::string& text) = 0;
+    virtual bool reloadShader(ResourceId id) = 0;
+    virtual bool reloadResource(EResourceType type, ResourceId id) = 0;
+    // Referenced CPU dependencies cannot be deleted; callers release scene users first.
+    virtual bool removeResource(EResourceType type, ResourceId id) = 0;
     /**
      * \brief Virtual destructor for interface class.
      */
@@ -76,9 +95,9 @@ class IResourceManager
     /**
     * \brief Returns material data.
     */
-    virtual bool getMaterial(ResourceId id, ResourceId& baseImage, ResourceId& alphaImage,
-                             ResourceId& normalImage, ResourceId& specularImage,
-                             ResourceId& glowImage) const = 0;
+    virtual bool getMaterial(ResourceId id, ResourceId& baseImage, ResourceId& normalImage,
+                             ResourceId& specularImage, ResourceId& glowImage,
+                             ResourceId& alphaImage) const = 0;
 
 	/**
 	* \brief Creates model from mesh and material.

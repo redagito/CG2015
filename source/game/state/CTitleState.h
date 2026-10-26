@@ -26,7 +26,8 @@ public:
 	const std::string& getNextState() const;
 
 private:
-	float m_fadeInTime;
+    void updateOverlay();
+    bool m_enterWasDown=false;
 	std::string m_sceneFile;
 	IInputProvider* m_inputProvider = nullptr;
 	std::shared_ptr<ICamera> m_camera = nullptr;

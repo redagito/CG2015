@@ -7,16 +7,17 @@
 #include "graphics/ICamera.h"
 #include "resource/IResourceManager.h"
 #include "game/CGameSystem.h"
+#include "input/IInputProvider.h"
 
 /**
 * \brief Load state.
 *
-* Just for showing off some effects.
+* Animates the loading scene while CPU preparation and render-thread uploads run.
 */
 class CLoadState : public IGameState
 {
 public:
-	CLoadState(const std::string& sceneFile, float transitionTime);
+	CLoadState(const std::string& sceneFile, const std::string& manifest);
 	~CLoadState();
 
 	bool init(IGraphicsSystem* graphicsSystem, IInputProvider* inputProvider, IResourceManager* resourceManager);
@@ -25,10 +26,14 @@ public:
 	bool update(float dtime);
 	void onExit();
 	const std::string& getNextState() const;
+    bool readyToContinue() const {return m_ready;}
 
 private:
-	float m_transitionTime = 0.f;
-	float m_timeLeft = 0.f;
+    std::string m_manifest;
+    AsyncLoadId m_request=0;
+    bool m_ready=false;
+    bool m_enterWasDown=false;
+    IInputProvider* m_inputProvider=nullptr;
 	std::string m_sceneFile;
 	std::shared_ptr<ICamera> m_camera = nullptr;
 	IScene* m_scene = nullptr;

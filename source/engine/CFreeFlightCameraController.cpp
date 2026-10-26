@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <json/json.h>
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 #include "graphics/camera/IControllableCamera.h"
 
@@ -56,14 +56,14 @@ bool CFreeFlightCameraController::loadSequence(std::string file)
     std::ifstream ifs(file);
     if (!ifs.is_open())
     {
-        LOG_ERROR("Failed to open json file %s.", file.c_str());
+        SPDLOG_ERROR("Failed to open json file {}.", file.c_str());
         return false;
     }
 
     // Parse json data
     if (!reader.parse(ifs, root))
     {
-        LOG_ERROR("Failed to load scene file %s with error %s.", file.c_str(),
+        SPDLOG_ERROR("Failed to load scene file {} with error {}.", file.c_str(),
                   reader.getFormattedErrorMessages().c_str());
         return false;
     }
@@ -75,14 +75,14 @@ bool CFreeFlightCameraController::loadSequence(std::string file)
     // Node empty?
     if (node.empty())
     {
-        LOG_INFO("Missing or empty 'positions' node. No scene objects are loaded.");
+        SPDLOG_INFO("Missing or empty 'positions' node. No scene objects are loaded.");
         return true;
     }
 
     // Node is array type
     if (!node.isArray())
     {
-        LOG_ERROR("The node 'positions' must be array type.");
+        SPDLOG_ERROR("The node 'positions' must be array type.");
         return false;
     }
 
@@ -98,35 +98,35 @@ bool CFreeFlightCameraController::loadSequence(std::string file)
 
         if (!load(node[i], "position", position))
         {
-            LOG_ERROR("Failed loading node 'position' for element #%i.", i);
+            SPDLOG_ERROR("Failed loading node 'position' for element #{}.", i);
             success = false;
             break;
         }
 
         if (!load(node[i], "orientation", orientation))
         {
-            LOG_ERROR("Failed loading node 'orientation' for element #%i.", i);
+            SPDLOG_ERROR("Failed loading node 'orientation' for element #{}.", i);
             success = false;
             break;
         }
 
         if (!load(node[i], "timestamp", timestamp))
         {
-            LOG_ERROR("Failed loading node 'timestamp' for element #%i.", i);
+            SPDLOG_ERROR("Failed loading node 'timestamp' for element #{}.", i);
             success = false;
             break;
         }
         
         if (!load(node[i], "fxaa", fxaaActive))
         {
-            LOG_ERROR("Failed loading node 'fxaa' for element #%i.", i);
+            SPDLOG_ERROR("Failed loading node 'fxaa' for element #{}.", i);
             success = false;
             break;
         }
         
         if (!load(node[i], "fog", fogActive))
         {
-            LOG_ERROR("Failed loading node 'fog' for element #%i.", i);
+            SPDLOG_ERROR("Failed loading node 'fog' for element #{}.", i);
             success = false;
             break;
         }

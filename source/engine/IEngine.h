@@ -16,12 +16,12 @@ public:
 	* \parm config Config file name containing initialization parameters.
 	* \return True on success and false on error.
 	*/
-	virtual bool init(const char* configFile) = 0;
+	virtual bool init(const char* configFile, bool visible = true) = 0;
 
 	/**
 	* \brief Starts game loop.
 	*
 	* The function returns after the game loop ends.
 	*/
-	virtual void run() = 0;
+	virtual void run(unsigned int frameLimit = 0) = 0;
 };

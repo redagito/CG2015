@@ -1,0 +1,90 @@
+#include "graphics/ui/CUiRenderer.h"
+#include "graphics/renderer/CFrameBuffer.h"
+#include "graphics/IGraphicsSystem.h"
+#include "graphics/resource/CGraphicsResourceManager.h"
+#include "graphics/resource/CTexture.h"
+#include "graphics/scene/CScene.h"
+#include "game/state/CTitleState.h"
+#include "resource/Resource.h"
+#include <GLFW/glfw3.h>
+#include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <stdexcept>
+
+namespace {
+void require(bool value,const char* message) { if(!value) throw std::runtime_error(message); }
+class Input : public IInputProvider {
+public:
+    bool enter=false;
+    void addInputListener(IInputListener*) override {}
+    void removeInputListener(IInputListener*) override {}
+    bool isKeyPressed(int key) override {return key==GLFW_KEY_ENTER && enter;}
+};
+class Graphics : public IGraphicsSystem {
+public:
+    CScene scene;
+    UiDocument overlay;
+    explicit Graphics(const IGraphicsResourceManager* resources):scene(resources) {}
+    bool init(IResourceManager&) override {return true;}
+    void setUiOverlay(const UiDocument& value) override {overlay=value;}
+    void setActiveRenderer(const std::string&) override {}
+    IScene* createScene() override {return &scene;}
+    void setActiveScene(IScene*) override {}
+    ICamera* createCamera() override {return nullptr;}
+    void setActiveCamera(ICamera*) override {}
+    void toggleDebugOverlay() override {}
+    void toggleDebugOverlayTransparency() override {}
+    void toggleViewFrustumCulling() override {}
+    void draw(IWindow&) override {}
+};
+}
+
+bool runUiTests()
+{
+    try {
+        std::unique_ptr<IResourceManager> resources(createResourceManager());
+        CGraphicsResourceManager gpu;resources->addResourceListener(&gpu);
+        CUiRenderer ui;require(ui.init(*resources),"Bundled UI initialization failed");
+        Graphics graphics(&gpu);Input input;
+        CTitleState title("data/world/intro_1.json");
+        require(title.init(&graphics,&input,resources.get()),"Title initialization failed");
+        input.enter=true;title.onEnter();
+        require(title.update(0.016f),"A held Enter key skipped the title");
+        require(graphics.overlay.texts.size()==4 && graphics.overlay.texts[0].text=="DEFENDERS" &&
+            graphics.overlay.texts[1].text=="of CTHEDRA","The title UI text is missing");
+
+        for(const glm::uvec2 size:{glm::uvec2(320,180),glm::uvec2(1280,720),glm::uvec2(480,900)}) {
+            auto color=std::make_shared<CTexture>();require(color->init(size.x,size.y,GL_RGBA8),"UI target allocation failed");
+            CFrameBuffer target;target.attach(color,GL_COLOR_ATTACHMENT0);target.setActive(GL_FRAMEBUFFER);
+            glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);glClearColor(0,0,0,1);glClear(GL_COLOR_BUFFER_BIT);
+            // A hostile caller state must neither hide the UI nor be lost.
+            glEnable(GL_DEPTH_TEST);glEnable(GL_SCISSOR_TEST);glScissor(0,0,0,0);glDepthMask(GL_TRUE);
+            glEnable(GL_FRAMEBUFFER_SRGB);glColorMask(GL_FALSE,GL_TRUE,GL_FALSE,GL_TRUE);
+            ui.draw(graphics.overlay,size.x,size.y,gpu);
+            require(glIsEnabled(GL_DEPTH_TEST)&&glIsEnabled(GL_SCISSOR_TEST)&&glIsEnabled(GL_FRAMEBUFFER_SRGB),"UI leaked caller GL state");
+            GLint fbo=0;glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING,&fbo);require(static_cast<GLuint>(fbo)==target.getId(),"UI changed the destination");
+            glDisable(GL_SCISSOR_TEST);glDisable(GL_FRAMEBUFFER_SRGB);glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+            std::vector<unsigned char> pixels(size.x*size.y*4);
+            glReadBuffer(GL_COLOR_ATTACHMENT0);glReadPixels(0,0,size.x,size.y,GL_RGBA,GL_UNSIGNED_BYTE,pixels.data());
+            unsigned titlePixels=0,subtitlePixels=0,promptPixels=0,centerPixels=0;
+            for(unsigned y=0;y<size.y;++y) for(unsigned x=0;x<size.x;++x) {
+                const auto p=4*(y*size.x+x);const float top=1.f-(y+0.5f)/size.y;
+                const bool bright=pixels[p+1]>150 && pixels[p+2]>150;
+                if(bright && top<0.125f) ++titlePixels;
+                if(bright && top>=0.125f && top<0.20f) ++subtitlePixels;
+                if(bright && top>0.83f && top<0.89f) ++promptPixels;
+                if(top>0.35f && top<0.70f && pixels[p+1]>0) ++centerPixels;
+            }
+            require(titlePixels>15 && subtitlePixels>8 && promptPixels>5,"Title UI was clipped or missing after resize");
+            require(centerPixels==0,"Title overlay obscured the ship area");
+            CFrameBuffer::setDefaultActive();
+        }
+        input.enter=false;require(title.update(0.016f),"Title exited on Enter release");
+        input.enter=true;require(!title.update(0.016f),"Enter did not activate the title action");
+        title.onExit();require(graphics.overlay.empty(),"Title overlay leaked into gameplay");
+        glDisable(GL_DEPTH_TEST);glDepthMask(GL_TRUE);
+        std::puts("Title UI: bundled font, responsive text, isolated GL state and Enter lifecycle passed.");
+        return true;
+    } catch(const std::exception& error) {std::fprintf(stderr,"UI regression: %s\n",error.what());return false;}
+}

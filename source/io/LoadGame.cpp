@@ -8,7 +8,7 @@
 #include "JsonUtil.h"
 #include "JsonDeserialize.h"
 
-#include "debug/Log.h"
+#include <spdlog/spdlog.h>
 
 #include "resource/IResourceManager.h"
 #include "game/CGameSystem.h"
@@ -21,7 +21,7 @@ bool load(const std::string& file, IResourceManager& manager, CGameSystem& syste
 	Json::Value root;
 	if (!load(file, root))
 	{
-		LOG_ERROR("Failed to load game from file %s.", file.c_str());
+		SPDLOG_ERROR("Failed to load game from file {}.", file.c_str());
 		return false;
 	}
 
@@ -29,16 +29,16 @@ bool load(const std::string& file, IResourceManager& manager, CGameSystem& syste
 	std::string name;
 	if (!load(root, "name", name))
 	{
-		LOG_ERROR("Failed to load game name identfier from file %s.", file.c_str());
+		SPDLOG_ERROR("Failed to load game name identfier from file {}.", file.c_str());
 		return false;
 	}
 	// TODO Name identifier unused. Use for window title.
-	LOG_INFO("Loading game %s.", name.c_str());
+	SPDLOG_INFO("Loading game {}.", name.c_str());
 
 	// Load game states which contain high level game logic and application control
 	if (!loadGameStates(root["game_states"], manager, system))
 	{
-		LOG_ERROR("Failed to load game states from file %s.", file.c_str());
+		SPDLOG_ERROR("Failed to load game states from file {}.", file.c_str());
 		return false;
 	}
 
@@ -46,12 +46,12 @@ bool load(const std::string& file, IResourceManager& manager, CGameSystem& syste
 	std::string initialState;
 	if (!load(root, "start_state", initialState))
 	{
-		LOG_ERROR("Failed to load initial game state from file %s.", file.c_str());
+		SPDLOG_ERROR("Failed to load initial game state from file {}.", file.c_str());
 		return false;
 	}
 
 	// Load successful
-	LOG_INFO("Loaded game file %s.", file.c_str());
+	SPDLOG_INFO("Loaded game file {}.", file.c_str());
 	return true;
 }
 
@@ -60,14 +60,14 @@ bool loadGameStates(const Json::Value& node, IResourceManager& manager, CGameSys
 	// Node empty?
 	if (node.empty())
 	{
-		LOG_INFO("Missing or empty 'game_states' node. No game states were loaded.");
+		SPDLOG_INFO("Missing or empty 'game_states' node. No game states were loaded.");
 		return false;
 	}
 
 	// Node is array type?
 	if (!node.isArray())
 	{
-		LOG_ERROR("The node 'game_states' must be array type.");
+		SPDLOG_ERROR("The node 'game_states' must be array type.");
 		return false;
 	}
 
@@ -112,7 +112,7 @@ bool loadGameState(const std::string& file, const std::string& name, IResourceMa
 	Json::Value root;
 	if (!load(file, root))
 	{
-		LOG_ERROR("Failed to load game state from file %s.", file.c_str());
+		SPDLOG_ERROR("Failed to load game state from file {}.", file.c_str());
 		return false;
 	}
 
@@ -122,7 +122,7 @@ bool loadGameState(const std::string& file, const std::string& name, IResourceMa
 	std::string type;
 	if (!load(root, "type", type))
 	{
-		LOG_ERROR("Failed to load state type.");
+		SPDLOG_ERROR("Failed to load state type.");
 		return false;
 	}
 

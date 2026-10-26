@@ -2,13 +2,16 @@
 
 #include "core/RendererCoreConfig.h"
 
-/**
+    /**
 * \brief Opengl sampler wrapper.
 */
 class CSampler
 {
 public:
-	CSampler();
+
+    CSampler(const CSampler&) = delete;
+    CSampler& operator=(const CSampler&) = delete;
+    CSampler();
 	~CSampler();
 
 	/**

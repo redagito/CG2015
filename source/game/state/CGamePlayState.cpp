@@ -69,6 +69,7 @@ bool CGamePlayState::init(IGraphicsSystem* graphicsSystem, IInputProvider* input
 
 	// Disable god ray
 	m_camera->getFeatureInfoForWrite().godRayActive = false;
+	m_camera->getFeatureInfoForWrite().lenseFlareActive = false;
 
 	// Create player
 	m_player = new CGameObject();

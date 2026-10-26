@@ -1,4 +1,4 @@
-#version 400
+#version 460 core
 
 uniform sampler2D scene_texture;
 uniform sampler2D godray_texture;

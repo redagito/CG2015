@@ -2,13 +2,16 @@
 
 #include "RendererCoreConfig.h"
 
-/**
+    /**
 * \brief Represents an OpenGl vertex array object.
 * A VAO stores and restores binding state of VBOs.
 */
 class CVertexArrayObject
 {
    public:
+
+    CVertexArrayObject(const CVertexArrayObject&) = delete;
+    CVertexArrayObject& operator=(const CVertexArrayObject&) = delete;
     /**
     * \brief Resource allocation.
     */

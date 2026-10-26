@@ -94,7 +94,7 @@ void CFreeCamera::setProjection(float fieldOfView, float aspectRatio, float zNea
     m_aspectRatio = aspectRatio;
     m_zNear = zNear;
     m_zFar = zFar;
-    m_proj = glm::perspective(fieldOfView, aspectRatio, zNear, zFar);
+    m_proj = glm::perspective(glm::radians(fieldOfView), aspectRatio, zNear, zFar);
 }
 
 void CFreeCamera::updateView() { m_view = glm::lookAt(m_position, m_position + m_forward, m_up); }

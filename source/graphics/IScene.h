@@ -19,6 +19,7 @@ class ISceneQuery;
 class IScene
 {
 public:
+    virtual bool removeObject(SceneObjectId id) = 0;
     virtual ~IScene();
 
 	/**

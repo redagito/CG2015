@@ -1,4 +1,4 @@
-#version 400
+#version 460 core
 
 // Noise based distortion shader
 // Applies vignette with blur/distortion effect
@@ -34,11 +34,11 @@ vec3 blur(vec2 coords, float blurAmount)
 	vec2 noise = rand(coords);
 	float tolerance = 0.2; // From uniform?
 	float vignette_size = 0.5; // From uniform?
-	
+
 	// Range [0.0 - 0.5], pow2 -> range [0.0 - 0.25]
 	// TODO Could be done faster, abs not needed?
 	vec2 powers = pow(abs(vec2(coords.x - 0.5, coords.y - 0.5)), vec2(2.0));
-	
+
 	float radiusSqrd = vignette_size * vignette_size;
 	// Smoothstep max to 0.5f?
 	float gradient = smoothstep(radiusSqrd - tolerance, radiusSqrd + tolerance, powers.x + powers.y);
@@ -62,7 +62,7 @@ vec3 blur(vec2 coords, float blurAmount)
 	vec2 k2 = (vec2(1.0, 1.0) - noise) * blurAmount * 0.004 * gradient * 0.5;
 	vec2 inv1 = coords + k2;
 	vec2 inv2 = coords - k2;
-	
+
 	// Calculate final color
 	color += texture(scene_texture, v1) * 0.1;
 	color += texture(scene_texture, v2) * 0.1;

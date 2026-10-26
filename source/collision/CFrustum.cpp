@@ -30,8 +30,8 @@ void CFrustum::setFromCameraParameters(float angle, float ratio, float nearD, fl
 	glm::vec3 z = glm::normalize(pos - look);
 
 	// X axis of camera with given "up" vector and Z axis
-	glm::vec3 x = glm::normalize(u * z);
-	
+	glm::vec3 x = glm::normalize(glm::cross(u, z));
+
 	// The real "up" vector is the cross product of Z and X
 	glm::vec3 y = glm::cross(z, x);
 
@@ -75,10 +75,10 @@ void CFrustum::setFromViewProjectionClipSpaceApproach(const glm::mat4& view, con
 	glm::vec4 rowW = glm::row(matrix, 3);
 
 	// Create planes
-	m_planes[Top].setCoefficients(glm::normalize(rowW + rowX));
-	m_planes[Bottom].setCoefficients(glm::normalize(rowW - rowX));
-	m_planes[Left].setCoefficients(glm::normalize(rowW + rowY));
-	m_planes[Right].setCoefficients(glm::normalize(rowW - rowY));
+	m_planes[Left].setCoefficients(rowW + rowX);
+	m_planes[Right].setCoefficients(rowW - rowX);
+	m_planes[Bottom].setCoefficients(rowW + rowY);
+	m_planes[Top].setCoefficients(rowW - rowY);
 	m_planes[Near].setCoefficients(glm::normalize(rowW + rowZ));
 	m_planes[Far].setCoefficients(glm::normalize(rowW - rowZ));
 }
@@ -113,7 +113,7 @@ void CFrustum::setFromInverseViewProjection(const glm::mat4& invViewProj)
 	for (unsigned int i = 0; i < 8; i++)
 	{
 		// Transform to world space
-		points[i] = points[i] * invViewProj;
+		points[i] = invViewProj * points[i];
 		points[i] /= points[i].w;
 	}
 
@@ -157,11 +157,6 @@ bool CFrustum::isInsideOrIntersects(const CBoundingSphere& sphere) const
 		{
 			// Outside
 			return false;
-		}
-		else if (distance < sphere.getRadius())
-		{
-			// Intersects
-			return true;
 		}
 	}
 	// Inside

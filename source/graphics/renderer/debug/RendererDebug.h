@@ -6,3 +6,6 @@
 * \brief Checks for gl errors and writes error description to string.
 */
 bool hasGLError(std::string& errorText);
+
+bool initializeOpenGLDebug();
+void validateFramebufferFeedback();
