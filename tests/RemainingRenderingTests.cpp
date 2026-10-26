@@ -1,3 +1,4 @@
+#include "game/state/CGamePlayState.h"
 #include "graphics/camera/CCamera.h"
 #include "graphics/renderer/CDeferredRenderer.h"
 #include "graphics/renderer/Draw.h"
@@ -10,6 +11,8 @@
 #include "graphics/window/CGlfwWindow.h"
 #include "resource/Resource.h"
 #include "support/RenderingTestProbe.h"
+#include "support/TestGraphics.h"
+#include "support/TestInput.h"
 #include <array>
 #include <cmath>
 #include <cstdio>
@@ -150,10 +153,10 @@ bool runRemainingRenderingTests(const CGlfwWindow &window)
         require(rejected, "A real sampler/draw attachment alias escaped validation");
 #endif
         graphics.getTexture(gray)->setActive(0);
-        require(
-            resources->updateString(fragmentId, "#version 460 core\nlayout(location=0) out vec4 "
-                                                "color;void main(){color=vec4(0.25,0.5,0.75,1);}"),
-            "Shader update failed");
+        require(resources->updateString(fragmentId,
+                                        "#version 460 core\nlayout(location=0) out vec4 "
+                                        "color;void main(){color=vec4(0.25,0.5,0.75,1);}"),
+                "Shader update failed");
         require(graphics.getShaderProgram(programId) == program,
                 "Shader reload invalidated the program wrapper pointer");
         program->setActive();
@@ -255,6 +258,50 @@ bool runRemainingRenderingTests(const CGlfwWindow &window)
         camera.getFeatureInfoForWrite().godRayActive = false;
         camera.getFeatureInfoForWrite().dofActive = false;
         camera.getFeatureInfoForWrite().lenseFlareActive = false;
+        {
+            // Use the actual gameplay projection: a distant, unobstructed wall
+            // must not alternate between lit and self-shadowed as the ship moves.
+            TestGraphics gameGraphics(&graphics);
+            TestInput input;
+            CGamePlayState gameplay;
+            require(gameplay.init(&gameGraphics, &input, resources.get()),
+                    "Gameplay camera fixture failed to initialize");
+            gameplay.onEnter();
+            CCamera wallCamera;
+            wallCamera.setProjection(gameGraphics.activeCamera->getProjection());
+            CScene wall(&graphics);
+            wall.createObject(meshId, materialId, glm::vec3(0, 0, -200), glm::quat(1, 0, 0, 0),
+                              glm::vec3(1000));
+            wall.createDirectionalLight(glm::normalize(glm::vec3(1, -1, -0.5f)), glm::vec3(1), 1.f,
+                                        true);
+            float lowest = 1e10f, highest = 0.f;
+            for (int frame = 0; frame < 20; ++frame)
+            {
+                const glm::vec3 eye(0, 0, frame * 0.031f);
+                wallCamera.setPosition(eye);
+                wallCamera.setView(glm::lookAt(eye, eye + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0)));
+                CSceneQuery query;
+                wall.getVisibleObjects(wallCamera, query);
+                renderer.geometryPass(wall, wallCamera, window, graphics, query);
+                renderer.lightPass(wall, wallCamera, window, graphics, query);
+                renderer.illuminationPass(wall, wallCamera, window, graphics, query);
+                // Composition binds its diffuse light input to unit zero. Read
+                // this test-owned texture numerically, never a window or desktop.
+                GLint lightTexture = 0;
+                glGetIntegeri_v(GL_TEXTURE_BINDING_2D, 0, &lightTexture);
+                std::array<float, 3> lightSample{};
+                glGetTextureSubImage(lightTexture, 0, window.getWidth() / 2, window.getHeight() / 2,
+                                     0, 1, 1, 1, GL_RGB, GL_FLOAT, sizeof(lightSample),
+                                     lightSample.data());
+                require(std::isfinite(lightSample[0]), "Far-wall lighting became non-finite");
+                lowest = std::min(lowest, lightSample[0]);
+                highest = std::max(highest, lightSample[0]);
+            }
+            std::printf("Far-wall light under camera motion: %.6f .. %.6f\n", lowest, highest);
+            require(highest > 0.3f && lowest > highest * 0.9f,
+                    "Far wall flickers from depth-reconstruction self-shadowing");
+            gameplay.onExit();
+        }
         auto red = resources->createImage({255, 0, 0}, 1, 1, EColorFormat::RGB24),
              blue = resources->createImage({0, 0, 255}, 1, 1, EColorFormat::RGB24);
         auto redMaterial = resources->createMaterial(red, invalidResource, invalidResource,

@@ -61,9 +61,11 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     CSceneLoader loader(*resourceManager);
     loader.load("data/world/game_1.json", *m_scene, animWorld);
 
+    // The chase camera stays well behind the ship. An unnecessarily tiny near
+    // plane loses far-wall depth precision and makes reconstructed shadow positions flicker.
     m_camera = std::make_shared<CFirstPersonCamera>(
         glm::vec3(90.f, 70.f, 90.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
-        4.f / 3.f, 0.01f, 1000.f);
+        4.f / 3.f, 0.5f, 1000.f);
 
     // Disable god ray
     m_camera->getFeatureInfoForWrite().godRayActive = false;
