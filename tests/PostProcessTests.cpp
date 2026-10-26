@@ -90,6 +90,42 @@ bool runPostProcessTests(const CGlfwWindow &window)
             if (std::abs(value) > 0.0001f)
                 throw std::runtime_error("A black input produced phantom glare");
 
+        // Keep the source in the sharp center of the vignette, with DOF and flare
+        // disabled. Only bloom should light pixels outside this HDR patch.
+        features.lenseFlareActive = false;
+        const auto centerX = width / 2, centerY = height / 2;
+        const auto sample = [&](const std::vector<float> &image, int dx, int dy)
+        { return image[3 * ((centerY + dy) * width + centerX + dx)]; };
+        for (float brightness : {0.5f, 4.f})
+        {
+            std::fill(pixels.begin(), pixels.end(), 0.f);
+            for (unsigned y = centerY - 3; y <= centerY + 3; ++y)
+                for (unsigned x = centerX - 3; x <= centerX + 3; ++x)
+                    for (unsigned channel = 0; channel < 3; ++channel)
+                        pixels[3 * (y * width + x) + channel] = brightness;
+            glTextureSubImage2D(input->getId(), 0, 0, 0, width, height, GL_RGB, GL_FLOAT,
+                                pixels.data());
+            renderer.postProcessPass(camera, window, graphics, input);
+            const auto bloomed = readTarget(window);
+            if (brightness < 1.f)
+            {
+                if (sample(bloomed, 7, 0) > 0.0001f)
+                    throw std::runtime_error("Below-threshold pixels produced bloom");
+                continue;
+            }
+            const float horizontal = sample(bloomed, 7, 0);
+            const float vertical = sample(bloomed, 0, 7);
+            const float diagonal = sample(bloomed, 7, 7);
+            if (horizontal < 0.001f || vertical < 0.001f || diagonal < 0.0001f)
+                throw std::runtime_error("Bloom has no soft halo outside the bright source");
+            if (std::abs(horizontal - vertical) > 0.005f || sample(bloomed, 0, 0) <= horizontal ||
+                sample(bloomed, 16, 0) > 0.0001f)
+                throw std::runtime_error("Bloom spread is asymmetric or obscures the sharp source");
+        }
+        std::fill(pixels.begin(), pixels.end(), 0.f);
+        glTextureSubImage2D(input->getId(), 0, 0, 0, width, height, GL_RGB, GL_FLOAT,
+                            pixels.data());
+
         // Odd dimensions put one fragment exactly at the optical center. Exercise
         // the flare-generation shader directly to catch normalize(vec2(0)).
         auto output = std::make_shared<CTexture>();

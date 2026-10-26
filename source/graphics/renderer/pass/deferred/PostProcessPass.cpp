@@ -133,7 +133,12 @@ void PostProcessPass::render(const ICamera &camera, const IWindow &window,
     // Bloom pass
     m_post.secondary.framebuffer.setActive(GL_FRAMEBUFFER);
     bloomPass1(window, manager, m_post.primary.color);
-    // Bloom scene in secondary target
+    // Blur only the extracted highlights. Preserve the sharp scene in primary;
+    // ping-pong the bloom so no draw reads from its own framebuffer attachment.
+    m_post.scratch.framebuffer.setActive(GL_FRAMEBUFFER);
+    gaussBlurVerticalPass(window, manager, m_post.secondary.color);
+    m_post.secondary.framebuffer.setActive(GL_FRAMEBUFFER);
+    gaussBlurHorizontalPass(window, manager, m_post.scratch.color);
 
     // Additive blend
     // Sample primary target into a separate target: reading an attached draw texture
