@@ -257,8 +257,8 @@ void CEngine::run(unsigned int frameLimit)
     double timeDiff = 0.0;
     bool running = true;
 
-    // Activate mouse capture as default
-    if (m_visible)
+    // Gameplay owns capture through its input mode; retain the legacy demo toggle.
+    if (m_visible && m_gameSystem->activeStateName() == "demo")
         m_window->toggleMouseCapture();
     unsigned int frameCount = 0;
 
@@ -342,7 +342,8 @@ void CEngine::run(unsigned int frameLimit)
         }
 
         // Key 1
-        if (glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_1) == GLFW_PRESS && k1Cooldown <= 0.f)
+        if (m_gameSystem->activeStateName() == "demo" &&
+            glfwGetKey(m_window->getGlfwHandle(), GLFW_KEY_1) == GLFW_PRESS && k1Cooldown <= 0.f)
         {
             k1Cooldown = 0.3f;
             // Turns mouse capture on/off

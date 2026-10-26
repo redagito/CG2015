@@ -1,6 +1,8 @@
 #pragma once
 
 #include "AGameState.h"
+#include "game/control/CFlightController.h"
+#include "game/flight/CChaseCamera.h"
 
 #include "animation/CAnimationWorld.h"
 #include "graphics/IGraphicsSystem.h"
@@ -33,12 +35,16 @@ class CGamePlayState : public AGameState
     void setAudio(GameAudio *audio);
 
   private:
+    void updateFlightPresentation(float seconds);
     GameAudio *m_audio = nullptr;
     IGraphicsSystem *m_graphicsSystem = nullptr;
     IScene *m_scene = nullptr;
     IResourceManager *m_resourceManager = nullptr;
     IInputProvider *m_inputProvider = nullptr;
-    std::shared_ptr<IControllableCamera> m_camera = nullptr;
+    std::shared_ptr<CChaseCamera> m_camera;
+    std::shared_ptr<CFlightController> m_flight;
+    FlightTuning m_flightTuning;
+    bool m_controlsCaptured = false;
     CCollisionSystem *m_collisionSystem = nullptr; /**< Collision system. */
 
     CGameObject *m_player;     /**< Player object. */

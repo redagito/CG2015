@@ -40,8 +40,9 @@ void CWeaponController::update(float dtime)
     if (m_active && m_object != nullptr)
     {
         m_weaponCooldown -= dtime;
-        // Check for space key
-        if (m_inputProvider->isKeyPressed(GLFW_KEY_SPACE) && m_weaponCooldown <= 0.f)
+        // Space is the air brake; guns are on the primary mouse button.
+        if (m_inputProvider->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) &&
+            m_weaponCooldown <= 0.f)
         {
             // Reset cooldown
             m_weaponCooldown = 0.3f;
@@ -53,7 +54,7 @@ void CWeaponController::update(float dtime)
             CGameObject *bullet = new CGameObject;
             bullet->addController(std::make_shared<CLinearMovementController>(direction, 50.f));
             bullet->setPosition(position + direction * 2.f);
-            bullet->setRotation(m_object->getRotation());
+            bullet->setOrientation(m_object->getOrientation());
 
             // Bullet colidable
             std::vector<float> bulletVertices;

@@ -1,3 +1,5 @@
+#include "game/flight/CChaseCamera.h"
+#include "game/flight/FlightHud.h"
 #include "game/state/CLoseState.h"
 #include "game/state/CTitleState.h"
 #include "game/state/CWinState.h"
@@ -98,6 +100,26 @@ bool runUiTests()
             require(titlePixels > 15 && subtitlePixels > 8 && promptPixels > 5,
                     "Title UI was clipped or missing after resize");
             require(centerPixels == 0, "Title overlay obscured the ship area");
+            CChaseCamera chase(FlightTuning{});
+            FlightState flight;
+            flight.pointer = glm::vec2(.22f, 0);
+            chase.follow(glm::vec3(0), flight, 0, float(size.x) / size.y);
+            glClear(GL_COLOR_BUFFER_BIT);
+            ui.draw(FlightHud::build(chase, glm::vec3(0), flight, glm::vec2(size)), size.x, size.y,
+                    gpu);
+            glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+            unsigned steeringPixels = 0, headingPixels = 0;
+            for (unsigned y = size.y / 4; y < size.y * 3 / 4; ++y)
+                for (unsigned x = size.x / 8; x < size.x * 7 / 8; ++x)
+                {
+                    const auto p = 4 * (y * size.x + x);
+                    if (pixels[p] < 160 && pixels[p + 1] > 100 && pixels[p + 2] > 100)
+                        ++steeringPixels;
+                    if (pixels[p] > 180 && pixels[p + 1] > 180 && pixels[p + 2] > 180)
+                        ++headingPixels;
+                }
+            require(steeringPixels > 3 && headingPixels > 1,
+                    "Flight reticles vanished or were clipped after resize");
             CFrameBuffer::setDefaultActive();
         }
         input.enter = false;

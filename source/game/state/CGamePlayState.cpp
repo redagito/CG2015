@@ -12,16 +12,14 @@
 #include "game/CGameObject.h"
 
 // Controller
-#include "game/control/CCameraController.h"
 #include "game/control/CHealthController.h"
 #include "game/control/CLinearMovementController.h"
-#include "game/control/CPlayerMovementController.h"
+#include "game/flight/FlightHud.h"
+
 #include "game/control/CRemoveOnDeathController.h"
 #include "game/control/CRestrictPositionController.h"
 #include "game/control/CSimpleWaypointController.h"
 #include "game/control/CWeaponController.h"
-
-#include "graphics/camera/CFirstPersonCamera.h"
 
 #include "animation/CAnimationWorld.h"
 #include "io/CSceneLoader.h"
@@ -41,7 +39,8 @@ CGamePlayState::CGamePlayState()
 
 CGamePlayState::~CGamePlayState()
 {
-    // Empty
+    if (m_controlsCaptured)
+        m_inputProvider->setFlightMode(false);
 }
 
 bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *inputProvider,
@@ -61,21 +60,20 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     CSceneLoader loader(*resourceManager);
     loader.load("data/world/game_1.json", *m_scene, animWorld);
 
-    // The chase camera stays well behind the ship. An unnecessarily tiny near
-    // plane loses far-wall depth precision and makes reconstructed shadow positions flicker.
-    m_camera = std::make_shared<CFirstPersonCamera>(
-        glm::vec3(90.f, 70.f, 90.f), glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f), 45.f,
-        4.f / 3.f, 0.5f, 1000.f);
+    m_flightTuning = FlightTuning::load(*resourceManager);
+    m_camera = std::make_shared<CChaseCamera>(m_flightTuning);
 
     // Disable god ray
     m_camera->getFeatureInfoForWrite().godRayActive = false;
     m_camera->getFeatureInfoForWrite().lenseFlareActive = false;
+    m_camera->getFeatureInfoForWrite().dofActive = false;
 
     // Create player
     m_player = new CGameObject();
 
-    m_player->addController(std::make_shared<CPlayerMovementController>(inputProvider, 20.f));
-    m_player->addController(std::make_shared<CCameraController>(m_camera.get()));
+    m_flight = std::make_shared<CFlightController>(*inputProvider, m_flightTuning);
+    m_player->addController(m_flight);
+    // Arena wrapping is retained until the boundary milestone. Camera detects wraps.
     m_player->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f),
                                                                           glm::vec2(100.f, 100.f)));
 
@@ -271,6 +269,10 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
 
 void CGamePlayState::onEnter()
 {
+    m_inputProvider->setFlightMode(true, m_flightTuning.pointerRadius);
+    m_controlsCaptured = true;
+    m_camera->reset();
+    updateFlightPresentation(0);
     m_graphicsSystem->setActiveCamera(m_camera.get());
     m_graphicsSystem->setActiveScene(m_scene);
 }
@@ -419,6 +421,7 @@ bool CGamePlayState::update(float dtime)
         m_audio->emit({GameAudioEventType::Hit, m_player->getPosition()});
     // Update gameworld
     const bool running = AGameState::update(dtime);
+    updateFlightPresentation(dtime);
     if (m_audio)
     {
         // The listener follows the player, while camera orientation controls pan.
@@ -431,6 +434,9 @@ bool CGamePlayState::update(float dtime)
 
 void CGamePlayState::onExit()
 {
+    m_inputProvider->setFlightMode(false);
+    m_controlsCaptured = false;
+    m_graphicsSystem->setUiOverlay({});
     if (m_audio)
         m_audio->stopEmitters();
 }
@@ -455,4 +461,13 @@ const std::string &CGamePlayState::getNextState() const
 void CGamePlayState::winCount()
 {
     m_winCounter++;
+}
+
+void CGamePlayState::updateFlightPresentation(float seconds)
+{
+    const auto viewport = m_inputProvider->viewportSize();
+    const float aspect = viewport.x / std::max(viewport.y, 1.f);
+    m_camera->follow(m_player->getPosition(), m_flight->state(), seconds, aspect);
+    m_graphicsSystem->setUiOverlay(
+        FlightHud::build(*m_camera, m_player->getPosition(), m_flight->state(), viewport));
 }

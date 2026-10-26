@@ -72,7 +72,7 @@ macOS cannot provide OpenGL 4.6 and is rejected at configure time.
 
 The default startup configuration launches the original game. Change `[mode] type`
 to `demo` and `[scene] file` to a `data/world/test_*.json` scene to explore the renderer.
-`[renderer] type=deferred` is the supported renderer. Escape exits; 1 toggles mouse capture, F2 toggles the debug overlay, and F8 toggles frustum culling.
+`[renderer] type=deferred` is the supported renderer. Escape exits; 1 toggles mouse capture in demo mode, F2 toggles the debug overlay, and F8 toggles frustum culling. Gameplay uses mouse steering, W/S throttle, A/D roll, Shift boost, Space brake and left mouse fire. See [flight controls and tuning](doc/flight-controls.md).
 
 A 4.6 **core debug context is mandatory in every build**, including Release.
 glad 2.0.8 replaces the old 4.3 loader, generated for OpenGL 4.6 core without extensions; shaders target GLSL 460 core. Functions are resolved through GLFW, with native GL debug reporting in both Debug and Release. Debug output is

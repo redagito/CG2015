@@ -93,7 +93,10 @@ bool runLoadingScreenTests(CGlfwWindow &window)
         input.enter = true;
         require(game.update(0.016f), "Gameplay initialization failed after loading");
         require(game.activeStateName() == "game", "Title Enter did not enter gameplay");
-        input.space = true;
+        require(input.flightMode, "Gameplay did not acquire flight input");
+        input.viewport = glm::vec2(window.getWidth(), window.getHeight());
+        input.pointer = glm::vec2(.1f, -.03f);
+        input.fire = true;
         for (int i = 0; i < 3; ++i)
         {
             require(game.update(0.016f), "Gameplay update failed");

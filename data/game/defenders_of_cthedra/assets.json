@@ -67,6 +67,10 @@
     {
       "kind": "audio_bank",
       "file": "data/audio/cues.json"
+    },
+    {
+      "kind": "json",
+      "file": "data/game/defenders_of_cthedra/flight.json"
     }
   ]
 }
