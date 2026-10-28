@@ -31,6 +31,7 @@ for stem,name,loop in [
 (out/'licenses/kenney.txt').write_bytes(archive.read('License.txt'))
 for name,author,url in [('outer_space','wipics','https://opengameart.org/content/outer-space-loop'),('space_adventure','MintoDog','https://opengameart.org/content/space-adventure')]:
     source=root/f'data/audio/music/{name}.mp3'
+    if not source.exists():source=raw/source.name
     data,rate=sf.read(source,dtype='float32',always_2d=True)
     level=np.max(np.abs(data),axis=1);active=np.flatnonzero(level>.0001)
     if len(active):data=data[max(0,int(active[0])-int(.01*rate)):min(len(data),int(active[-1])+int(.01*rate)+1)]
@@ -39,7 +40,7 @@ for name,author,url in [('outer_space','wipics','https://opengameart.org/content
     data*=.75/max(.001,float(np.max(np.abs(data))))
     path=out/'music'/f'{name}.flac';sf.write(path,data,rate,subtype='PCM_16')
     sources[path.relative_to(out).as_posix()]=dict(author=author,source=url,original=source.name,license='CC0-1.0',processing='trim encoder silence, short seam crossfade, level normalization, FLAC')
-    source.replace(raw/source.name)
+    if source.parent != raw:source.replace(raw/source.name)
 # Small original synthesized UI/result cues; no external samples.
 for name,notes,duration in [('confirm',[660,990],.18),('victory',[440,554.365,659.255],1.0),('defeat',[330,311.127,220],1.1)]:
     rate=48000;t=np.arange(int(rate*duration))/rate
@@ -49,3 +50,10 @@ for name,notes,duration in [('confirm',[660,990],.18),('victory',[440,554.365,65
 for name,record in sources.items():record['sha256']=hashlib.sha256((out/name).read_bytes()).hexdigest()
 (out/'sources.json').write_text(json.dumps(sources,indent=2)+'\n')
 print('Prepared',len(sources),'audio assets.')
+
+# Preserve the separately reproducible player shield cue in the complete manifest.
+from prepare_shield_sound import prepare
+prepare()
+
+from prepare_mothership_sounds import prepare as prepare_mothership
+prepare_mothership()

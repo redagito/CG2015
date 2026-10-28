@@ -20,6 +20,7 @@ class IAudioSystem : public IResourceListener
     virtual void stopAll() = 0;
     virtual void setPosition(VoiceHandle, glm::vec3) = 0;
     virtual void setGain(VoiceHandle, float) = 0;
+    virtual void setPitch(VoiceHandle, float) = 0;
     virtual void setListener(glm::vec3 position, glm::vec3 forward, glm::vec3 up) = 0;
     virtual void setMasterGain(float) = 0;
     virtual void setBusGain(AudioBus, float) = 0;

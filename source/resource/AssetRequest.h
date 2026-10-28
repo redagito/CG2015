@@ -13,7 +13,8 @@ enum class AssetKind
     Json,
     Scene,
     Audio,
-    AudioBank
+    AudioBank,
+    EnemyRoster
 };
 struct AssetRequest
 {

@@ -10,7 +10,7 @@ class GameAudio;
 class CAudioEmitterController : public IController
 {
   public:
-    CAudioEmitterController(GameAudio *audio, std::string cue, bool respondToMotion = false);
+    CAudioEmitterController(GameAudio *audio, std::string cue);
     ~CAudioEmitterController();
     void attach(CGameObject *object) override;
     void detach() override;
@@ -23,8 +23,5 @@ class CAudioEmitterController : public IController
     CGameObject *m_object = nullptr;
     std::string m_cue;
     VoiceHandle m_voice = 0;
-    glm::vec3 m_previousPosition{0};
-    float m_gain = .3f;
     bool m_active = true;
-    bool m_respondToMotion = false;
 };

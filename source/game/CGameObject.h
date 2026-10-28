@@ -2,6 +2,7 @@
 
 #include <list>
 #include <memory>
+#include <string>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -35,6 +36,13 @@ class CGameObject
     void setRotation(const glm::vec3 &rotation);
     void setOrientation(const glm::quat &orientation);
     const glm::quat &getOrientation() const;
+    void setVisible(bool visible);
+    void setProjectile(bool projectile);
+    bool isProjectile() const;
+    void setVelocity(glm::vec3 velocity);
+    const glm::vec3 &getVelocity() const;
+    void setTargetName(std::string name);
+    const std::string &getTargetName() const;
 
     /**
      * \brief Sets position.
@@ -125,6 +133,9 @@ class CGameObject
     void setDead();
 
   protected:
+    bool m_projectile = false;
+    glm::vec3 m_velocity{0};
+    std::string m_targetName;
     glm::quat m_orientation{1, 0, 0, 0};
     std::unique_ptr<CSceneObjectProxy> m_sceneObject; /**< Scene object. */
     glm::vec3 m_forward = glm::vec3(0.f, 0.f, 1.f);   /**< Forward direction per default +z. */

@@ -206,6 +206,7 @@ VoiceHandle CMiniaudioSystem::play(const std::string &name, glm::vec3 position, 
     ma_sound_set_volume(&voice->sound, cue.gain);
     const float pitch = 1.f + std::uniform_real_distribution<float>(-cue.pitchVariation,
                                                                     cue.pitchVariation)(random);
+    voice->basePitch = pitch;
     ma_sound_set_pitch(&voice->sound, pitch);
     if (fadeIn > 0)
         ma_sound_set_fade_in_milliseconds(&voice->sound, 0, 1,
@@ -306,4 +307,12 @@ bool CMiniaudioSystem::render(float *stereo, std::uint64_t count)
     const bool ok = ma_engine_read_pcm_frames(&engine, stereo, count, nullptr) == MA_SUCCESS;
     limit(stereo, count * 2);
     return ok;
+}
+
+void CMiniaudioSystem::setPitch(VoiceHandle id, float pitch)
+{
+    if (!std::isfinite(pitch))
+        return;
+    if (auto *voice = find(id))
+        ma_sound_set_pitch(&voice->sound, voice->basePitch * std::clamp(pitch, .5f, 2.f));
 }

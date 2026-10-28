@@ -10,12 +10,47 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <thread>
 
 namespace
 {
+void writeTone(const std::string &file)
+{
+    std::ofstream out(file, std::ios::binary);
+    const auto word = [&](std::uint16_t value)
+    { out.write(reinterpret_cast<const char *>(&value), 2); };
+    const auto integer = [&](std::uint32_t value)
+    { out.write(reinterpret_cast<const char *>(&value), 4); };
+    out.write("RIFF", 4);
+    integer(36 + 96000);
+    out.write("WAVEfmt ", 8);
+    integer(16);
+    word(1);
+    word(1);
+    integer(48000);
+    integer(96000);
+    word(2);
+    word(16);
+    out.write("data", 4);
+    integer(96000);
+    for (int i = 0; i < 48000; ++i)
+    {
+        const auto sample = std::int16_t(8000 * std::sin(2 * 3.141592653589793 * 440 * i / 48000));
+        out.write(reinterpret_cast<const char *>(&sample), 2);
+    }
+}
+unsigned crossings(const std::vector<float> &stereo)
+{
+    unsigned count = 0;
+    for (std::size_t frame = 1; frame < stereo.size() / 2; ++frame)
+        if (stereo[(frame - 1) * 2] <= 0 && stereo[frame * 2] > 0)
+            ++count;
+    return count;
+}
 void require(bool condition, const char *message)
 {
     if (!condition)
@@ -94,6 +129,31 @@ int main(int argc, char **argv)
             audio->update(.085f);
         }
         require(!audio->playing(voice), "Finished one-shot voice was not retired");
+
+        const std::string tonePath = "build/audio-tests/pitch.wav";
+        writeTone(tonePath);
+        AssetRequest toneRequest{AssetKind::Audio, tonePath};
+        toneRequest.channels = 1;
+        require(waitFor(*resources, resources->loadAsync({toneRequest})).phase == LoadPhase::Ready,
+                "Tone preparation failed");
+        SoundCue tone;
+        tone.clips = {resources->loadAudio(tonePath, false, 1)};
+        tone.loop = true;
+        tone.gain = .2f;
+        audio->defineCue("pitch_test", tone);
+        std::vector<float> toneMix(4800 * 2);
+        auto toneVoice = audio->play("pitch_test");
+        audio->render(toneMix.data(), 4800);
+        const auto normalCrossings = crossings(toneMix);
+        audio->stopAll();
+        toneVoice = audio->play("pitch_test");
+        audio->setPitch(toneVoice, 2);
+        audio->render(toneMix.data(), 4800);
+        const auto highCrossings = crossings(toneMix);
+        audio->stopAll();
+        require(normalCrossings > 30 && highCrossings > normalCrossings * 1.8f &&
+                    highCrossings < normalCrossings * 2.2f,
+                "Backend pitch modulation did not change the rendered frequency");
 
         const auto bank = resources->loadAsync({{AssetKind::AudioBank, "data/audio/cues.json"}});
         auto status = waitFor(*resources, bank);

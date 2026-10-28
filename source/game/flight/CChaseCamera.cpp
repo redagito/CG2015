@@ -14,6 +14,8 @@ CChaseCamera::CChaseCamera(const FlightTuning &tuning)
 void CChaseCamera::reset()
 {
     m_initialized = false;
+    m_trauma = 0;
+    m_shakeTime = 0;
 }
 void CChaseCamera::spring(glm::vec3 &position, glm::vec3 &velocity, glm::vec3 target,
                           float frequency, float seconds)
@@ -73,8 +75,25 @@ void CChaseCamera::follow(glm::vec3 position, const FlightState &flight, float s
             std::abs(viewForward.y) < .9f ? glm::vec3(0, 1, 0) : glm::vec3(1, 0, 0);
         up = fallback - viewForward * glm::dot(fallback, viewForward);
     }
-    setPosition(m_eye);
-    setView(glm::lookAt(m_eye, m_eye + viewForward, glm::normalize(up)));
+    m_trauma *= std::exp(-8 * dt);
+    m_shakeTime += dt;
+    const auto normalizedUp = glm::normalize(up),
+               cameraRight = glm::normalize(glm::cross(viewForward, normalizedUp));
+    const auto eyeKick =
+        (cameraRight * std::sin(m_shakeTime * 71.f) + normalizedUp * std::sin(m_shakeTime * 89.f)) *
+        .06f * m_trauma;
+    const auto lookKick = (cameraRight * std::sin(m_shakeTime * 43.f) * .7f +
+                           normalizedUp * std::sin(m_shakeTime * 57.f) * .45f) *
+                          m_trauma;
+    setPosition(m_eye + eyeKick);
+    setView(glm::lookAt(m_eye + eyeKick, m_eye + viewForward * m_tuning.lookAhead + lookKick,
+                        normalizedUp));
     // Reticle projection and rendering use this same frame's aspect and FOV.
     setProjection(glm::perspective(glm::radians(m_fieldOfView), aspect, .5f, 1000.f));
+}
+
+void CChaseCamera::addImpact(float strength)
+{
+    if (std::isfinite(strength))
+        m_trauma = std::clamp(m_trauma + strength, 0.f, 1.f);
 }

@@ -12,6 +12,6 @@ struct AudioVoice
     int priority = 0;
     bool initialized = false;
     bool sourceInitialized = false;
-    float stopRemaining = -1, baseGain = 1;
+    float stopRemaining = -1, baseGain = 1, basePitch = 1;
     ~AudioVoice();
 };

@@ -1,6 +1,8 @@
 #include "CGamePlayState.h"
 #include "audio/GameAudio.h"
+#include "game/combat/CombatStatus.h"
 #include "game/control/CAudioEmitterController.h"
+#include "game/control/CFlightAudioController.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -13,12 +15,9 @@
 
 // Controller
 #include "game/control/CHealthController.h"
-#include "game/control/CLinearMovementController.h"
+
 #include "game/flight/FlightHud.h"
 
-#include "game/control/CRemoveOnDeathController.h"
-#include "game/control/CRestrictPositionController.h"
-#include "game/control/CSimpleWaypointController.h"
 #include "game/control/CWeaponController.h"
 
 #include "animation/CAnimationWorld.h"
@@ -31,22 +30,21 @@
 const std::string exitStr = "lose";
 const std::string exitStrW = "win";
 
-CGamePlayState::CGamePlayState()
-    : m_enemyCount(6), m_enemyTime(4.f), m_enemyXPosition(-75.f), m_playerGroup(0), m_enemyGroup(0),
-      m_enemyId(0)
-{
-}
+CGamePlayState::CGamePlayState() = default;
 
 CGamePlayState::~CGamePlayState()
 {
     if (m_controlsCaptured)
         m_inputProvider->setFlightMode(false);
+    // Controllers and proxies must release before the scene/physics owners.
+    m_cinematic.reset();
+    getGameWorld().clear();
 }
 
 bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *inputProvider,
                           IResourceManager *resourceManager)
 {
-    m_collisionSystem = new CCollisionSystem();
+    m_collisionSystem = std::make_unique<CCollisionSystem>();
     m_graphicsSystem = graphicsSystem;
     m_inputProvider = inputProvider;
     m_resourceManager = resourceManager;
@@ -60,6 +58,12 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     CSceneLoader loader(*resourceManager);
     loader.load("data/world/game_1.json", *m_scene, animWorld);
 
+    m_effectsTuning = CombatEffectsTuning::load(*resourceManager);
+    m_effects = std::make_unique<CCombatEffects>(getGameWorld(), *m_scene, m_effectsTuning);
+    m_resultTimer = -1;
+    m_arena = ArenaTuning::load(*resourceManager);
+    m_combatTuning = CombatTuning::load(*resourceManager);
+    m_targeting = std::make_unique<CTargetingSystem>(m_combatTuning.targeting);
     m_flightTuning = FlightTuning::load(*resourceManager);
     m_camera = std::make_shared<CChaseCamera>(m_flightTuning);
 
@@ -71,11 +75,11 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     // Create player
     m_player = new CGameObject();
 
-    m_flight = std::make_shared<CFlightController>(*inputProvider, m_flightTuning);
+    m_flight = std::make_shared<CFlightController>(*inputProvider, m_flightTuning, &m_arena);
     m_player->addController(m_flight);
-    // Arena wrapping is retained until the boundary milestone. Camera detects wraps.
-    m_player->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f),
-                                                                          glm::vec2(100.f, 100.f)));
+    m_playerHealth =
+        std::make_shared<CHealthController>(m_arena.enemies.playerHealth, m_audio, m_effects.get());
+    m_player->addController(m_playerHealth);
 
     // Load bullet
     ResourceId bulletMesh = m_resourceManager->loadMesh("data/mesh/bullet.obj");
@@ -83,20 +87,23 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     {
         return false;
     }
-    ResourceId bulletMaterial = m_resourceManager->loadMaterial("data/material/white.json");
+    ResourceId bulletMaterial = m_resourceManager->loadMaterial("data/material/white_glowing.json");
     if (bulletMaterial == invalidResource)
     {
         return false;
     }
 
-    m_player->addController(std::make_shared<CWeaponController>(
+    m_projectileMesh = bulletMesh;
+    m_projectileMaterial = bulletMaterial;
+    m_weapon = std::make_shared<CWeaponController>(
         m_inputProvider, &getGameWorld(), m_scene, bulletMesh, bulletMaterial, m_resourceManager,
-        m_collisionSystem, m_playerGroup, m_audio));
-    m_player->setPosition(glm::vec3(0.f, 20.f, -100.f));
+        m_collisionSystem.get(), m_playerGroup, m_audio, m_combatTuning.weapon, m_effects.get());
+    m_player->addController(m_weapon);
+    m_player->setPosition(m_arena.center + glm::vec3(0, -30, -130));
     m_player->setRotation(glm::vec3(0.f));
     m_player->setScale(glm::vec3(0.5f));
     m_player->addController(
-        std::make_shared<CAudioEmitterController>(m_audio, "player_engine", true));
+        std::make_shared<CFlightAudioController>(m_audio, m_flight, m_combatTuning.engine));
 
     // Get model resources
     ResourceId playerShip = m_resourceManager->loadMesh("data/mesh/ship_2.obj");
@@ -114,7 +121,7 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     m_resourceManager->getMesh(playerShip, playerVertices, playerIndices, playerNormals, playerUvs,
                                playerType);
     m_player->setCollidable(m_collisionSystem->add(CAABBox::create(playerVertices), m_playerGroup));
-    m_player->getCollidable()->setDamage(50.f);
+    m_player->getCollidable()->setDamage(0);
 
     ResourceId playerShipMaterial =
         m_resourceManager->loadMaterial("data/material/line_metal.json");
@@ -129,15 +136,25 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     m_player->setSceneObject(playerSceneObject);
 
     // Add player
-    getGameWorld().addObject(m_player);
+    m_playerId = getGameWorld().addObject(m_player);
+    m_effects->bindPlayer(m_playerId);
 
     // Create mothership
     m_mothership = new CGameObject();
     m_mothership->setPosition(glm::vec3(0.f, 68.f, 700.f));
     m_mothership->setRotation(glm::vec3(0.f));
     m_mothership->setScale(glm::vec3(60.f));
-    m_mothership->addController(
-        std::make_shared<CSimpleWaypointController>(glm::vec3(0.f, 68.f, 0.f), 5.f, this));
+    m_mothershipApproach = std::make_shared<CMothershipController>(
+        glm::vec3(0.f, 68.f, 0.f), m_arena.mothership,
+        [this]
+        {
+            if (m_resultTimer < 0 && !m_player->isDead() && !m_progress.complete())
+            {
+                m_mothershipDeadline = true;
+                getGameWorld().freezeSimulation();
+            }
+        });
+    m_mothership->addController(m_mothershipApproach);
     m_mothership->addController(std::make_shared<CAudioEmitterController>(m_audio, "ufo_engine"));
 
     // Get model resources
@@ -146,6 +163,18 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     {
         return false;
     }
+    std::vector<float> cinematicVertices, cinematicNormals, cinematicUvs;
+    std::vector<unsigned> cinematicIndices;
+    EPrimitiveType cinematicPrimitive;
+    m_resourceManager->getMesh(motherShip, cinematicVertices, cinematicIndices, cinematicNormals,
+                               cinematicUvs, cinematicPrimitive);
+    const auto mothershipBounds = CAABBox::create(cinematicVertices);
+    m_mothershipEmitterOffset =
+        glm::vec3(0,
+                  (mothershipBounds.getMid().y - mothershipBounds.getHalfWidths().y) *
+                          m_mothership->getScale().y -
+                      .2f,
+                  0);
     ResourceId motherShipMaterial =
         m_resourceManager->loadMaterial("data/material/mothership.json");
     if (motherShipMaterial == invalidResource)
@@ -162,10 +191,10 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     getGameWorld().addObject(m_mothership);
 
     // Create pyramide
-    CGameObject *m_pyramide = new CGameObject();
-    m_pyramide->setPosition(glm::vec3(0.f, 2.f, 0.f));
-    m_pyramide->setRotation(glm::vec3(0.f, -90.f, 0.f));
-    m_pyramide->setScale(glm::vec3(3.f));
+    m_temple = new CGameObject();
+    m_temple->setPosition(glm::vec3(0.f, 2.f, 0.f));
+    m_temple->setRotation(glm::vec3(0.f, -90.f, 0.f));
+    m_temple->setScale(glm::vec3(3.f));
 
     // Get model resources
     ResourceId pyramide = m_resourceManager->loadMesh("data/mesh/piramyde.obj");
@@ -174,6 +203,18 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
         return false;
     }
 
+    cinematicVertices.clear();
+    cinematicIndices.clear();
+    cinematicNormals.clear();
+    cinematicUvs.clear();
+    m_resourceManager->getMesh(pyramide, cinematicVertices, cinematicIndices, cinematicNormals,
+                               cinematicUvs, cinematicPrimitive);
+    const auto templeBounds = CAABBox::create(cinematicVertices);
+    m_templeImpact = m_temple->getPosition() +
+                     glm::vec3(0,
+                               (templeBounds.getMid().y + templeBounds.getHalfWidths().y) *
+                                   m_temple->getScale().y,
+                               0);
     ResourceId pyramideMaterial = m_resourceManager->loadMaterial("data/material/sand.json");
     if (pyramideMaterial == invalidResource)
     {
@@ -184,85 +225,18 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     CSceneObjectProxy *pyramideSceneObject = new CSceneObjectProxy(
         m_scene, m_scene->createObject(pyramide, pyramideMaterial, glm::vec3(0.f, 2.f, 0.f),
                                        glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(3.f)));
-    m_pyramide->setSceneObject(pyramideSceneObject);
+    m_temple->setSceneObject(pyramideSceneObject);
 
     // Add player
-    getGameWorld().addObject(m_pyramide);
+    getGameWorld().addObject(m_temple);
 
-    // LOAD ENEMY RESOURCE
-    //  Get model resources
-    enemyShip = m_resourceManager->loadMesh("data/mesh/enemy.obj");
-    if (enemyShip == invalidResource)
-    {
-        return false;
-    }
-
-    enemyShipMaterial = m_resourceManager->loadMaterial("data/material/enemy.json");
-    if (enemyShipMaterial == invalidResource)
-    {
-        return false;
-    }
-
-    // Load boss Enemy resources
-    // Add enemy with rotating ring
-    m_bossEnemy = new CGameObject();
-    m_bossEnemy->setPosition(glm::vec3(0.f, 20.f, -50.f));
-    m_bossEnemy->setRotation(glm::vec3(0.f));
-    m_bossEnemy->setScale(glm::vec3(0.6f));
-    m_bossEnemy->addController(std::make_shared<CRestrictPositionController>(
-        glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-    m_bossEnemy->addController(
-        std::make_shared<CLinearMovementController>(m_bossEnemy->getForward(), 17.f));
-    m_bossEnemy->addController(std::make_shared<CHealthController>(300.f, m_audio));
-    m_bossEnemy->addController(std::make_shared<CRemoveOnDeathController>(this));
-
-    bossShip = m_resourceManager->loadMesh("data/mesh/ship_2.obj");
-    if (bossShip == invalidResource)
-    {
-        return false;
-    }
-
-    bossShipMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
-    if (enemyShipMaterial == invalidResource)
-    {
-        return false;
-    }
-
-    // Create scene object
-    CSceneObjectProxy *bossSceneObject = new CSceneObjectProxy(
-        m_scene, m_scene->createObject(bossShip, bossShipMaterial, glm::vec3(0.f, 20.f, -50.f),
-                                       glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(0.5f)));
-    m_bossEnemy->setSceneObject(bossSceneObject);
-
-    getGameWorld().addObject(m_bossEnemy);
-
-    m_ring = new CGameObject();
-    m_ring->setPosition(glm::vec3(0.f, 20.f, -50.f));
-    m_ring->setRotation(glm::vec3(0.f));
-    m_ring->setScale(glm::vec3(0.5f));
-    m_ring->addController(std::make_shared<CRestrictPositionController>(glm::vec2(-100.f, -100.f),
-                                                                        glm::vec2(100.f, 100.f)));
-    m_ring->addController(std::make_shared<CLinearMovementController>(m_ring->getForward(), 17.f));
-
-    bossRing = m_resourceManager->loadMesh("data/mesh/ring_animation.obj");
-    if (bossRing == invalidResource)
-    {
-        return false;
-    }
-
-    bossRingMaterial = m_resourceManager->loadMaterial("data/material/metallic_galvanized.json");
-    if (bossRingMaterial == invalidResource)
-    {
-        return false;
-    }
-
-    // Create scene object
-    CSceneObjectProxy *bossRingObject = new CSceneObjectProxy(
-        m_scene, m_scene->createObject(bossRing, bossRingMaterial, glm::vec3(0.f, 20.f, -50.f),
-                                       glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(0.5f)));
-    m_ring->setSceneObject(bossRingObject);
-
-    getGameWorld().addObject(m_ring);
+    const auto roster = EnemyRoster::load(*resourceManager, m_arena, m_combatTuning.weapon);
+    m_progress = {roster.spawns.size(), 0};
+    m_spawner = std::make_unique<CEnemySpawner>(
+        roster, m_arena, getGameWorld(), *m_scene, *resourceManager, *m_collisionSystem, m_playerId,
+        m_enemyGroup, m_projectileMesh, m_projectileMaterial, m_audio,
+        [this] { m_progress.recordDefeat(); }, m_effects.get());
+    m_spawner->update(0);
 
     return true;
 }
@@ -279,132 +253,11 @@ void CGamePlayState::onEnter()
 
 bool CGamePlayState::update(float dtime)
 {
+    if (m_cinematic)
+        return updateMothershipCinematic(dtime);
 
-    m_enemyTime -= dtime;
-    if (m_enemyCount > 0.f && m_enemyTime <= 0.f)
-    {
-        m_enemyTime = 2.f;
-        m_enemyId++;
-        // Create new enemy
-        CGameObject *enemy = new CGameObject();
-        if (m_enemyId == 1)
-        {
-            enemy->setPosition(glm::vec3(-50.f, 30.f, 50.f));
-            enemy->setRotation(glm::vec3(0.f));
-            enemy->setScale(glm::vec3(0.5f));
-            enemy->addController(std::make_shared<CRestrictPositionController>(
-                glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-            enemy->addController(
-                std::make_shared<CLinearMovementController>(enemy->getForward(), 15.f));
-            enemy->addController(std::make_shared<CHealthController>(100.f, m_audio));
-            enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
-        }
-
-        if (m_enemyId == 2)
-        {
-            enemy->setPosition(glm::vec3(0.f, 45.f, -50.f));
-            enemy->setRotation(glm::vec3(0.f));
-            enemy->setScale(glm::vec3(0.5f));
-            enemy->addController(std::make_shared<CRestrictPositionController>(
-                glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-            enemy->addController(
-                std::make_shared<CLinearMovementController>(enemy->getForward(), 15.f));
-            enemy->addController(std::make_shared<CHealthController>(100.f, m_audio));
-            enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
-        }
-
-        if (m_enemyId == 3)
-        {
-            enemy->setPosition(glm::vec3(50.f, 20.f, 0.f));
-            enemy->setRotation(glm::vec3(0.f));
-            enemy->setScale(glm::vec3(0.5f));
-            enemy->addController(std::make_shared<CRestrictPositionController>(
-                glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-            enemy->addController(
-                std::make_shared<CLinearMovementController>(enemy->getForward(), 15.f));
-            enemy->addController(std::make_shared<CHealthController>(100.f, m_audio));
-            enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
-        }
-
-        if (m_enemyId == 4)
-        {
-            enemy->setPosition(glm::vec3(50.f, 25.f, 0.f));
-            enemy->setRotation(glm::vec3(0.f, 92.6, 0.f));
-            enemy->setScale(glm::vec3(0.5f));
-            enemy->addController(std::make_shared<CRestrictPositionController>(
-                glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-            enemy->addController(std::make_shared<CSimpleWaypointController>(
-                glm::vec3(-101.f, 25.f, 0.f), 15.f, this));
-            enemy->addController(std::make_shared<CHealthController>(100.f, m_audio));
-            enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
-        }
-
-        if (m_enemyId == 5)
-        {
-            enemy->setPosition(glm::vec3(0.f, 40.f, -50.f));
-            enemy->setRotation(glm::vec3(0.f, 92.6, 0.f));
-            enemy->setScale(glm::vec3(0.5f));
-            enemy->addController(std::make_shared<CRestrictPositionController>(
-                glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-            enemy->addController(std::make_shared<CSimpleWaypointController>(
-                glm::vec3(-101.f, 40.f, -50.f), 15.f, this));
-            enemy->addController(std::make_shared<CHealthController>(100.f, m_audio));
-            enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
-        }
-
-        if (m_enemyId == 6)
-        {
-            enemy->setPosition(glm::vec3(-50.f, 50.f, 50.f));
-            enemy->setRotation(glm::vec3(0.f, 92.6, 0.f));
-            enemy->setScale(glm::vec3(0.5f));
-            enemy->addController(std::make_shared<CRestrictPositionController>(
-                glm::vec2(-100.f, -100.f), glm::vec2(100.f, 100.f)));
-            enemy->addController(std::make_shared<CSimpleWaypointController>(
-                glm::vec3(-101.f, 50.f, 50.f), 15.f, this));
-            enemy->addController(std::make_shared<CHealthController>(100.f, m_audio));
-            enemy->addController(std::make_shared<CRemoveOnDeathController>(this));
-        }
-
-        // Player collidable added to player collision group
-        std::vector<float> enemyVertices;
-        std::vector<unsigned int> enemyIndices;
-        std::vector<float> enemyNormals;
-        std::vector<float> enemyUvs;
-        EPrimitiveType enemyType;
-        m_resourceManager->getMesh(enemyShip, enemyVertices, enemyIndices, enemyNormals, enemyUvs,
-                                   enemyType);
-        enemy->setCollidable(m_collisionSystem->add(CAABBox::create(enemyVertices), m_enemyGroup));
-
-        // Create scene object
-        CSceneObjectProxy *enemySceneObject = new CSceneObjectProxy(
-            m_scene, m_scene->createObject(enemyShip, enemyShipMaterial,
-                                           glm::vec3(m_enemyXPosition, 25.f, 0.f),
-                                           glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(0.5f)));
-        enemy->setSceneObject(enemySceneObject);
-
-        // Add enemy
-        getGameWorld().addObject(enemy);
-
-        m_enemyCount -= 1;
-        m_enemyXPosition += 25.f;
-    }
-
-    m_ring->setRotation(glm::vec3(m_ring->getRotation().x, m_ring->getRotation().y,
-                                  m_ring->getRotation().z + dtime));
-
-    if (m_inputProvider->isKeyPressed(GLFW_KEY_P))
-    {
-        return false;
-    }
-    if (m_inputProvider->isKeyPressed(GLFW_KEY_O))
-    {
-        m_winCounter = 6;
-        return false;
-    }
-    if (m_winCounter == 6)
-    {
-        return false;
-    }
+    if (m_resultTimer < 0)
+        m_spawner->update(dtime);
 
     if (m_inputProvider->isKeyPressed(GLFW_KEY_K))
     {
@@ -416,11 +269,27 @@ bool CGamePlayState::update(float dtime)
     }
     // Update collision system
     m_collisionSystem->update();
-    // The player currently has no health controller; consume its hit feedback here.
-    if (m_audio && m_player->getCollidable()->getDamageReceived() > 0)
-        m_audio->emit({GameAudioEventType::Hit, m_player->getPosition()});
+    m_collisionSystem->beginStep();
     // Update gameworld
     const bool running = AGameState::update(dtime);
+    if (m_mothershipDeadline)
+    {
+        beginMothershipCinematic();
+        return updateMothershipCinematic(0);
+    }
+    m_effects->update(dtime);
+    m_camera->addImpact(m_effects->consumeCameraImpulse());
+    if ((m_player->isDead() || m_progress.complete()) && m_resultTimer < 0)
+    {
+        m_resultTimer = m_effectsTuning.resultDelay;
+        m_mothershipApproach->setActive(false);
+        m_flight->setActive(false);
+        m_weapon->setActive(false);
+        m_inputProvider->setFlightMode(false);
+        m_controlsCaptured = false;
+    }
+    if (m_resultTimer >= 0)
+        m_resultTimer = std::max(0.f, m_resultTimer - std::min(dtime, .25f));
     updateFlightPresentation(dtime);
     if (m_audio)
     {
@@ -429,14 +298,17 @@ bool CGamePlayState::update(float dtime)
         m_audio->setListener(m_player->getPosition(), -glm::vec3(inverseView[2]),
                              glm::vec3(inverseView[1]));
     }
-    return running;
+    return running && m_resultTimer != 0;
 }
 
 void CGamePlayState::onExit()
 {
     m_inputProvider->setFlightMode(false);
     m_controlsCaptured = false;
+    m_cinematic.reset();
     m_graphicsSystem->setUiOverlay({});
+    if (m_effects)
+        m_effects->clear();
     if (m_audio)
         m_audio->stopEmitters();
 }
@@ -448,7 +320,7 @@ void CGamePlayState::setAudio(GameAudio *audio)
 
 const std::string &CGamePlayState::getNextState() const
 {
-    if (m_winCounter == 6)
+    if (!m_mothershipDeadline && m_progress.complete() && m_player && !m_player->isDead())
     {
         return exitStrW;
     }
@@ -458,16 +330,46 @@ const std::string &CGamePlayState::getNextState() const
     }
 }
 
-void CGamePlayState::winCount()
-{
-    m_winCounter++;
-}
-
 void CGamePlayState::updateFlightPresentation(float seconds)
 {
     const auto viewport = m_inputProvider->viewportSize();
     const float aspect = viewport.x / std::max(viewport.y, 1.f);
     m_camera->follow(m_player->getPosition(), m_flight->state(), seconds, aspect);
-    m_graphicsSystem->setUiOverlay(
-        FlightHud::build(*m_camera, m_player->getPosition(), m_flight->state(), viewport));
+    const auto aim = m_weapon->aim();
+    m_targeting->update(getGameWorld().targets(), m_player->getPosition(), m_player->getForward(),
+                        aim, *m_inputProvider);
+    const auto &solution = m_targeting->solution();
+    const CombatStatus status{m_playerHealth->health(),
+                              m_arena.enemies.playerHealth,
+                              m_progress.defeated,
+                              m_progress.total,
+                              m_mothershipApproach->approachRemaining(),
+                              m_mothershipApproach->totalRemaining()};
+    m_graphicsSystem->setUiOverlay(FlightHud::build(
+        *m_camera, m_player->getPosition(), m_flight->state(), viewport, &aim,
+        solution ? &*solution : nullptr, &m_arena, &status, &m_effects->feedback()));
+}
+
+void CGamePlayState::beginMothershipCinematic()
+{
+    m_flight->setActive(false);
+    m_weapon->setActive(false);
+    m_playerHealth->setActive(false);
+    m_mothershipApproach->setActive(false);
+    m_inputProvider->setFlightMode(false);
+    m_controlsCaptured = false;
+    m_effects->clear();
+    if (m_audio)
+        m_audio->enterState("cinematic");
+    m_cinematic = std::make_unique<CMothershipCinematic>(
+        *m_scene, *m_temple, m_mothership->getPosition() + m_mothershipEmitterOffset,
+        m_templeImpact, m_audio);
+    m_graphicsSystem->setActiveCamera(&m_cinematic->camera());
+}
+bool CGamePlayState::updateMothershipCinematic(float seconds)
+{
+    const auto viewport = m_inputProvider->viewportSize();
+    m_cinematic->update(seconds, viewport);
+    m_graphicsSystem->setUiOverlay(m_cinematic->overlay(viewport));
+    return !m_cinematic->finished();
 }

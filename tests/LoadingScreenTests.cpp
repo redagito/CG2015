@@ -1,9 +1,12 @@
 #include "audio/GameAudio.h"
+#include "collision/CCollidable.h"
 #include "engine/CEngine.h"
 #include "game/CGameSystem.h"
 #include "game/state/CGamePlayState.h"
 #include "game/state/CLoadState.h"
+#include "game/state/CLoseState.h"
 #include "game/state/CTitleState.h"
+#include "game/state/CWinState.h"
 #include "graphics/system/CGraphicsSystem.h"
 #include "graphics/window/CGlfwWindow.h"
 #include "resource/Resource.h"
@@ -56,6 +59,8 @@ bool runLoadingScreenTests(CGlfwWindow &window)
         auto *gameplay = new CGamePlayState();
         gameplay->setAudio(&gameAudio);
         game.addState("game", gameplay);
+        game.addState("lose", new CLoseState("data/world/lose.json"));
+        game.addState("win", new CWinState("data/world/win.json"));
         require(game.init("load", &graphics, &input, resources.get(), &gameAudio),
                 "Loading state initialization failed");
         input.enter = true; // A press during loading must not skip the ready prompt.
@@ -103,10 +108,60 @@ bool runLoadingScreenTests(CGlfwWindow &window)
             graphics.draw(window);
             audio->render(samples.data(), 4096);
         }
+        for (int frame = 0; frame < 240; ++frame)
+        {
+            require(game.update(.016f) && game.activeStateName() == "game",
+                    "Arena play failed during enemy deployment");
+            audio->render(samples.data(), 1024);
+        }
+        graphics.draw(window);
+        require(gameplay->getGameWorld().targets().size() >= 2, "Pursuit enemies did not deploy");
         require(audio->activeVoices() >= 3, "Gameplay music and attached engines did not start");
         require(std::any_of(samples.begin(), samples.end(),
                             [](float v) { return std::abs(v) > 0.00001f; }),
                 "Gameplay audio mix was silent");
+        const auto *player = gameplay->getGameWorld().getObject(1);
+        require(player && player->hasCollidable(), "Player collision/health fixture is missing");
+        player->getCollidable()->receiveDamage(10000);
+        require(game.update(.016f) && game.activeStateName() == "game" && !input.flightMode,
+                "Player destruction did not start visible feedback and release flight input");
+        for (int frame = 0; frame < 120 && game.activeStateName() == "game"; ++frame)
+            require(game.update(.016f), "Defeat feedback transition failed");
+        require(game.activeStateName() == "lose",
+                "Player destruction did not finish the defeat transition");
+        graphics.draw(window);
+        // Exercise the actual deadline path with cached resources and live rendering.
+        // A single large step reaches the deadline without an unrelated player death fixture.
+        {
+            CGamePlayState siege;
+            siege.setAudio(&gameAudio);
+            require(siege.init(&graphics, &input, resources.get()), "Siege initialization failed");
+            siege.onEnter();
+            input.fire = true;
+            require(siege.update(35) && siege.getGameWorld().simulationFrozen() &&
+                        !input.flightMode,
+                    "Mothership deadline skipped cinematic or failed to freeze combat");
+            const auto frozenTargets = siege.getGameWorld().targets();
+            const auto frozenPlayer = siege.getGameWorld().getObject(1)->getPosition();
+            for (int frame = 0; frame < 23; ++frame)
+            {
+                require(siege.update(.25f), "Cinematic entered defeat before its final fade");
+                gameAudio.update(.25f);
+                if (frame % 4 == 0)
+                    graphics.draw(window);
+                const auto targets = siege.getGameWorld().targets();
+                require(targets.size() == frozenTargets.size(),
+                        "Enemies spawned or died during cinematic");
+                for (std::size_t j = 0; j < targets.size(); ++j)
+                    require(targets[j].position == frozenTargets[j].position,
+                            "Enemy moved during cinematic");
+                require(siege.getGameWorld().getObject(1)->getPosition() == frozenPlayer,
+                        "Player moved during cinematic");
+            }
+            require(!siege.update(.25f) && siege.getNextState() == "lose",
+                    "Completed mothership cinematic did not route to defeat");
+            siege.onExit();
+        }
         std::printf("Loading screen rendered %u frames, then title and gameplay initialized from "
                     "cache only.\n",
                     loadingFrames);

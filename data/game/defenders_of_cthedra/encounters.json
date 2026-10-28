@@ -1,0 +1,66 @@
+{
+  "max_active": 24,
+  "enemy_types": [
+    {
+      "id": "guardian",
+      "name": "GUARDIAN",
+      "mesh": "data/mesh/ship_2.obj",
+      "material": "data/material/metallic_galvanized.json",
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ],
+      "health": 300,
+      "decoration": {
+        "mesh": "data/mesh/ring_animation.obj",
+        "material": "data/material/metallic_galvanized.json",
+        "scale": [
+          0.5,
+          0.5,
+          0.5
+        ]
+      }
+    },
+    {
+      "id": "raider",
+      "name": "RAIDER",
+      "mesh": "data/mesh/enemy.obj",
+      "material": "data/material/enemy.json",
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "health": 100,
+      "weapon": {
+        "muzzles": [
+          [
+            0,
+            0,
+            7.1
+          ]
+        ]
+      }
+    }
+  ],
+  "waves": [
+    {
+      "type": "guardian",
+      "count": 1,
+      "delay": 0,
+      "interval": 0,
+      "offset": [
+        0,
+        -0.222222,
+        0.4
+      ]
+    },
+    {
+      "type": "raider",
+      "count": 6,
+      "delay": 1,
+      "interval": 2.5
+    }
+  ]
+}

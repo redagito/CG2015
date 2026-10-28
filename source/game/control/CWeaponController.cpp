@@ -1,92 +1,98 @@
-#include <glm/glm.hpp>
-
 #include "CWeaponController.h"
+#include "CProjectileController.h"
 #include "audio/GameAudio.h"
-
-#include "CLinearMovementController.h"
-#include "game/CGameObject.h"
-
+#include "game/combat/ProjectileBallistics.h"
+#include "game/effects/CCombatEffects.h"
 #include <GLFW/glfw3.h>
-
-CWeaponController::CWeaponController(IInputProvider *provider, CGameWorld *gameWorld, IScene *scene,
+#include <algorithm>
+#include <cmath>
+#include <stdexcept>
+CWeaponController::CWeaponController(IInputProvider *provider, CGameWorld *world, IScene *scene,
                                      ResourceId mesh, ResourceId material,
-                                     IResourceManager *resourceManager,
-                                     CCollisionSystem *collisionSystem, int collisionGroup,
-                                     GameAudio *audio)
-    : m_collisionGroup(collisionGroup), m_collisionSystem(collisionSystem),
-      m_resourceManager(resourceManager), m_inputProvider(provider), m_gameWorld(gameWorld),
-      m_scene(scene), m_mesh(mesh), m_material(material)
+                                     IResourceManager *resources, CCollisionSystem *collisions,
+                                     int group, GameAudio *audio, const WeaponTuning &tuning,
+                                     CCombatEffects *effects)
+    : m_effects(effects), m_tuning(tuning), m_audio(audio), m_inputProvider(provider),
+      m_gameWorld(world), m_scene(scene), m_mesh(mesh), m_material(material),
+      m_collisionSystem(collisions), m_collisionGroup(group)
 {
-    m_audio = audio;
-    return;
+    std::vector<float> vertices, normals, uv;
+    std::vector<unsigned> indices;
+    EPrimitiveType primitive;
+    if (tuning.muzzles.empty() || tuning.interval <= 0 ||
+        !resources->getMesh(mesh, vertices, indices, normals, uv, primitive))
+        throw std::runtime_error("Cannot prepare projectile mesh");
+    m_projectileBounds = CAABBox::create(vertices);
 }
-
-CWeaponController::~CWeaponController()
-{
-}
-
+CWeaponController::~CWeaponController() = default;
 void CWeaponController::attach(CGameObject *object)
 {
     m_object = object;
 }
-
 void CWeaponController::detach()
 {
     m_object = nullptr;
 }
-
-void CWeaponController::update(float dtime)
+void CWeaponController::setActive(bool active)
 {
-    if (m_active && m_object != nullptr)
+    m_active = active;
+}
+void CWeaponController::receiveMessage(Message)
+{
+}
+WeaponAim CWeaponController::aim() const
+{
+    if (!m_object)
+        return {};
+    return {ProjectileBallistics::muzzlePosition(*m_object, m_tuning.muzzles[m_muzzleIndex]),
+            m_object->getForward(), m_object->getVelocity(), m_tuning.projectileSpeed,
+            m_tuning.projectileLifetime};
+}
+void CWeaponController::update(float seconds)
+{
+    if (!m_active || !m_object || m_object->isDead() || !std::isfinite(seconds) || seconds <= 0)
+        return;
+    m_weaponCooldown -= std::min(seconds, .25f);
+    if (!(m_inputProvider ? m_inputProvider->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)
+                          : m_trigger))
     {
-        m_weaponCooldown -= dtime;
-        // Space is the air brake; guns are on the primary mouse button.
-        if (m_inputProvider->isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT) &&
-            m_weaponCooldown <= 0.f)
-        {
-            // Reset cooldown
-            m_weaponCooldown = 0.3f;
-
-            glm::vec3 direction = m_object->getForward();
-            glm::vec3 position = m_object->getPosition();
-
-            // Create game object
-            CGameObject *bullet = new CGameObject;
-            bullet->addController(std::make_shared<CLinearMovementController>(direction, 50.f));
-            bullet->setPosition(position + direction * 2.f);
-            bullet->setOrientation(m_object->getOrientation());
-
-            // Bullet colidable
-            std::vector<float> bulletVertices;
-            std::vector<unsigned int> bulletIndices;
-            std::vector<float> bulletNormals;
-            std::vector<float> bulletUvs;
-            EPrimitiveType bulletType;
-            m_resourceManager->getMesh(m_mesh, bulletVertices, bulletIndices, bulletNormals,
-                                       bulletUvs, bulletType);
-            bullet->setCollidable(
-                m_collisionSystem->add(CAABBox::create(bulletVertices), m_collisionGroup));
-            bullet->getCollidable()->setDamage(50.f);
-
-            // Create scene proxy
-            CSceneObjectProxy *proxy = new CSceneObjectProxy(
-                m_scene, m_scene->createObject(m_mesh, m_material, glm::vec3(0.f),
-                                               glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(1.f)));
-            bullet->setSceneObject(proxy);
-
-            // Add to world
-            m_gameWorld->addObject(bullet);
-            if (m_audio)
-                m_audio->emit({GameAudioEventType::Shot, position});
-        }
+        m_weaponCooldown = std::max(0.f, m_weaponCooldown);
+        return;
+    }
+    // Preserve the remainder so cadence does not drift with the render frame rate.
+    while (m_weaponCooldown <= 0)
+    {
+        fire();
+        m_weaponCooldown += m_tuning.interval;
     }
 }
-
-void CWeaponController::setActive(bool state)
+void CWeaponController::fire()
 {
-    m_active = state;
+    const auto launch = ProjectileBallistics::launch(aim());
+    if (m_effects)
+        m_effects->muzzle(launch.position, launch.velocity, m_tuning.color);
+    auto bullet = std::make_unique<CGameObject>();
+    bullet->setProjectile(true);
+    bullet->setPosition(launch.position);
+    bullet->setOrientation(launch.orientation);
+    bullet->setVelocity(launch.velocity);
+    bullet->setCollidable(m_collisionSystem->add(m_projectileBounds, m_collisionGroup));
+    bullet->getCollidable()->setDamage(m_tuning.damage);
+    // Projectile sweeps deliver one hit; ordinary overlap testing must not duplicate it.
+    bullet->getCollidable()->setCollidable(false);
+    bullet->addController(std::make_shared<CProjectileController>(
+        launch.velocity, m_tuning.projectileLifetime, *m_collisionSystem, m_collisionGroup,
+        m_effects, m_inputProvider != nullptr, m_tuning.color));
+    bullet->setSceneObject(
+        new CSceneObjectProxy(m_scene, m_scene->createObject(m_mesh, m_material, launch.position,
+                                                             launch.orientation, glm::vec3(1))));
+    m_gameWorld->addObject(bullet.release());
+    m_muzzleIndex = (m_muzzleIndex + 1) % m_tuning.muzzles.size();
+    if (m_audio)
+        m_audio->emit({GameAudioEventType::Shot, launch.position});
 }
 
-void CWeaponController::receiveMessage(Message msg)
+void CWeaponController::setTrigger(bool firing)
 {
+    m_trigger = firing;
 }

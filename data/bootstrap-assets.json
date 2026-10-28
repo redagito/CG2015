@@ -137,6 +137,10 @@
     {
       "kind": "scene",
       "file": "data/world/load_1.json"
+    },
+    {
+      "kind": "shader",
+      "file": "data/shader/deferred/particles.ini"
     }
   ]
 }

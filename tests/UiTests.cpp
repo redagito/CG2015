@@ -1,3 +1,5 @@
+#include "game/combat/ProjectileBallistics.h"
+#include "game/combat/TargetingSolution.h"
 #include "game/flight/CChaseCamera.h"
 #include "game/flight/FlightHud.h"
 #include "game/state/CLoseState.h"
@@ -120,6 +122,29 @@ bool runUiTests()
                 }
             require(steeringPixels > 3 && headingPixels > 1,
                     "Flight reticles vanished or were clipped after resize");
+            TargetingSolution selected;
+            selected.target = {1, "TEST", {20, 0, 100}, {-5, 0, 0}};
+            WeaponAim gun;
+            selected.intercept = ProjectileBallistics::intercept(gun, selected.target.position,
+                                                                 selected.target.velocity);
+            selected.range = 102;
+            glClear(GL_COLOR_BUFFER_BIT);
+            ui.draw(FlightHud::build(chase, glm::vec3(0), flight, glm::vec2(size), &gun, &selected),
+                    size.x, size.y, gpu);
+            glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+            unsigned targetPixels = 0, leadPixels = 0;
+            for (unsigned y = size.y / 4; y < size.y * 3 / 4; ++y)
+                for (unsigned x = size.x / 8; x < size.x * 7 / 8; ++x)
+                {
+                    const auto p = 4 * (y * size.x + x);
+                    if (pixels[p] > 180 && pixels[p + 1] < 160 && pixels[p + 2] < 160)
+                        ++targetPixels;
+                    if (pixels[p] > 40 && pixels[p] < 180 && pixels[p + 1] > 180 &&
+                        pixels[p + 2] < 180)
+                        ++leadPixels;
+                }
+            require(targetPixels > 3 && leadPixels > 1,
+                    "Target box or lead indicator vanished after resize");
             CFrameBuffer::setDefaultActive();
         }
         input.enter = false;

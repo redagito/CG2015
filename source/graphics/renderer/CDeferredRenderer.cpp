@@ -9,7 +9,7 @@
 bool CDeferredRenderer::init(IResourceManager &manager)
 {
     SPDLOG_INFO("Initializing deferred renderer.");
-    if (!m_background.init(manager) || !m_transparency.init(manager))
+    if (!m_background.init(manager) || !m_transparency.init(manager) || !m_particles.init(manager))
         return false;
     std::string error;
     if (hasGLError(error))
@@ -75,6 +75,10 @@ void CDeferredRenderer::draw(const IScene &scene, const ICamera &camera, const I
         m_transparency.render(scene, camera, window, manager);
     }
 
+    {
+        CRenderProfileScope timer(m_profiler, "particles");
+        m_particles.render(scene, camera, window, manager);
+    }
     m_targets.shadows.prune();
     // Post processing pass
     {

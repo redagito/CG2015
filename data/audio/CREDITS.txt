@@ -18,3 +18,7 @@ CC0 dedication: https://creativecommons.org/publicdomain/zero/1.0/
 Files were normalized, converted and given fades/loop crossfades.
 Per-file origins, processing and SHA-256 checksums: sources.json
 The miniaudio library license is bundled in ../licenses/miniaudio.txt.
+
+Player shield-hit transient: original deterministic FM/noise synthesis, CC0 1.0.
+
+Mothership charge/beam: original deterministic oscillator/noise synthesis, CC0 1.0.

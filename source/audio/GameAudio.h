@@ -17,7 +17,7 @@ class GameAudio
     void update(float seconds);
     VoiceHandle startEmitter(const std::string &cue, glm::vec3 position);
     bool emitterActive(VoiceHandle handle) const;
-    void moveEmitter(VoiceHandle handle, glm::vec3 position, float gain = 1);
+    void moveEmitter(VoiceHandle handle, glm::vec3 position, float gain = 1, float pitch = 1);
     void stopEmitter(VoiceHandle handle);
     void stopEmitters();
     void setListener(glm::vec3 position, glm::vec3 forward, glm::vec3 up);

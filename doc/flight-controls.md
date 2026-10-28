@@ -13,11 +13,11 @@ Mouse movement displaces a virtual stick around screen center. The cyan bracket 
 | R | Recenter steering |
 | Escape | Exit |
 
-The white cross marks the ship's forward gun line at 100 world units. The amber dot marks its velocity direction at that distance, making drift visible. Neither is a target lead indicator. Cyan brackets show mouse steering independently of camera lag. The HUD also shows speed, throttle and brake/boost status.
+The white cross marks the current muzzle's forward gun line at 100 world units. The amber dot marks its velocity direction at that distance, making drift visible. The green square is the separate target lead indicator. Cyan brackets show mouse steering independently of camera lag. The HUD also shows speed, throttle and brake/boost status.
 
 `CFlightController` owns quaternion attitude, angular response, throttle and assisted velocity. Automatic bank is cosmetic: it does not inadvertently tilt the steering axes. Manual roll changes the physical attitude. Small integration steps keep turns consistent across frame rates; an exceptional frame contributes at most 0.25 seconds. There is no player altitude clamp.
 
-`CChaseCamera` follows after world movement, with critically damped position and look-target springs. It follows deliberate rolls, anticipates steering and gently widens FOV under boost. Teleports/wraps reset the springs instead of dragging the view across the arena. Projection keeps the 0.5 near plane that fixes distant shadow acne and uses the same aspect/FOV as the reticles. Gameplay depth-of-field is disabled for aiming clarity.
+`CChaseCamera` follows after world movement, with critically damped position and look-target springs. It follows deliberate rolls, anticipates steering and gently widens FOV under boost. Large discontinuities reset the springs instead of dragging the view across the arena; normal arena boundaries now use return assistance. Projection keeps the 0.5 near plane that fixes distant shadow acne and uses the same aspect/FOV as the reticles. Gameplay depth-of-field is disabled for aiming clarity.
 
 ## Tuning
 
@@ -45,8 +45,8 @@ Rates other than angular speeds/frequency are exponential response coefficients 
 
 ## Scope and verification
 
-This milestone replaces the old movement and chase-camera controllers and adds a quaternion bridge to game-object rendering. It keeps the existing enemies, projectile speeds, collision behavior and X/Z arena wrapping. Boundary assistance, target selection, lead prediction and combat/AI balancing remain later milestones. The old wrap can still be encountered by the player; the camera now resets cleanly across it.
+The old movement, chase camera and wrapping controllers have been replaced. Combat integration, target selection/lead, engine modulation, arena boundaries and pursuit enemies are described in [combat-and-arena.md](combat-and-arena.md). Tab cycles targets, T selects near the gun line, and X clears selection.
 
 The flight regression tests cover neutral flight, steering signs, dead zone, inverted pitch, loops/rolls, throttle/boost/brake, momentum, different frame rates, roll/vertical camera stability, wrap reset, boost FOV and reticle positioning at different aspect ratios. The loading integration enters gameplay with cached tuning, steering input and firing. Existing GPU tests cover the render pipeline and far-wall shadow stability.
 
-The initial boost speed is kept below the existing projectile speed so the ship cannot overtake its own shots. Inherited projectile velocity belongs to the combat milestone.
+Shots now inherit the ship's velocity. Combat and arena tuning are bundled beside the flight configuration.

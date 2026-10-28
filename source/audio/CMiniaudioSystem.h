@@ -22,6 +22,7 @@ class CMiniaudioSystem final : public IAudioSystem
     void stopAll() override;
     void setPosition(VoiceHandle, glm::vec3) override;
     void setGain(VoiceHandle, float) override;
+    void setPitch(VoiceHandle, float) override;
     void setListener(glm::vec3, glm::vec3, glm::vec3) override;
     void setMasterGain(float) override;
     void setBusGain(AudioBus, float) override;

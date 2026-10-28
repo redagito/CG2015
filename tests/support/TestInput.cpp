@@ -11,7 +11,8 @@ bool TestInput::isKeyPressed(int key)
     return (key == GLFW_KEY_ENTER && enter) || (key == GLFW_KEY_SPACE && space) ||
            (key == GLFW_KEY_W && throttleUp) || (key == GLFW_KEY_S && throttleDown) ||
            (key == GLFW_KEY_A && rollLeft) || (key == GLFW_KEY_D && rollRight) ||
-           (key == GLFW_KEY_LEFT_SHIFT && boost);
+           (key == GLFW_KEY_LEFT_SHIFT && boost) || (key == GLFW_KEY_TAB && targetNext) ||
+           (key == GLFW_KEY_T && targetSelect) || (key == GLFW_KEY_X && targetClear);
 }
 
 bool TestInput::isMouseButtonPressed(int button)

@@ -1,15 +1,22 @@
 #include "CFlightController.h"
 #include "game/CGameObject.h"
+#include "game/arena/ArenaBoundary.h"
 #include "input/IInputProvider.h"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 #include <cmath>
 #include <glm/gtx/quaternion.hpp>
 
-CFlightController::CFlightController(IInputProvider &input, const FlightTuning &tuning)
+CFlightController::CFlightController(IInputProvider &input, const FlightTuning &tuning,
+                                     const ArenaTuning *arena)
     : m_input(input), m_tuning(tuning)
 {
     m_tuning.validate();
+    if (arena)
+    {
+        arena->validate();
+        m_arena = *arena;
+    }
 }
 void CFlightController::attach(CGameObject *object)
 {
@@ -20,6 +27,7 @@ void CFlightController::attach(CGameObject *object)
     m_state.throttle =
         (m_tuning.initialSpeed - m_tuning.minSpeed) / (m_tuning.maxSpeed - m_tuning.minSpeed);
     m_state.velocity = object->getForward() * m_state.speed;
+    object->setVelocity(m_state.velocity);
 }
 void CFlightController::detach()
 {
@@ -39,7 +47,7 @@ const FlightState &CFlightController::state() const
 
 void CFlightController::update(float seconds)
 {
-    if (!m_active || !m_object || !std::isfinite(seconds) || seconds <= 0)
+    if (!m_active || !m_object || m_object->isDead() || !std::isfinite(seconds) || seconds <= 0)
         return;
     m_state.pointer = m_input.pointerOffset();
     glm::vec2 stick = m_state.pointer / m_tuning.pointerRadius;
@@ -81,10 +89,19 @@ void CFlightController::update(float seconds)
                                 : boost ? m_tuning.boostTurnMultiplier
                                         : 1;
         // Local +Z is forward; the chase view's screen-right points along local -X.
-        const glm::vec3 targetRate = glm::radians(glm::vec3(m_state.steering.y * m_tuning.pitchRate,
-                                                            -m_state.steering.x * m_tuning.yawRate,
-                                                            rollInput * m_tuning.rollRate)) *
-                                     turnScale;
+        glm::vec3 targetRate = glm::radians(glm::vec3(m_state.steering.y * m_tuning.pitchRate,
+                                                      -m_state.steering.x * m_tuning.yawRate,
+                                                      rollInput * m_tuning.rollRate)) *
+                               turnScale;
+        BoundaryResponse boundary;
+        if (m_arena)
+        {
+            boundary = ArenaBoundary::evaluate(position, *m_arena);
+            targetRate =
+                ArenaBoundary::correctTurn(m_state.orientation, targetRate, boundary, *m_arena);
+            m_state.boundaryWarning = boundary.strength;
+            m_state.boundaryAssist = boundary.strength > .65f;
+        }
         m_state.angularVelocity +=
             (targetRate - m_state.angularVelocity) * (1 - std::exp(-m_tuning.angularResponse * dt));
         const float angle = glm::length(m_state.angularVelocity) * dt;
@@ -98,8 +115,12 @@ void CFlightController::update(float seconds)
         const auto forward = m_state.orientation * glm::vec3(0, 0, 1);
         m_state.velocity += (forward * m_state.speed - m_state.velocity) *
                             (1 - std::exp(-m_tuning.velocityResponse * dt));
+        if (m_arena)
+            m_state.velocity =
+                ArenaBoundary::dampVelocity(m_state.velocity, boundary, dt, *m_arena);
         position += m_state.velocity * dt;
     }
+    m_object->setVelocity(m_state.velocity);
     m_object->setPosition(position);
     m_object->setOrientation(m_state.orientation *
                              glm::angleAxis(m_state.bank, glm::vec3(0, 0, 1)));

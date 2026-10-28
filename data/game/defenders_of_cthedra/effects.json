@@ -1,0 +1,9 @@
+{
+  "maxParticles": 2048,
+  "trailInterval": 0.025,
+  "trailLifetime": 0.13,
+  "shieldDuration": 0.45,
+  "shieldRadius": 3.6,
+  "cameraKick": 0.45,
+  "resultDelay": 1
+}

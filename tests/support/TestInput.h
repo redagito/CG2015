@@ -8,6 +8,7 @@ class TestInput : public IInputProvider
     bool space = false, fire = false, flightMode = false;
     bool throttleUp = false, throttleDown = false, rollLeft = false, rollRight = false,
          boost = false;
+    bool targetNext = false, targetSelect = false, targetClear = false;
     glm::vec2 pointer{0}, viewport{1280, 720};
     bool isMouseButtonPressed(int button) override;
     glm::vec2 pointerOffset() override;

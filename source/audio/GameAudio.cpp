@@ -67,6 +67,13 @@ void GameAudio::enterState(const std::string &state)
     if (!m_configured)
         return;
     stopEmitters();
+    if (state == "cinematic")
+    {
+        // Stop in-flight gun/hit one-shots too, and discard events queued earlier in this step.
+        m_system.stopAll();
+        m_events.clear();
+        m_music = 0;
+    }
     const std::string music = state == "game"    ? "combat_music"
                               : state == "title" ? "title_music"
                                                  : "";
@@ -95,9 +102,12 @@ void GameAudio::update(float seconds)
     // Events are collected during game-world updates and played once per frame.
     for (const auto &event : m_events)
     {
-        const char *cue = event.type == GameAudioEventType::Shot  ? "shot"
-                          : event.type == GameAudioEventType::Hit ? "hit"
-                                                                  : "explosion";
+        const char *cue = event.type == GameAudioEventType::MothershipCharge ? "mothership_charge"
+                          : event.type == GameAudioEventType::MothershipBeam ? "mothership_beam"
+                          : event.type == GameAudioEventType::PlayerHit      ? "player_hit"
+                          : event.type == GameAudioEventType::Shot           ? "shot"
+                          : event.type == GameAudioEventType::Hit            ? "hit"
+                                                                             : "explosion";
         m_system.play(cue, event.position);
     }
     m_events.clear();
@@ -117,10 +127,11 @@ bool GameAudio::emitterActive(VoiceHandle handle) const
     return m_system.playing(handle);
 }
 
-void GameAudio::moveEmitter(VoiceHandle handle, glm::vec3 position, float gain)
+void GameAudio::moveEmitter(VoiceHandle handle, glm::vec3 position, float gain, float pitch)
 {
     m_system.setPosition(handle, position);
     m_system.setGain(handle, gain);
+    m_system.setPitch(handle, pitch);
 }
 
 void GameAudio::stopEmitter(VoiceHandle handle)

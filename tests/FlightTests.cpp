@@ -197,7 +197,7 @@ int main()
             camera.follow({0, 0, 0}, state, .016f, viewport.x / viewport.y);
             state.pointer = {tuning.pointerRadius, 0};
             const auto hud = FlightHud::build(camera, {0, 0, 0}, state, viewport);
-            require(hud.rectangles.size() >= 11 && hud.texts.size() == 2,
+            require(hud.rectangles.size() >= 11 && hud.texts.size() == 3,
                     "Flight reticles or controls are missing");
             const auto pointer = hud.rectangles.front().anchor;
             const float expected =

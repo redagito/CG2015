@@ -115,5 +115,26 @@
     "license": "CC0-1.0",
     "processing": "original oscillator synthesis",
     "sha256": "f51fb57b5f071983ce64c47fdb66b600f227c2ded15117e43dcebcdb9ad92d10"
+  },
+  "sfx/shield_hit.wav": {
+    "author": "CG2015 project",
+    "license": "CC0-1.0",
+    "source": "scripts/prepare_shield_sound.py",
+    "processing": "48 kHz mono PCM, deterministic FM/noise synthesis, attack and exponential decay",
+    "sha256": "489bbd07d019a83ae827ff5a2ea349bf7195e21ea4ca6f95020a44e12369c1fd"
+  },
+  "sfx/mothership_charge.wav": {
+    "author": "CG2015 project",
+    "license": "CC0-1.0",
+    "source": "scripts/prepare_mothership_sounds.py",
+    "processing": "Original deterministic oscillator/noise synthesis, 48 kHz mono PCM",
+    "sha256": "b3c3521addaf62db4228ac977a9b41bb634650b008d95e666e7f28f514e9cbd4"
+  },
+  "sfx/mothership_beam.wav": {
+    "author": "CG2015 project",
+    "license": "CC0-1.0",
+    "source": "scripts/prepare_mothership_sounds.py",
+    "processing": "Original deterministic oscillator/noise synthesis, 48 kHz mono PCM",
+    "sha256": "32efde7e961c4157349b257e2689ac63a439fd22f31b06bf37621da9e8aad14b"
   }
 }

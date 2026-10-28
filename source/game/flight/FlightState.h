@@ -8,5 +8,6 @@ struct FlightState
     glm::vec3 velocity{0}, angularVelocity{0};
     glm::vec2 steering{0}, pointer{0};
     float throttle = .5f, speed = 0, bank = 0, boost = 0;
-    bool braking = false;
+    bool braking = false, boundaryAssist = false;
+    float boundaryWarning = 0;
 };

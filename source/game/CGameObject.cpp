@@ -53,6 +53,10 @@ void CGameObject::setSceneObject(CSceneObjectProxy *proxy)
 {
     assert(proxy != nullptr);
     m_sceneObject.reset(proxy);
+    // Publish the object's real spawn pose immediately, before its first simulation tick.
+    m_sceneObject->setPosition(m_position);
+    m_sceneObject->setRotation(m_orientation);
+    m_sceneObject->setScale(m_scale);
 }
 
 const glm::vec3 &CGameObject::getPosition() const
@@ -75,6 +79,8 @@ void CGameObject::update(float dtime)
     // Update object controllers
     for (auto &controller : m_controllers)
     {
+        if (m_deleteRequested)
+            break;
         controller->update(dtime);
     }
 
@@ -93,8 +99,7 @@ void CGameObject::update(float dtime)
         // Update collidable
         if (hasCollidable())
         {
-            m_collidable->setTranslation(getPosition());
-            m_collidable->setScale(getScale());
+            m_collidable->setTransform(getPosition(), getOrientation(), getScale());
         }
     }
 }
@@ -132,8 +137,7 @@ void CGameObject::setCollidable(CCollidable *entity)
     {
         m_collidable = entity;
         // Update
-        m_collidable->setScale(getScale());
-        m_collidable->setTranslation(getPosition());
+        m_collidable->setTransform(getPosition(), getOrientation(), getScale());
     }
 }
 
@@ -167,4 +171,36 @@ void CGameObject::setOrientation(const glm::quat &orientation)
 const glm::quat &CGameObject::getOrientation() const
 {
     return m_orientation;
+}
+
+void CGameObject::setVelocity(glm::vec3 velocity)
+{
+    m_velocity = velocity;
+}
+const glm::vec3 &CGameObject::getVelocity() const
+{
+    return m_velocity;
+}
+void CGameObject::setTargetName(std::string name)
+{
+    m_targetName = std::move(name);
+}
+const std::string &CGameObject::getTargetName() const
+{
+    return m_targetName;
+}
+
+void CGameObject::setProjectile(bool projectile)
+{
+    m_projectile = projectile;
+}
+bool CGameObject::isProjectile() const
+{
+    return m_projectile;
+}
+
+void CGameObject::setVisible(bool visible)
+{
+    if (m_sceneObject)
+        m_sceneObject->setVisibility(visible);
 }

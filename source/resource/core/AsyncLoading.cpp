@@ -30,6 +30,8 @@ AssetKind assetKind(const std::string &name)
         return AssetKind::Scene;
     if (name == "audio")
         return AssetKind::Audio;
+    if (name == "enemy_roster")
+        return AssetKind::EnemyRoster;
     if (name == "audio_bank")
         return AssetKind::AudioBank;
     throw std::runtime_error("Unknown asset kind: " + name);
@@ -163,12 +165,35 @@ AsyncLoadId CResourceManager::beginAsync(std::vector<AssetRequest> requests, std
                         }
                         break;
                     }
+                    case AssetKind::EnemyRoster:
                     case AssetKind::Json:
                     case AssetKind::Scene:
                     {
                         Json::Value root;
                         if (!staged->loadJsonDocument(request.file, root))
                             throw std::runtime_error("Cannot parse " + request.file);
+                        if (request.kind == AssetKind::EnemyRoster)
+                        {
+                            if (!root["enemy_types"].isArray())
+                                throw std::runtime_error("Enemy roster needs enemy_types");
+                            const auto prepare = [&](const Json::Value &type)
+                            {
+                                if (!type["mesh"].isString() || !type["material"].isString())
+                                    throw std::runtime_error(
+                                        "Enemy assets need mesh and material paths");
+                                if (staged->loadMesh(type["mesh"].asString()) == invalidResource ||
+                                    staged->loadMaterial(type["material"].asString()) ==
+                                        invalidResource)
+                                    throw std::runtime_error("Cannot prepare enemy assets for " +
+                                                             request.file);
+                            };
+                            for (const auto &type : root["enemy_types"])
+                            {
+                                prepare(type);
+                                if (type.isMember("decoration"))
+                                    prepare(type["decoration"]);
+                            }
+                        }
                         if (request.kind == AssetKind::Scene)
                             for (const auto &object : root["scene_objects"])
                             {

@@ -22,7 +22,7 @@
     },
     {
       "kind": "material",
-      "file": "data/material/white.json"
+      "file": "data/material/white_glowing.json"
     },
     {
       "kind": "mesh",
@@ -49,28 +49,28 @@
       "file": "data/material/sand.json"
     },
     {
-      "kind": "mesh",
-      "file": "data/mesh/enemy.obj"
-    },
-    {
-      "kind": "material",
-      "file": "data/material/enemy.json"
-    },
-    {
-      "kind": "material",
-      "file": "data/material/metallic_galvanized.json"
-    },
-    {
-      "kind": "mesh",
-      "file": "data/mesh/ring_animation.obj"
-    },
-    {
       "kind": "audio_bank",
       "file": "data/audio/cues.json"
     },
     {
       "kind": "json",
       "file": "data/game/defenders_of_cthedra/flight.json"
+    },
+    {
+      "kind": "json",
+      "file": "data/game/defenders_of_cthedra/combat.json"
+    },
+    {
+      "kind": "json",
+      "file": "data/game/defenders_of_cthedra/arena.json"
+    },
+    {
+      "kind": "enemy_roster",
+      "file": "data/game/defenders_of_cthedra/encounters.json"
+    },
+    {
+      "kind": "json",
+      "file": "data/game/defenders_of_cthedra/effects.json"
     }
   ]
 }

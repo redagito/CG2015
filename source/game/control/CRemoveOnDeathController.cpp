@@ -1,49 +1,31 @@
 #include "CRemoveOnDeathController.h"
-
 #include "game/CGameObject.h"
-
-#include "game/state/CGamePlayState.h"
-
-CRemoveOnDeathController::CRemoveOnDeathController(CGamePlayState* state)
-:
-m_object(nullptr),
-m_gameState(state),
-m_active(true)
+CRemoveOnDeathController::CRemoveOnDeathController(std::function<void()> onDefeat)
+    : m_onDefeat(std::move(onDefeat))
 {
-	return;
 }
-
-CRemoveOnDeathController::~CRemoveOnDeathController()
+CRemoveOnDeathController::~CRemoveOnDeathController() = default;
+void CRemoveOnDeathController::attach(CGameObject *object)
 {
-	return;
+    m_object = object;
 }
-
-void CRemoveOnDeathController::attach(CGameObject* object)
-{
-	m_object = object;
-}
-
 void CRemoveOnDeathController::detach()
 {
-	m_object = nullptr;
+    m_object = nullptr;
 }
-
-void CRemoveOnDeathController::update(float dtime)
+void CRemoveOnDeathController::setActive(bool active)
 {
-	if (m_object != nullptr && m_active && m_object->isDead())
-	{
-		// Mark for deletion
-		m_gameState->winCount();
-		m_object->markDeleted();
-	}
+    m_active = active;
 }
-
-void CRemoveOnDeathController::setActive(bool state)
+void CRemoveOnDeathController::receiveMessage(Message)
 {
-	m_active = state;
 }
-
-void CRemoveOnDeathController::receiveMessage(Message msg)
+void CRemoveOnDeathController::update(float)
 {
-
+    if (m_active && m_object && m_object->isDead() && !m_object->isDeleteRequested())
+    {
+        if (m_onDefeat)
+            m_onDefeat();
+        m_object->markDeleted();
+    }
 }

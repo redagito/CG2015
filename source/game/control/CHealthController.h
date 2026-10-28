@@ -2,6 +2,7 @@
 
 #include "game/IController.h"
 class GameAudio;
+class CCombatEffects;
 
 /**
  * \brief Stores health state and marks object for deletion on death.
@@ -13,12 +14,13 @@ class CHealthController : public IController
     /**
      * \brief Sets health.
      */
-    CHealthController(float health, GameAudio *audio = nullptr);
+    CHealthController(float health, GameAudio *audio = nullptr, CCombatEffects *effects = nullptr);
 
     /**
      * \brief Destructor for cleanup.
      */
     ~CHealthController();
+    float health() const;
 
     /**
      * \brief On attach to object.
@@ -43,6 +45,7 @@ class CHealthController : public IController
     void receiveMessage(Message msg);
 
   private:
+    CCombatEffects *m_effects = nullptr;
     GameAudio *m_audio = nullptr;
     CGameObject *m_object = nullptr; /**< Controlled game object. */
     float m_health;                  /**< Health value. */

@@ -6,40 +6,43 @@
 
 class CSceneObjectProxy
 {
-public:
-	CSceneObjectProxy();
-	CSceneObjectProxy(IScene* scene, SceneObjectId id);
-	
-	bool init(IScene* scene, SceneObjectId id);
+  public:
+    CSceneObjectProxy();
+    ~CSceneObjectProxy();
+    CSceneObjectProxy(const CSceneObjectProxy &) = delete;
+    CSceneObjectProxy &operator=(const CSceneObjectProxy &) = delete;
+    CSceneObjectProxy(IScene *scene, SceneObjectId id);
 
-	const glm::vec3& getPosition() const;
-	const glm::quat& getRotation() const;
-	const glm::vec3& getScale() const;
+    bool init(IScene *scene, SceneObjectId id);
 
-	void setPosition(const glm::vec3& position);
-	void setRotation(const glm::vec3& rotation);
-	void setRotation(const glm::quat& rotation);
-	void setScale(const glm::vec3& scale);
+    const glm::vec3 &getPosition() const;
+    const glm::quat &getRotation() const;
+    const glm::vec3 &getScale() const;
 
-	/**
-	* \brief Sets visibility of the object.
-	*
-	* Set to false to make scene object invisible.
-	*/
-	void setVisibility(bool visible);
+    void setPosition(const glm::vec3 &position);
+    void setRotation(const glm::vec3 &rotation);
+    void setRotation(const glm::quat &rotation);
+    void setScale(const glm::vec3 &scale);
 
-private:
-	void getUpdate() const;
-	void sendUpdate();
+    /**
+     * \brief Sets visibility of the object.
+     *
+     * Set to false to make scene object invisible.
+     */
+    void setVisibility(bool visible);
 
-	mutable ResourceId m_mesh = invalidResource;
-	mutable ResourceId m_material = invalidResource;
-	mutable glm::vec3 m_position;
-	mutable glm::quat m_rotation;
-	mutable glm::vec3 m_scale;
-	mutable bool m_visible = true;
+  private:
+    void getUpdate() const;
+    void sendUpdate();
 
-	bool m_init = false;
-	IScene* m_scene = nullptr;
-	SceneObjectId m_objectId = invalidObject;
+    mutable ResourceId m_mesh = invalidResource;
+    mutable ResourceId m_material = invalidResource;
+    mutable glm::vec3 m_position;
+    mutable glm::quat m_rotation;
+    mutable glm::vec3 m_scale;
+    mutable bool m_visible = true;
+
+    bool m_init = false;
+    IScene *m_scene = nullptr;
+    SceneObjectId m_objectId = invalidObject;
 };

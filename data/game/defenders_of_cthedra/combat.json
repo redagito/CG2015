@@ -1,0 +1,38 @@
+{
+  "weapon": {
+    "projectileSpeed": 90,
+    "projectileLifetime": 4,
+    "damage": 50,
+    "interval": 0.3,
+    "muzzles": [
+      [
+        3.2264,
+        0.424,
+        7.1
+      ],
+      [
+        -2.6727,
+        0.424,
+        7.1
+      ]
+    ],
+    "color": [
+      0.25,
+      0.85,
+      2
+    ]
+  },
+  "targeting": {
+    "range": 300,
+    "acquisitionAngle": 75
+  },
+  "engine": {
+    "idleGain": 0.2,
+    "fullGain": 0.7,
+    "boostGain": 1,
+    "idlePitch": 0.7,
+    "fullPitch": 1.1,
+    "boostPitch": 1.4,
+    "response": 5
+  }
+}

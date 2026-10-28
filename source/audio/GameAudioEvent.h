@@ -5,7 +5,10 @@ enum class GameAudioEventType
 {
     Shot,
     Hit,
-    Destroyed
+    PlayerHit,
+    Destroyed,
+    MothershipCharge,
+    MothershipBeam
 };
 
 struct GameAudioEvent

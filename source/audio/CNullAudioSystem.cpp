@@ -87,3 +87,7 @@ bool CNullAudioSystem::render(float *p, std::uint64_t n)
     std::fill(p, p + n * 2, 0.f);
     return true;
 }
+
+void CNullAudioSystem::setPitch(VoiceHandle, float)
+{
+}
