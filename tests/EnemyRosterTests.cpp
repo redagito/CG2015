@@ -38,6 +38,11 @@ int main()
         Json::Value root;
         require(resources->loadJsonDocument("data/game/defenders_of_cthedra/encounters.json", root),
                 "Enemy roster fixture missing");
+        root["waves"] = Json::Value(Json::arrayValue);
+        root["waves"][0]["type"] = "guardian";
+        root["waves"][0]["count"] = 1;
+        root["waves"][1]["type"] = "raider";
+        root["waves"][1]["count"] = 6;
         auto interceptor = root["enemy_types"][1];
         interceptor["id"] = "interceptor";
         interceptor["name"] = "INTERCEPTOR";

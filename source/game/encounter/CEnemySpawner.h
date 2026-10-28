@@ -19,6 +19,7 @@ class CEnemySpawner
                   ResourceId projectileMaterial, GameAudio *audio, std::function<void()> onDefeat,
                   CCombatEffects *effects = nullptr);
     void update(float seconds);
+    void setWave(std::size_t wave);
     std::size_t pending() const;
 
   private:
@@ -44,5 +45,6 @@ class CEnemySpawner
     std::function<void()> m_onDefeat;
     std::vector<PreparedType> m_prepared;
     std::size_t m_next = 0;
+    std::size_t m_wave = static_cast<std::size_t>(-1);
     float m_elapsed = 0;
 };

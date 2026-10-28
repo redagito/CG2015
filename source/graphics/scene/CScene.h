@@ -19,6 +19,7 @@ class IGraphicsResourceManager;
 class CScene : public IScene
 {
   public:
+    void reset() override;
     void setParticles(const std::vector<RenderParticle> &particles) override;
     const std::vector<RenderParticle> &particles() const override;
     bool removeObject(SceneObjectId id) override;

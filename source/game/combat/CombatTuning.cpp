@@ -66,7 +66,7 @@ void CombatTuning::validate() const
     for (const auto &offset : weapon.muzzles)
         for (int axis = 0; axis < 3; ++axis)
             range("muzzle", offset[axis], -50, 50);
-    range("target range", targeting.range, 10, 1000);
+    range("target range", targeting.range, 10, 4000);
     range("acquisition angle", targeting.acquisitionAngle, 1, 89);
     range("idleGain", engine.idleGain, 0, 2);
     range("fullGain", engine.fullGain, 0, 2);

@@ -10,6 +10,7 @@
 #include "graphics/IGraphicsSystem.h"
 #include "input/IInputProvider.h"
 class GameAudio;
+class CPlayerProgression;
 
 /**
  * \brief Manages game objects
@@ -33,6 +34,7 @@ class CGameSystem
      * \brief Updates the game objects
      */
     bool update(float dtime);
+    const std::shared_ptr<CPlayerProgression> &progression() const;
     const std::string &activeStateName() const
     {
         return m_activeName;
@@ -58,6 +60,7 @@ class CGameSystem
     void removeState(const std::string &name);
 
   private:
+    std::shared_ptr<CPlayerProgression> m_progression;
     GameAudio *m_audio = nullptr;
     IGraphicsSystem *m_graphics = nullptr;
     IInputProvider *m_input = nullptr;

@@ -2,6 +2,7 @@
 
 #include "CGameSystem.h"
 #include "audio/GameAudio.h"
+#include "game/progression/CPlayerProgression.h"
 #include "resource/IResourceManager.h"
 
 #include <spdlog/spdlog.h>
@@ -11,7 +12,8 @@ CGameSystem::~CGameSystem()
     SPDLOG_DEBUG("Game system destroyed.");
 }
 
-CGameSystem::CGameSystem() : m_activeState(nullptr)
+CGameSystem::CGameSystem()
+    : m_progression(std::make_shared<CPlayerProgression>()), m_activeState(nullptr)
 {
     SPDLOG_DEBUG("Game system created.");
 }
@@ -45,7 +47,7 @@ bool CGameSystem::update(float dtime)
         // Set next state
         const auto next = m_activeState->getNextState();
         auto *destination = m_gameStates.at(next).get();
-        if (!m_initialized.contains(next))
+        if (!m_initialized.contains(next) || destination->reinitializeOnEntry())
         {
             if (!destination->init(m_graphics, m_input, m_resources))
                 return false;
@@ -108,6 +110,7 @@ bool CGameSystem::addState(const std::string &name, IGameState *state)
         m_activeState = nullptr;
         m_activeName.clear();
     }
+    state->setProgression(m_progression);
     m_gameStates[name] = std::unique_ptr<IGameState>(state);
     SPDLOG_DEBUG("Added game state {} to game system.", name.c_str());
     return true;
@@ -128,4 +131,9 @@ void CGameSystem::removeState(const std::string &name)
     }
     m_gameStates.erase(name);
     SPDLOG_DEBUG("Removed game state {} from game system.", name.c_str());
+}
+
+const std::shared_ptr<CPlayerProgression> &CGameSystem::progression() const
+{
+    return m_progression;
 }

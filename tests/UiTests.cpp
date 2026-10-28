@@ -2,6 +2,8 @@
 #include "game/combat/TargetingSolution.h"
 #include "game/flight/CChaseCamera.h"
 #include "game/flight/FlightHud.h"
+#include "game/progression/CPlayerProgression.h"
+#include "game/progression/CSkillTreeScreen.h"
 #include "game/state/CLoseState.h"
 #include "game/state/CTitleState.h"
 #include "game/state/CWinState.h"
@@ -145,6 +147,31 @@ bool runUiTests()
                 }
             require(targetPixels > 3 && leadPixels > 1,
                     "Target box or lead indicator vanished after resize");
+            CPlayerProgression progression;
+            for (int i = 0; i < 8; ++i)
+                progression.awardKill();
+            CSkillTreeScreen tree(progression);
+            glClear(GL_COLOR_BUFFER_BIT);
+            ui.draw(tree.build(glm::vec2(size), {}), size.x, size.y, gpu);
+            glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+            const float scale = std::min(size.x / 1280.f, size.y / 720.f);
+            for (unsigned node = 0; node < 6; ++node)
+            {
+                const glm::vec2 center((.18f + .32f * (node / 2)) * size.x,
+                                       (1 - (.37f + .23f * (node % 2))) * size.y);
+                unsigned textPixels = 0;
+                for (unsigned y = 0; y < size.y; ++y)
+                    for (unsigned x = 0; x < size.x; ++x)
+                    {
+                        if (std::abs(float(x) - center.x) > 130 * scale ||
+                            std::abs(float(y) - center.y) > 50 * scale)
+                            continue;
+                        const auto p = 4 * (y * size.x + x);
+                        if (pixels[p + 1] > 140 && pixels[p + 2] > 140)
+                            ++textPixels;
+                    }
+                require(textPixels > 3, "Skill node text is clipped or missing after resize");
+            }
             CFrameBuffer::setDefaultActive();
         }
         input.enter = false;
@@ -164,7 +191,7 @@ bool runUiTests()
             const auto &features = graphics.activeCamera->getFeatureInfo();
             require(!features.lenseFlareActive && !features.godRayActive && !features.dofActive,
                     "Result screen enabled distracting post-processing");
-            require(graphics.overlay.texts.size() == 3 &&
+            require(graphics.overlay.texts.size() >= 20 &&
                         graphics.overlay.texts[0].text == (state == &win ? "YOU WON" : "YOU LOST"),
                     "Result screen UI is missing");
             require(state->update(0.016f), "Result screen exited unexpectedly");

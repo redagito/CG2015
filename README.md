@@ -138,3 +138,5 @@ Godray with lense flare
 Audio setup, bundled assets and loading behavior are described in [doc/audio.md](doc/audio.md).
 
 Combat configuration and behavior: [combat and arena](doc/combat-and-arena.md), [combat feedback](doc/combat-effects.md). Enemy types/waves live in `encounters.json`; player hit/shield/camera feedback lives in `effects.json`.
+
+The game now has ten clear-to-advance waves, session skill progression, a result-screen skill tree and retries. The arena is 1,600 × 1,600 units; the UFO arrives on wave 10 with a 30-second final battle. [Progression, controls and wave configuration](doc/progression-and-waves.md).

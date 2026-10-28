@@ -137,6 +137,11 @@ bool runCombatGraphicsTests(const CGlfwWindow &)
         require(resources->loadJsonDocument("data/game/defenders_of_cthedra/encounters.json",
                                             encounter),
                 "Prepared encounter missing");
+        encounter["waves"] = Json::Value(Json::arrayValue);
+        encounter["waves"][0]["type"] = "guardian";
+        encounter["waves"][0]["count"] = 1;
+        encounter["waves"][1]["type"] = "raider";
+        encounter["waves"][1]["count"] = 6;
         encounter["max_active"] = 4;
         encounter["waves"][1]["count"] = 36;
         for (auto &wave : encounter["waves"])

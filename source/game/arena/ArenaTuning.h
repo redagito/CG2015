@@ -5,7 +5,7 @@
 class IResourceManager;
 struct ArenaTuning
 {
-    glm::vec3 center{0, 100, 0}, halfExtents{200, 90, 200};
+    glm::vec3 center{0, 100, 0}, halfExtents{800, 90, 800};
     float warningMargin = 45, returnRate = 150, returnResponse = 3, velocityDamping = 18;
     EnemyTuning enemies;
     MothershipTuning mothership;

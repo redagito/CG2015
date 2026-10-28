@@ -68,7 +68,7 @@ void CMothershipCinematic::updateCamera(glm::vec2 viewport)
     eye += glm::vec3(std::sin(m_time * 67), std::cos(m_time * 53), 0) * shake;
     m_camera.setPosition(eye);
     m_camera.setView(glm::lookAt(eye, midpoint, glm::vec3(0, 1, 0)));
-    m_camera.setProjection(glm::perspective(glm::radians(50.f), aspect, .5f, 1000.f));
+    m_camera.setProjection(glm::perspective(glm::radians(50.f), aspect, .5f, 4000.f));
     if (m_audio)
     {
         const auto inverse = glm::inverse(m_camera.getView());

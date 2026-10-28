@@ -145,6 +145,12 @@ EnemyRoster EnemyRoster::parse(const Json::Value &root, const ArenaTuning &arena
     std::size_t sequence = 0;
     for (const auto &wave : root["waves"])
     {
+        const auto waveNumber = wave.get("wave", 1);
+        if (!waveNumber.isUInt() || waveNumber.asUInt() < 1 || waveNumber.asUInt() > 1000)
+            throw std::runtime_error("Wave number must be 1..1000");
+        const float playerDistance = optionalNumber(wave, "playerDistance", 0);
+        if (playerDistance < 0 || playerDistance > 1000)
+            throw std::runtime_error("Invalid spawn distance");
         const auto id = requiredString(wave, "type");
         const auto found = ids.find(id);
         if (found == ids.end())
@@ -173,10 +179,11 @@ EnemyRoster EnemyRoster::parse(const Json::Value &root, const ArenaTuning &arena
                       : glm::vec3(std::cos(angle) * .68f, std::sin(phase * 1.7f) * .45f,
                                   std::sin(angle) * .68f);
             result.spawns.push_back({found->second, ++ordinals[found->second],
-                                     delay + interval * float(i), phase, point});
+                                     delay + interval * float(i), phase, point,
+                                     waveNumber.asUInt() - 1, playerDistance});
         }
     }
-    std::stable_sort(result.spawns.begin(), result.spawns.end(),
-                     [](const auto &a, const auto &b) { return a.time < b.time; });
+    std::stable_sort(result.spawns.begin(), result.spawns.end(), [](const auto &a, const auto &b)
+                     { return a.wave == b.wave ? a.time < b.time : a.wave < b.wave; });
     return result;
 }

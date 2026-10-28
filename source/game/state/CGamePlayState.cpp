@@ -3,6 +3,7 @@
 #include "game/combat/CombatStatus.h"
 #include "game/control/CAudioEmitterController.h"
 #include "game/control/CFlightAudioController.h"
+#include "game/progression/CPlayerProgression.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
@@ -44,11 +45,24 @@ CGamePlayState::~CGamePlayState()
 bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *inputProvider,
                           IResourceManager *resourceManager)
 {
+    // Release controllers/proxies before resetting their collision and scene owners.
+    m_cinematic.reset();
+    m_spawner.reset();
+    getGameWorld().clear();
+    m_effects.reset();
+    m_mothershipDeadline = false;
+    m_finalWaveStarted = false;
+    m_finalWait = false;
+    if (!m_progression)
+        m_progression = std::make_shared<CPlayerProgression>();
     m_collisionSystem = std::make_unique<CCollisionSystem>();
     m_graphicsSystem = graphicsSystem;
     m_inputProvider = inputProvider;
     m_resourceManager = resourceManager;
-    m_scene = m_graphicsSystem->createScene();
+    if (!m_scene)
+        m_scene = m_graphicsSystem->createScene();
+    else
+        m_scene->reset();
 
     // Collision group ids for static entities, enemy objects and the player model
     m_playerGroup = m_collisionSystem->getNewGroupId();
@@ -65,6 +79,8 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     m_combatTuning = CombatTuning::load(*resourceManager);
     m_targeting = std::make_unique<CTargetingSystem>(m_combatTuning.targeting);
     m_flightTuning = FlightTuning::load(*resourceManager);
+    const auto enemyWeapon = m_combatTuning.weapon;
+    m_progression->apply(m_flightTuning, m_combatTuning.weapon);
     m_camera = std::make_shared<CChaseCamera>(m_flightTuning);
 
     // Disable god ray
@@ -155,7 +171,10 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
             }
         });
     m_mothership->addController(m_mothershipApproach);
-    m_mothership->addController(std::make_shared<CAudioEmitterController>(m_audio, "ufo_engine"));
+    m_mothershipApproach->setActive(false);
+    m_ufoAudio = std::make_shared<CAudioEmitterController>(m_audio, "ufo_engine");
+    m_ufoAudio->setActive(false);
+    m_mothership->addController(m_ufoAudio);
 
     // Get model resources
     ResourceId motherShip = m_resourceManager->loadMesh("data/mesh/mothership.obj");
@@ -186,6 +205,7 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
         m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 68.f, 700.f),
                                        glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(60.f)));
     m_mothership->setSceneObject(motherSceneObject);
+    m_mothership->setVisible(false);
 
     // Add player
     getGameWorld().addObject(m_mothership);
@@ -230,13 +250,23 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     // Add player
     getGameWorld().addObject(m_temple);
 
-    const auto roster = EnemyRoster::load(*resourceManager, m_arena, m_combatTuning.weapon);
+    const auto roster = EnemyRoster::load(*resourceManager, m_arena, enemyWeapon);
     m_progress = {roster.spawns.size(), 0};
+    m_waves = std::make_unique<CWaveDirector>(roster);
     m_spawner = std::make_unique<CEnemySpawner>(
         roster, m_arena, getGameWorld(), *m_scene, *resourceManager, *m_collisionSystem, m_playerId,
         m_enemyGroup, m_projectileMesh, m_projectileMaterial, m_audio,
-        [this] { m_progress.recordDefeat(); }, m_effects.get());
+        [this]
+        {
+            m_progress.recordDefeat();
+            m_waves->recordDefeat();
+            m_progression->awardKill();
+        },
+        m_effects.get());
+    m_spawner->setWave(0);
     m_spawner->update(0);
+    if (m_waves->finalWave())
+        startFinalWave();
 
     return true;
 }
@@ -255,9 +285,29 @@ bool CGamePlayState::update(float dtime)
 {
     if (m_cinematic)
         return updateMothershipCinematic(dtime);
+    if (m_finalWait)
+    {
+        // Combat has ended. Advance only the UFO's final wait, never the frozen world.
+        m_mothershipApproach->update(dtime);
+        if (m_mothershipDeadline)
+        {
+            beginMothershipCinematic();
+            return updateMothershipCinematic(0);
+        }
+        updateFlightPresentation(0);
+        return true;
+    }
 
     if (m_resultTimer < 0)
+    {
+        if (m_waves->advance())
+        {
+            m_spawner->setWave(m_waves->wave());
+            if (m_waves->finalWave())
+                startFinalWave();
+        }
         m_spawner->update(dtime);
+    }
 
     if (m_inputProvider->isKeyPressed(GLFW_KEY_K))
     {
@@ -276,6 +326,14 @@ bool CGamePlayState::update(float dtime)
     {
         beginMothershipCinematic();
         return updateMothershipCinematic(0);
+    }
+    if (m_finalWaveStarted && m_mothershipApproach->approachRemaining() <= 0 &&
+        !m_progress.complete() && !m_player->isDead() && m_resultTimer < 0)
+    {
+        m_finalWait = true;
+        freezeCombat();
+        updateFlightPresentation(0);
+        return true;
     }
     m_effects->update(dtime);
     m_camera->addImpact(m_effects->consumeCameraImpulse());
@@ -343,24 +401,33 @@ void CGamePlayState::updateFlightPresentation(float seconds)
                               m_arena.enemies.playerHealth,
                               m_progress.defeated,
                               m_progress.total,
-                              m_mothershipApproach->approachRemaining(),
-                              m_mothershipApproach->totalRemaining()};
+                              m_finalWaveStarted ? m_mothershipApproach->approachRemaining() : -1,
+                              m_finalWaveStarted ? m_mothershipApproach->totalRemaining() : -1,
+                              m_waves->wave() + 1,
+                              m_waves->waveCount(),
+                              m_waves->remaining(),
+                              m_progression->points(),
+                              m_finalWait};
     m_graphicsSystem->setUiOverlay(FlightHud::build(
         *m_camera, m_player->getPosition(), m_flight->state(), viewport, &aim,
         solution ? &*solution : nullptr, &m_arena, &status, &m_effects->feedback()));
 }
 
-void CGamePlayState::beginMothershipCinematic()
+void CGamePlayState::freezeCombat()
 {
+    getGameWorld().freezeSimulation();
     m_flight->setActive(false);
     m_weapon->setActive(false);
     m_playerHealth->setActive(false);
-    m_mothershipApproach->setActive(false);
     m_inputProvider->setFlightMode(false);
     m_controlsCaptured = false;
     m_effects->clear();
     if (m_audio)
         m_audio->enterState("cinematic");
+}
+void CGamePlayState::beginMothershipCinematic()
+{
+    freezeCombat();
     m_cinematic = std::make_unique<CMothershipCinematic>(
         *m_scene, *m_temple, m_mothership->getPosition() + m_mothershipEmitterOffset,
         m_templeImpact, m_audio);
@@ -372,4 +439,28 @@ bool CGamePlayState::updateMothershipCinematic(float seconds)
     m_cinematic->update(seconds, viewport);
     m_graphicsSystem->setUiOverlay(m_cinematic->overlay(viewport));
     return !m_cinematic->finished();
+}
+
+bool CGamePlayState::reinitializeOnEntry() const
+{
+    return true;
+}
+GameObjectId CGamePlayState::playerId() const
+{
+    return m_playerId;
+}
+std::size_t CGamePlayState::waveNumber() const
+{
+    return m_waves ? m_waves->wave() + 1 : 0;
+}
+const WeaponTuning &CGamePlayState::playerWeapon() const
+{
+    return m_combatTuning.weapon;
+}
+void CGamePlayState::startFinalWave()
+{
+    m_finalWaveStarted = true;
+    m_mothership->setVisible(true);
+    m_mothershipApproach->setActive(true);
+    m_ufoAudio->setActive(true);
 }

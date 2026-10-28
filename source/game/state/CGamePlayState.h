@@ -4,6 +4,7 @@
 #include "game/arena/ArenaTuning.h"
 #include "game/combat/CTargetingSystem.h"
 #include "game/combat/CombatTuning.h"
+#include "game/control/CAudioEmitterController.h"
 #include "game/control/CFlightController.h"
 #include "game/control/CHealthController.h"
 #include "game/control/CMothershipController.h"
@@ -11,6 +12,7 @@
 #include "game/effects/CCombatEffects.h"
 #include "game/effects/CMothershipCinematic.h"
 #include "game/encounter/CEnemySpawner.h"
+#include "game/encounter/CWaveDirector.h"
 #include "game/encounter/EncounterProgress.h"
 #include "game/flight/CChaseCamera.h"
 
@@ -37,6 +39,10 @@ class CGamePlayState : public AGameState
 
     bool init(IGraphicsSystem *graphicsSystem, IInputProvider *inputProvider,
               IResourceManager *resourceManager);
+    bool reinitializeOnEntry() const override;
+    GameObjectId playerId() const;
+    std::size_t waveNumber() const;
+    const WeaponTuning &playerWeapon() const;
     void onEnter();
     bool update(float dtime);
     void onExit();
@@ -46,6 +52,8 @@ class CGamePlayState : public AGameState
   private:
     void updateFlightPresentation(float seconds);
     void beginMothershipCinematic();
+    void freezeCombat();
+    void startFinalWave();
     bool updateMothershipCinematic(float seconds);
     GameAudio *m_audio = nullptr;
     IGraphicsSystem *m_graphicsSystem = nullptr;
@@ -60,7 +68,8 @@ class CGamePlayState : public AGameState
     CombatEffectsTuning m_effectsTuning;
     std::unique_ptr<CCombatEffects> m_effects;
     std::unique_ptr<CMothershipCinematic> m_cinematic;
-    bool m_mothershipDeadline = false;
+    bool m_mothershipDeadline = false, m_finalWaveStarted = false, m_finalWait = false;
+    std::shared_ptr<CAudioEmitterController> m_ufoAudio;
     CGameObject *m_temple = nullptr;
     glm::vec3 m_templeImpact{0}, m_mothershipEmitterOffset{0};
     float m_resultTimer = -1;
@@ -80,4 +89,5 @@ class CGamePlayState : public AGameState
 
     std::unique_ptr<CEnemySpawner> m_spawner;
     EncounterProgress m_progress;
+    std::unique_ptr<CWaveDirector> m_waves;
 };

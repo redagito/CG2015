@@ -1,6 +1,7 @@
 #include <GLFW/glfw3.h>
 
 #include "CLoseState.h"
+#include "game/progression/CPlayerProgression.h"
 
 #include "graphics/camera/CFirstPersonCamera.h"
 #include "io/CSceneLoader.h"
@@ -24,6 +25,9 @@ bool CLoseState::init(IGraphicsSystem *graphicsSystem, IInputProvider *inputProv
     m_graphicsSystem = graphicsSystem;
     m_inputProvider = inputProvider;
     m_resourceManager = resourceManager;
+    if (!m_progression)
+        m_progression = std::make_shared<CPlayerProgression>();
+    m_tree = std::make_unique<CSkillTreeScreen>(*m_progression);
 
     // TODO Refactor, camera movement should be implemented with a single camera and camera
     // controllers.
@@ -54,21 +58,19 @@ void CLoseState::onEnter()
 
     m_graphicsSystem->setActiveCamera(m_camera.get());
     m_graphicsSystem->setActiveScene(m_scene);
-    // Keep the result readable and independent of camera movement and post-processing.
-    const glm::vec4 accent(1.f, 0.44f, 0.35f, 1.f);
-    UiDocument ui;
-    ui.rectangles = {{{0.5f, 0.105f}, {780, 148}, {0.015f, 0.025f, 0.04f, 0.78f}},
-                     {{0.5f, 0.218f}, {120, 2}, accent}};
-    ui.texts = {{"YOU LOST", {0.5f, 0.075f}, 66, {0.95f, 0.97f, 1.f, 1.f}, 7, 0.88f},
-                {"THE DEFENSE HAS FALLEN", {0.5f, 0.16f}, 28, accent, 3, 0.8f},
-                {"ESC  /  EXIT", {0.5f, 0.956f}, 16, {0.6f, 0.67f, 0.73f, 1.f}, 2, 0.8f}};
-    m_graphicsSystem->setUiOverlay(ui);
+    m_inputProvider->setFlightMode(false);
+    m_tree->onEnter(*m_inputProvider);
+    m_graphicsSystem->setUiOverlay(
+        m_tree->build(m_inputProvider->viewportSize(), m_inputProvider->cursorPosition()));
 }
 
 bool CLoseState::update(float dtime)
 {
     m_animationWorld.update(dtime);
-    return true;
+    const bool keep = m_tree->update(*m_inputProvider);
+    m_graphicsSystem->setUiOverlay(
+        m_tree->build(m_inputProvider->viewportSize(), m_inputProvider->cursorPosition()));
+    return keep;
 }
 
 void CLoseState::onExit()

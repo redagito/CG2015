@@ -50,3 +50,5 @@ The old movement, chase camera and wrapping controllers have been replaced. Comb
 The flight regression tests cover neutral flight, steering signs, dead zone, inverted pitch, loops/rolls, throttle/boost/brake, momentum, different frame rates, roll/vertical camera stability, wrap reset, boost FOV and reticle positioning at different aspect ratios. The loading integration enters gameplay with cached tuning, steering input and firing. Existing GPU tests cover the render pipeline and far-wall shadow stability.
 
 Shots now inherit the ship's velocity. Combat and arena tuning are bundled beside the flight configuration.
+
+After defeat or victory, click skill nodes to spend points. Tab selects nodes, Enter buys the selected rank, and R or RETRY RUN starts a fresh run. Points and ranks last for the current session. See [progression and waves](progression-and-waves.md).

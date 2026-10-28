@@ -23,7 +23,7 @@
     ]
   },
   "targeting": {
-    "range": 300,
+    "range": 1600,
     "acquisitionAngle": 75
   },
   "engine": {

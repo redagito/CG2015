@@ -164,6 +164,15 @@ UiDocument FlightHud::build(const ICamera &camera, glm::vec3 position, const Fli
                             {.85f, .95f, 1, 1},
                             1,
                             .9f});
+    if (status && status->waveCount > 0)
+        ui.texts.push_back(
+            {std::format("WAVE {} / {}    ENEMIES LEFT {}    SKILL POINTS {}", status->wave,
+                         status->waveCount, status->waveRemaining, status->points),
+             {.5f, .19f},
+             18,
+             cyan,
+             1,
+             .94f});
     if (status && status->mothershipTotalRemaining >= 0)
     {
         // Round up: a positive fraction of a second must never read as zero.
@@ -177,7 +186,7 @@ UiDocument FlightHud::build(const ICamera &camera, glm::vec3 position, const Fli
                 ? std::format("MOTHERSHIP IN {}", clock(status->mothershipApproachRemaining))
                 : std::string("MOTHERSHIP ARRIVED");
         ui.texts.push_back(
-            {std::format("{} / DEFEAT IN {}", phase, clock(status->mothershipTotalRemaining)),
+            {std::format("{} / STRIKE IN {}", phase, clock(status->mothershipTotalRemaining)),
              {.5f, .105f},
              18,
              status->mothershipTotalRemaining <= 10 ? glm::vec4(1, .3f, .15f, 1) : cyan,
@@ -217,6 +226,9 @@ UiDocument FlightHud::build(const ICamera &camera, glm::vec3 position, const Fli
                                              {x * 7, y * 7}});
         }
     }
+    if (status && status->finalDeadlineExpired)
+        ui.texts.push_back(
+            {"TIME EXPIRED / TEMPLE STRIKE IMMINENT", {.5f, .26f}, 24, {1, .3f, .15f, 1}, 1, .94f});
     if (status && status->health <= 0)
         ui.texts.push_back({"SHIP DESTROYED", {.5f, .22f}, 30, {1, .35f, .2f, 1}, 3, .9f});
     else if (status && status->total > 0 && status->defeated >= status->total)

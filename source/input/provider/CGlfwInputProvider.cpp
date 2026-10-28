@@ -198,3 +198,10 @@ glm::vec2 CGlfwInputProvider::pointerOffset()
         m_pointer *= m_pointerRadius / length;
     return m_pointer;
 }
+
+glm::vec2 CGlfwInputProvider::cursorPosition() const
+{
+    double x = 0, y = 0;
+    glfwGetCursorPos(m_window, &x, &y);
+    return {float(x), float(y)};
+}

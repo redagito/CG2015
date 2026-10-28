@@ -3,6 +3,7 @@
 #include "animation/CAnimationWorld.h"
 #include "game/CGameSystem.h"
 #include "game/IGameState.h"
+#include "game/progression/CSkillTreeScreen.h"
 #include "graphics/ICamera.h"
 #include "graphics/IGraphicsSystem.h"
 #include "graphics/IScene.h"
@@ -27,6 +28,7 @@ class CLoseState : public IGameState
     const std::string &getNextState() const;
 
   private:
+    std::unique_ptr<CSkillTreeScreen> m_tree;
     std::string m_sceneFile;
     IInputProvider *m_inputProvider = nullptr;
     std::shared_ptr<ICamera> m_camera = nullptr;

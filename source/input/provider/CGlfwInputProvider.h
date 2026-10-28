@@ -24,6 +24,7 @@ class CGlfwInputProvider : public IInputProvider
     std::list<IInputListener *> m_listeners;
 
     bool isMouseButtonPressed(int button) override;
+    glm::vec2 cursorPosition() const override;
     glm::vec2 pointerOffset() override;
     glm::vec2 viewportSize() const override;
     void setFlightMode(bool enabled, float radius) override;

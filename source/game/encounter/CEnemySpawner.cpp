@@ -66,7 +66,11 @@ bool CEnemySpawner::positionFor(const EnemySpawn &spawn, glm::vec3 &position) co
             const float angle = (spawn.phase + attempt) * 2.39996323f;
             offset = {std::cos(angle) * .7f, std::sin(angle * 1.7f) * .45f, std::sin(angle) * .7f};
         }
-        position = ArenaBoundary::safePoint(m_arena.center + offset * m_arena.halfExtents, m_arena);
+        auto desired = m_arena.center + offset * m_arena.halfExtents;
+        if (player && spawn.playerDistance > 0)
+            desired = player->getPosition() +
+                      glm::normalize(offset + glm::vec3(.001f, 0, 0)) * spawn.playerDistance;
+        position = ArenaBoundary::safePoint(desired, m_arena);
         if (player && glm::distance(position, player->getPosition()) < 60)
             continue;
         bool free = true;
@@ -87,7 +91,8 @@ void CEnemySpawner::update(float seconds)
     if (!std::isfinite(seconds) || seconds < 0)
         return;
     m_elapsed += std::min(seconds, .25f);
-    while (m_next < m_roster.spawns.size() && m_roster.spawns[m_next].time <= m_elapsed)
+    while (m_next < m_roster.spawns.size() && m_roster.spawns[m_next].wave <= m_wave &&
+           m_roster.spawns[m_next].time <= m_elapsed)
     {
         if (m_world.targets().size() >= m_roster.maxActive)
             break;
@@ -140,4 +145,10 @@ void CEnemySpawner::spawn(const EnemySpawn &request, glm::vec3 position)
                                  glm::quat(1, 0, 0, 0), type.decoration.scale)));
         m_world.addObject(decoration.release());
     }
+}
+
+void CEnemySpawner::setWave(std::size_t wave)
+{
+    m_wave = wave;
+    m_elapsed = 0;
 }

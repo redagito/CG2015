@@ -62,7 +62,7 @@ void ArenaTuning::validate() const
     for (int axis = 0; axis < 3; ++axis)
     {
         range("center", center[axis], -1000, 1000);
-        range("halfExtents", halfExtents[axis], 60, 500);
+        range("halfExtents", halfExtents[axis], 60, 2000);
     }
     range("mothership approach seconds", mothership.approachSeconds, .1f, 3600);
     range("mothership wait seconds", mothership.waitSeconds, 0, 3600);

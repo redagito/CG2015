@@ -2,6 +2,7 @@
 #include "collision/CCollidable.h"
 #include "engine/CEngine.h"
 #include "game/CGameSystem.h"
+#include "game/progression/CPlayerProgression.h"
 #include "game/state/CGamePlayState.h"
 #include "game/state/CLoadState.h"
 #include "game/state/CLoseState.h"
@@ -120,6 +121,11 @@ bool runLoadingScreenTests(CGlfwWindow &window)
         require(std::any_of(samples.begin(), samples.end(),
                             [](float v) { return std::abs(v) > 0.00001f; }),
                 "Gameplay audio mix was silent");
+        const auto earnedBefore = game.progression()->earned();
+        const auto victim = gameplay->getGameWorld().targets().front();
+        gameplay->getGameWorld().getObject(victim.id)->getCollidable()->receiveDamage(10000);
+        require(game.update(.016f) && game.progression()->earned() == earnedBefore + 1,
+                "Actual enemy defeat did not award exactly one point");
         const auto *player = gameplay->getGameWorld().getObject(1);
         require(player && player->hasCollidable(), "Player collision/health fixture is missing");
         player->getCollidable()->receiveDamage(10000);
@@ -130,6 +136,26 @@ bool runLoadingScreenTests(CGlfwWindow &window)
         require(game.activeStateName() == "lose",
                 "Player destruction did not finish the defeat transition");
         graphics.draw(window);
+        input.fire = false;
+        input.enter = false;
+        require(game.update(.016f), "Skill menu input release failed");
+        input.cursor = input.viewport * glm::vec2(.18f, .37f);
+        input.fire = true;
+        require(game.update(.016f) && game.progression()->rank(SkillId::Damage) == 1,
+                "Defeat skill tree did not buy firepower");
+        const auto balance = game.progression()->points();
+        const auto oldPlayerId = gameplay->playerId();
+        input.fire = false;
+        input.retry = true;
+        require(game.update(.016f) && game.activeStateName() == "game" && input.flightMode,
+                "Retry did not enter a fresh gameplay run");
+        require(gameplay->waveNumber() == 1 && gameplay->playerId() != oldPlayerId &&
+                    !gameplay->getGameWorld().getObject(oldPlayerId) &&
+                    std::abs(gameplay->playerWeapon().damage - 60) < .001f &&
+                    game.progression()->points() == balance,
+                "Retry retained old objects, lost progression or failed to apply upgrades");
+        input.retry = false;
+        graphics.draw(window);
         // Exercise the actual deadline path with cached resources and live rendering.
         // A single large step reaches the deadline without an unrelated player death fixture.
         {
@@ -137,9 +163,21 @@ bool runLoadingScreenTests(CGlfwWindow &window)
             siege.setAudio(&gameAudio);
             require(siege.init(&graphics, &input, resources.get()), "Siege initialization failed");
             siege.onEnter();
+            input.fire = false;
+            for (int frame = 0; frame < 1500 && siege.waveNumber() < 10; ++frame)
+            {
+                for (const auto &target : siege.getGameWorld().targets())
+                    siege.getGameWorld().getObject(target.id)->getCollidable()->receiveDamage(
+                        10000);
+                require(siege.update(.25f), "Campaign ended before the final wave");
+            }
+            require(siege.waveNumber() == 10 && !siege.getGameWorld().simulationFrozen(),
+                    "Nine cleared waves did not unlock the UFO battle");
             input.fire = true;
-            require(siege.update(35) && siege.getGameWorld().simulationFrozen() &&
+            require(siege.update(30) && siege.getGameWorld().simulationFrozen() &&
                         !input.flightMode,
+                    "Thirty-second final battle did not stop combat");
+            require(siege.update(5) && siege.getGameWorld().simulationFrozen() && !input.flightMode,
                     "Mothership deadline skipped cinematic or failed to freeze combat");
             const auto frozenTargets = siege.getGameWorld().targets();
             const auto frozenPlayer = siege.getGameWorld().getObject(1)->getPosition();
@@ -160,6 +198,21 @@ bool runLoadingScreenTests(CGlfwWindow &window)
             }
             require(!siege.update(.25f) && siege.getNextState() == "lose",
                     "Completed mothership cinematic did not route to defeat");
+            siege.onExit();
+            require(siege.init(&graphics, &input, resources.get()), "Fresh campaign reset failed");
+            siege.onEnter();
+            input.fire = false;
+            bool running = true;
+            for (int frame = 0; frame < 1800 && running; ++frame)
+            {
+                for (const auto &target : siege.getGameWorld().targets())
+                    siege.getGameWorld().getObject(target.id)->getCollidable()->receiveDamage(
+                        10000);
+                running = siege.update(.25f);
+            }
+            require(!running && siege.waveNumber() == 10 && siege.getNextState() == "win" &&
+                        !siege.getGameWorld().simulationFrozen(),
+                    "Clearing final enemies before the UFO deadline did not win");
             siege.onExit();
         }
         std::printf("Loading screen rendered %u frames, then title and gameplay initialized from "

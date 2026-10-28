@@ -40,7 +40,7 @@ The default flight volume is 400 × 180 × 400 world units, centered at `(0, 100
 
 Raiders and the guardian pursue the player's motion in 3D, line up attack runs, fire only when a predicted shot is near their gun line, and break away before close passes. They extend and come around for another run rather than following fixed routes. The same boundary assistance brings them back into the volume. Their turn rate, cruise/break speeds, firing cone, reaction behavior, attack distance, break duration, separation distance, prediction horizon and approach spread are deliberately simple arcade tuning. There is no obstacle pathfinding; the arena's normal flight volume is above the ground structures.
 
-The player now has health, shown on the HUD, and enters defeat when destroyed. Defeating the configured encounter wins; completion follows the roster count, including queued waves. The default remains six raiders and one guardian. The guardian's decorative ring follows its stable object ID and disappears when the guardian is removed. The approaching UFO provides the timed defeat condition, ending in a temple-strike cinematic.
+The player now has health, shown on the HUD, and enters defeat when destroyed. Defeating the configured encounter wins; completion follows the roster count, including queued waves. The default has ten gated waves totaling 69 enemies; see [session progression and waves](progression-and-waves.md). The guardian's decorative ring follows its stable object ID and disappears when the guardian is removed. The approaching UFO provides the timed defeat condition, ending in a temple-strike cinematic.
 
 ## Verification
 
@@ -48,7 +48,7 @@ The suite includes mathematical interception checks against actual projectile tr
 
 ## Enemy roster and spacing
 
-`encounters.json` defines an arbitrary list of `enemy_types` and `waves`. Each type supplies an ID, display name, mesh, material, health, scale and engine cue. Optional `behavior`, `weapon` and `decoration` entries override shared defaults. A wave names its type and supplies count, delay and interval; optional offsets are fractions of arena half-extents. New types do not require C++ branches. All referenced assets join async loading before gameplay.
+`encounters.json` defines an arbitrary list of `enemy_types` and `waves`. Each type supplies an ID, display name, mesh, material, health, scale and engine cue. Optional `behavior`, `weapon` and `decoration` entries override shared defaults. A spawn group names its wave number, type, count, delay and interval. Multiple groups may share a wave number. Optional offsets are fractions of arena half-extents; `playerDistance` places groups near the player. New types do not require C++ branches. All referenced assets join async loading before gameplay.
 
 `max_active` limits concurrent hostiles; remaining spawns wait for room. Spawn positions spread around the arena, avoid occupied locations and keep clear of the player. Pursuit uses separate approach lanes and predicted local separation, including deterministic escape directions for coincident ships. A spatial grid supplies nearby ships without every enemy scanning the entire roster. Enemy count and the audio voice budget are separate limits.
 
@@ -56,11 +56,11 @@ Roster tests cover a third type, 137 configured enemies, invalid data and 1,000 
 
 ## Mothership deadline
 
-`arena.json` contains `mothership.approachSeconds` (30 by default) and `mothership.waitSeconds` (5). Movement is derived from the approach duration, so changing timing preserves the same start and destination. The controller's clock drives both the HUD and defeat; crossing arrival within a frame consumes the remaining portion of that frame from the wait. The HUD shows arrival and total time left, then switches to MOTHERSHIP ARRIVED for the final wait. Countdown values round up and turn red in the last ten seconds. The deadline freezes when a victory or player-destruction sequence starts.
+`arena.json` contains `mothership.approachSeconds` (30 by default) and `mothership.waitSeconds` (5). Movement is derived from the approach duration, so changing timing preserves the same start and destination. The controller's clock drives both the HUD and defeat; crossing arrival within a frame consumes the remaining portion of that frame from the wait. The UFO appears only on wave 10. The HUD shows arrival and time until the strike, then switches to MOTHERSHIP ARRIVED for the final wait. Combat freezes when the 30-second approach finishes; the wait is not extra time to clear enemies. Countdown values round up and turn red in the last ten seconds. The deadline freezes when a victory or player-destruction sequence starts.
 
 ## Mothership strike cinematic
 
-After the configured approach and wait (30 + 5 seconds by default), combat freezes and the six-second temple strike begins: 1.2 seconds charging, 2.3 seconds firing, then 2.5 seconds of destruction and fade. A dedicated orbiting camera frames the UFO and temple, including portrait windows. The beam connects mesh-derived underside/roof positions; its core and halo render in HDR before bloom, with strike lighting, sparks, debris and smoke. The temple disappears in the destruction burst, then the normal defeat screen appears.
+After the final wave's configured approach and wait (30 + 5 seconds by default), the six-second temple strike begins: 1.2 seconds charging, 2.3 seconds firing, then 2.5 seconds of destruction and fade. A dedicated orbiting camera frames the UFO and temple, including portrait windows. The beam connects mesh-derived underside/roof positions; its core and halo render in HDR before bloom, with strike lighting, sparks, debris and smoke. The temple disappears in the destruction burst, then the skill-tree defeat screen appears.
 
 World simulation stops at the deadline, including the remainder of the triggering step. Spawning, AI, weapons, collision damage and movement stop; existing projectile visuals are hidden. Flight input is released and combat music/voices/events are stopped before cinematic sounds start. The cinematic updates only its camera, particles and lighting. Ordinary player-death defeat and victory still use their existing result paths.
 

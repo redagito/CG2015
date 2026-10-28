@@ -21,6 +21,7 @@ class ISceneQuery;
 class IScene
 {
   public:
+    virtual void reset() = 0;
     virtual void setParticles(const std::vector<RenderParticle> &particles) = 0;
     virtual const std::vector<RenderParticle> &particles() const = 0;
     virtual bool removeObject(SceneObjectId id) = 0;

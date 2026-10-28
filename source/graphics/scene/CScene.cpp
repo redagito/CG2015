@@ -286,3 +286,14 @@ const std::vector<RenderParticle> &CScene::particles() const
 {
     return m_particles;
 }
+
+void CScene::reset()
+{
+    m_objects.clear();
+    m_freeObjects.clear();
+    m_pointLights.clear();
+    m_directionalLights.clear();
+    m_particles.clear();
+    m_ambientColor = glm::vec3(1);
+    m_ambientIntensity = 0;
+}

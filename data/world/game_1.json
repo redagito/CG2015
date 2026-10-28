@@ -14,18 +14,18 @@
         0
       ],
       "scale": [
-        500,
-        500,
-        500
+        2500,
+        2500,
+        2500
       ]
     },
     {
       "mesh": "data/mesh/frame.obj",
       "material": "data/material/sand.json",
       "position": [
-        -10.482550539999997,
+        -41.930202159999986,
         -4,
-        23.396898979999992
+        93.58759591999997
       ],
       "rotation": [
         0,
@@ -33,18 +33,18 @@
         0
       ],
       "scale": [
-        4.06,
+        16.24,
         1.2,
-        4.06
+        16.24
       ]
     },
     {
       "mesh": "data/mesh/post.obj",
       "material": "data/material/sand.json",
       "position": [
-        -175,
+        -700,
         0,
-        -175
+        -700
       ],
       "rotation": [
         0,
@@ -52,18 +52,18 @@
         0
       ],
       "scale": [
-        1,
+        4,
         2,
-        1
+        4
       ]
     },
     {
       "mesh": "data/mesh/post.obj",
       "material": "data/material/sand.json",
       "position": [
-        175,
+        700,
         0,
-        -175
+        -700
       ],
       "rotation": [
         0,
@@ -71,18 +71,18 @@
         0
       ],
       "scale": [
-        1,
+        4,
         2,
-        1
+        4
       ]
     },
     {
       "mesh": "data/mesh/post.obj",
       "material": "data/material/sand.json",
       "position": [
-        -175,
+        -700,
         0,
-        175
+        700
       ],
       "rotation": [
         0,
@@ -90,18 +90,18 @@
         0
       ],
       "scale": [
-        1,
+        4,
         2,
-        1
+        4
       ]
     },
     {
       "mesh": "data/mesh/post.obj",
       "material": "data/material/sand.json",
       "position": [
-        175,
+        700,
         0,
-        175
+        700
       ],
       "rotation": [
         0,
@@ -109,9 +109,9 @@
         0
       ],
       "scale": [
-        1,
+        4,
         2,
-        1
+        4
       ]
     },
     {
@@ -128,9 +128,9 @@
         0
       ],
       "scale": [
-        210,
+        840,
         1,
-        210
+        840
       ],
       "animations": [
         {

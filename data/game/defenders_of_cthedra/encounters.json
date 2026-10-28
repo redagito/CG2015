@@ -46,21 +46,92 @@
   ],
   "waves": [
     {
+      "wave": 1,
+      "type": "raider",
+      "count": 3,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 2,
+      "type": "raider",
+      "count": 4,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 3,
+      "type": "raider",
+      "count": 5,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 4,
+      "type": "raider",
+      "count": 6,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 5,
+      "type": "raider",
+      "count": 7,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 6,
+      "type": "raider",
+      "count": 8,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 7,
+      "type": "raider",
+      "count": 9,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 8,
+      "type": "raider",
+      "count": 10,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 9,
+      "type": "raider",
+      "count": 12,
+      "delay": 0.5,
+      "interval": 0.6,
+      "playerDistance": 220
+    },
+    {
+      "wave": 10,
       "type": "guardian",
       "count": 1,
       "delay": 0,
       "interval": 0,
-      "offset": [
-        0,
-        -0.222222,
-        0.4
-      ]
+      "playerDistance": 220
     },
     {
+      "wave": 10,
       "type": "raider",
-      "count": 6,
-      "delay": 1,
-      "interval": 2.5
+      "count": 4,
+      "delay": 0,
+      "interval": 0.4,
+      "playerDistance": 200
     }
   ]
 }

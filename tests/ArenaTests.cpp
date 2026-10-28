@@ -236,13 +236,13 @@ int main()
                     return true;
             return false;
         };
-        require(hasTimer(timerHud, "MOTHERSHIP IN 00:30 / DEFEAT IN 00:35"),
+        require(hasTimer(timerHud, "MOTHERSHIP IN 00:30 / STRIKE IN 00:35"),
                 "Initial HUD countdown is missing");
         status.mothershipApproachRemaining = 0;
         status.mothershipTotalRemaining = 4.1f;
         timerHud = FlightHud::build(camera, arena.center, flightState, {1280, 720}, nullptr,
                                     nullptr, &arena, &status);
-        require(hasTimer(timerHud, "MOTHERSHIP ARRIVED / DEFEAT IN 00:05"),
+        require(hasTimer(timerHud, "MOTHERSHIP ARRIVED / STRIKE IN 00:05"),
                 "HUD did not show the final wait or rounded down too early");
         EncounterProgress scoring{137, 0};
         for (int i = 0; i < 136; ++i)

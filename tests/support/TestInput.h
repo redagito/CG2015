@@ -4,13 +4,14 @@
 class TestInput : public IInputProvider
 {
   public:
-    bool enter = false;
+    bool enter = false, retry = false;
     bool space = false, fire = false, flightMode = false;
     bool throttleUp = false, throttleDown = false, rollLeft = false, rollRight = false,
          boost = false;
     bool targetNext = false, targetSelect = false, targetClear = false;
-    glm::vec2 pointer{0}, viewport{1280, 720};
+    glm::vec2 pointer{0}, cursor{0}, viewport{1280, 720};
     bool isMouseButtonPressed(int button) override;
+    glm::vec2 cursorPosition() const override;
     glm::vec2 pointerOffset() override;
     glm::vec2 viewportSize() const override;
     void setFlightMode(bool enabled, float radius = .22f) override;
