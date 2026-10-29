@@ -6,9 +6,7 @@ The original deferred renderer and game assets are preserved. The experimental f
 ## Build on this PC
 
 Uses the installed CMake (validated with 4.4.3), Conan 2 (2.33.0), and Visual Studio
-2026 C++ tools (MSVC 19.51, x64). No submodule checkout is needed. The old external
-sources remain as historical files but are not compiled or linked, including the
-unused 32-bit irrKlang and zlib dependencies.
+2026 C++ tools (MSVC 19.51, x64). Dependencies are managed by Conan; no submodule checkout is needed.
 
 From the project directory in PowerShell:
 
@@ -139,7 +137,7 @@ Audio setup, bundled assets and loading behavior are described in [doc/audio.md]
 
 Combat configuration and behavior: [combat and arena](doc/combat-and-arena.md), [combat feedback](doc/combat-effects.md). Enemy types/waves live in `encounters.json`; player hit/shield/camera feedback lives in `effects.json`.
 
-The game now has ten clear-to-advance waves, session skill progression, a result-screen skill tree and retries. The arena is 1,600 × 1,600 units; the UFO arrives on wave 10 with a 60-second approach and five seconds of playable grace. [Progression, controls and wave configuration](doc/progression-and-waves.md).
+The game now has ten clear-to-advance waves, session skill progression, a result-screen skill tree and retries. The arena is 1,600 ï¿½ 1,600 units; the UFO arrives on wave 10 with a 60-second approach and five seconds of playable grace. [Progression, controls and wave configuration](doc/progression-and-waves.md).
 
 Swarm preset: ten enemies initially, doubling through 5,120 on wave 10. Active gameplay exits if its one-second FPS average falls below 30. See [swarm performance and benchmark](doc/swarm-performance.md).
 
