@@ -21,11 +21,12 @@ CEnemySpawner::CEnemySpawner(const EnemyRoster &roster, const ArenaTuning &arena
                              CCollisionSystem &collisions, GameObjectId player, unsigned group,
                              ResourceId projectileMesh, ResourceId projectileMaterial,
                              GameAudio *audio, std::function<void()> onDefeat,
-                             CCombatEffects *effects)
+                             CCombatEffects *effects,
+                             std::function<void(glm::vec3, DamageKind)> onDestroyed)
     : m_effects(effects), m_roster(roster), m_arena(arena), m_world(world), m_scene(scene),
       m_collisions(collisions), m_player(player), m_group(group), m_projectileMesh(projectileMesh),
       m_projectileMaterial(projectileMaterial), m_resources(resources), m_audio(audio),
-      m_onDefeat(std::move(onDefeat))
+      m_onDefeat(std::move(onDefeat)), m_onDestroyed(std::move(onDestroyed))
 {
     for (const auto &type : roster.types)
     {
@@ -57,31 +58,29 @@ std::size_t CEnemySpawner::pending() const
 bool CEnemySpawner::positionFor(const EnemySpawn &spawn, glm::vec3 &position) const
 {
     const auto *player = m_world.getObject(m_player);
-    const auto neighbors = m_world.targets();
-    for (int attempt = 0; attempt < 32; ++attempt)
+    for (int attempt = 0; attempt < 128; ++attempt)
     {
         auto offset = spawn.offset;
-        if (attempt)
-        {
-            const float angle = (spawn.phase + attempt) * 2.39996323f;
-            offset = {std::cos(angle) * .7f, std::sin(angle * 1.7f) * .45f, std::sin(angle) * .7f};
-        }
         auto desired = m_arena.center + offset * m_arena.halfExtents;
         if (player && spawn.playerDistance > 0)
             desired = player->getPosition() +
                       glm::normalize(offset + glm::vec3(.001f, 0, 0)) * spawn.playerDistance;
+        if (attempt)
+        {
+            // Retry throughout the flight volume rather than filling one thin spawn shell.
+            const double seed = double(spawn.phase) * 131 + attempt;
+            const auto coordinate = [&](double step)
+            { return float(std::fmod(seed * step, 1.0) * 1.8 - .9); };
+            desired = m_arena.center + glm::vec3(coordinate(.754877666), coordinate(.569840291),
+                                                 coordinate(.438579)) *
+                                           m_arena.halfExtents;
+        }
         position = ArenaBoundary::safePoint(desired, m_arena);
         if (player && glm::distance(position, player->getPosition()) < 60)
             continue;
-        bool free = true;
-        const float spacing = m_roster.types[spawn.type].behavior.separationDistance;
-        for (const auto &other : neighbors)
-            if (glm::distance(position, other.position) < spacing * 1.4f)
-            {
-                free = false;
-                break;
-            }
-        if (free)
+        const float spacing =
+            m_roster.types[spawn.type].behavior.separationDistance * m_roster.spawnSeparationScale;
+        if (!m_spawnNeighborhood.hasNearby(position, spacing))
             return true;
     }
     return false; // Crowded wave waits for room instead of spawning inside another ship.
@@ -91,15 +90,23 @@ void CEnemySpawner::update(float seconds)
     if (!std::isfinite(seconds) || seconds < 0)
         return;
     m_elapsed += std::min(seconds, .25f);
+    if (m_next >= m_roster.spawns.size() || m_roster.spawns[m_next].wave > m_wave ||
+        m_roster.spawns[m_next].time > m_elapsed)
+        return;
+    const auto existing = m_world.targets();
+    auto active = existing.size();
+    m_spawnNeighborhood.rebuild(existing);
     while (m_next < m_roster.spawns.size() && m_roster.spawns[m_next].wave <= m_wave &&
            m_roster.spawns[m_next].time <= m_elapsed)
     {
-        if (m_world.targets().size() >= m_roster.maxActive)
+        if (active >= m_roster.maxActive)
             break;
         glm::vec3 position;
         if (!positionFor(m_roster.spawns[m_next], position))
             break;
         spawn(m_roster.spawns[m_next], position);
+        m_spawnNeighborhood.insert({0, "", position, {}});
+        ++active;
         ++m_next;
     }
 }
@@ -121,8 +128,20 @@ void CEnemySpawner::spawn(const EnemySpawn &request, glm::vec3 position)
     auto weapon = std::make_shared<CWeaponController>(
         nullptr, &m_world, &m_scene, m_projectileMesh, m_projectileMaterial, &m_resources,
         &m_collisions, m_group, m_audio, type.weapon, m_effects);
-    enemy->addController(std::make_shared<CHealthController>(type.health, m_audio, m_effects));
-    enemy->addController(std::make_shared<CRemoveOnDeathController>(m_onDefeat));
+    DefenseTuning defenses;
+    defenses.armor = type.armor;
+    enemy->addController(
+        std::make_shared<CHealthController>(type.health, m_audio, m_effects, defenses));
+    auto *ownerObject = enemy.get();
+    enemy->addController(std::make_shared<CRemoveOnDeathController>(
+        [onDefeat = m_onDefeat, onDestroyed = m_onDestroyed, ownerObject]
+        {
+            if (onDefeat)
+                onDefeat();
+            if (onDestroyed)
+                onDestroyed(ownerObject->getPosition(),
+                            ownerObject->getCollidable()->fatalDamageKind());
+        }));
     auto behavior = m_arena;
     behavior.enemies = type.behavior;
     enemy->addController(std::make_shared<CArenaEnemyController>(m_world, m_player, behavior,

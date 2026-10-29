@@ -39,16 +39,16 @@ void CCombatEffects::add(Particle particle)
         m_particles.push_back(particle);
         return;
     }
-    // Preserve decisive bursts when sustained gunfire exhausts the shared budget.
-    const auto replace = std::min_element(m_particles.begin(), m_particles.end(),
-                                          [](const auto &a, const auto &b)
-                                          {
-                                              return a.priority == b.priority
-                                                         ? a.lifetime - a.age < b.lifetime - b.age
-                                                         : a.priority < b.priority;
-                                          });
-    if (replace != m_particles.end() && replace->priority <= particle.priority)
-        *replace = particle;
+    // Bound saturation work per emission, even when thousands of ships explode together.
+    for (std::size_t probe = 0; probe < std::min<std::size_t>(32, m_particles.size()); ++probe)
+    {
+        auto &candidate = m_particles[m_replacementCursor++ % m_particles.size()];
+        if (candidate.priority <= particle.priority)
+        {
+            candidate = particle;
+            return;
+        }
+    }
 }
 void CCombatEffects::muzzle(glm::vec3 position, glm::vec3 velocity, glm::vec3 color)
 {
@@ -261,4 +261,25 @@ std::size_t CCombatEffects::particleCount() const
 float CCombatEffects::trailInterval() const
 {
     return m_tuning.trailInterval;
+}
+
+void CCombatEffects::burst(glm::vec3 position, float radius)
+{
+    Particle glow;
+    glow.render = {position, {0, 0, 0},         {4, 1.8f, .3f, .8f}, {radius * .35f, radius * .35f},
+                   0,        ParticleKind::Glow};
+    glow.lifetime = .15f;
+    glow.priority = 3;
+    add(glow);
+    Particle ring;
+    ring.render = {position,
+                   {0, 0, 0},
+                   {3, .8f, .12f, .7f},
+                   {radius * .4f, radius * .4f},
+                   0,
+                   ParticleKind::Shockwave};
+    ring.lifetime = .35f;
+    ring.growth = radius * 2;
+    ring.priority = 3;
+    add(ring);
 }

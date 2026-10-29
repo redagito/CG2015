@@ -34,6 +34,7 @@ class CGameSystem
      * \brief Updates the game objects
      */
     bool update(float dtime);
+    bool activeGameplay() const;
     const std::shared_ptr<CPlayerProgression> &progression() const;
     const std::string &activeStateName() const
     {

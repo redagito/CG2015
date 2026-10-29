@@ -96,24 +96,35 @@ bool runPostProcessTests(const CGlfwWindow &window)
         const auto centerX = width / 2, centerY = height / 2;
         const auto sample = [&](const std::vector<float> &image, int dx, int dy)
         { return image[3 * ((centerY + dy) * width + centerX + dx)]; };
-        for (float brightness : {0.5f, 4.f})
+        const auto enemyAccents =
+            resources->getMaterialSettings(resources->loadMaterial("data/material/enemy.json"))
+                .emissiveAccents;
+        const auto enemyEmission = enemyAccents.color * enemyAccents.strength * 4.f;
+        for (const auto emission : {glm::vec3(.5f), glm::vec3(4.f), enemyEmission})
         {
             std::fill(pixels.begin(), pixels.end(), 0.f);
             for (unsigned y = centerY - 3; y <= centerY + 3; ++y)
                 for (unsigned x = centerX - 3; x <= centerX + 3; ++x)
                     for (unsigned channel = 0; channel < 3; ++channel)
-                        pixels[3 * (y * width + x) + channel] = brightness;
+                        pixels[3 * (y * width + x) + channel] = emission[channel];
             glTextureSubImage2D(input->getId(), 0, 0, 0, width, height, GL_RGB, GL_FLOAT,
                                 pixels.data());
             renderer.postProcessPass(camera, window, graphics, input);
             const auto bloomed = readTarget(window);
-            if (brightness < 1.f)
+            if (emission.r < 1.f)
             {
                 if (sample(bloomed, 7, 0) > 0.0001f)
                     throw std::runtime_error("Below-threshold pixels produced bloom");
                 continue;
             }
             const float horizontal = sample(bloomed, 7, 0);
+            if (emission.r > emission.g * 8)
+            {
+                const auto halo = 3 * (centerY * width + centerX + 7);
+                if (bloomed[halo] <= .001f || bloomed[halo] < bloomed[halo + 1] * 8 ||
+                    bloomed[halo] < bloomed[halo + 2] * 8)
+                    throw std::runtime_error("Authored enemy emission has no red bloom halo");
+            }
             const float vertical = sample(bloomed, 0, 7);
             const float diagonal = sample(bloomed, 7, 7);
             if (horizontal < 0.001f || vertical < 0.001f || diagonal < 0.0001f)

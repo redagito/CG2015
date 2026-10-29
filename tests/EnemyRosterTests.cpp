@@ -43,6 +43,7 @@ int main()
         root["waves"][0]["count"] = 1;
         root["waves"][1]["type"] = "raider";
         root["waves"][1]["count"] = 6;
+        const auto originalTypeCount = root["enemy_types"].size();
         auto interceptor = root["enemy_types"][1];
         interceptor["id"] = "interceptor";
         interceptor["name"] = "INTERCEPTOR";
@@ -59,10 +60,11 @@ int main()
         root["waves"][1]["count"] = 136;
         root["waves"][1]["interval"] = .2;
         const auto roster = EnemyRoster::parse(root, ArenaTuning{}, WeaponTuning{});
-        require(roster.types.size() == 3 && roster.spawns.size() == 137 && roster.maxActive == 12,
+        require(roster.types.size() == originalTypeCount + 1 && roster.spawns.size() == 137 &&
+                    roster.maxActive == 12,
                 "Encounter still has a fixed enemy roster or count");
-        require(roster.types[2].health == 175 && roster.types[2].behavior.speed == 34 &&
-                    roster.types[2].weapon.damage == 7,
+        require(roster.types.back().health == 175 && roster.types.back().behavior.speed == 34 &&
+                    roster.types.back().weapon.damage == 7,
                 "Per-type settings were ignored");
         require(glm::distance(roster.spawns[8].offset, roster.spawns[14].offset) > .1f,
                 "Procedural spawns still repeat six formation slots");
@@ -73,6 +75,9 @@ int main()
         progress.recordDefeat();
         require(progress.complete(), "Dynamic encounter completion failed");
         auto invalid = root;
+        invalid["enemy_types"][0]["armor"] = .9;
+        reject(invalid);
+        invalid = root;
         invalid["waves"][1]["type"] = "missing";
         reject(invalid);
         invalid = root;

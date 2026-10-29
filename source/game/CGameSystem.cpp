@@ -137,3 +137,8 @@ const std::shared_ptr<CPlayerProgression> &CGameSystem::progression() const
 {
     return m_progression;
 }
+
+bool CGameSystem::activeGameplay() const
+{
+    return m_activeState && m_activeState->activeGameplay();
+}

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "CAABBox.h"
+#include "DamageKind.h"
+#include <cstdint>
+class CCollisionSystem;
 
 #include "glm/glm.hpp"
 #include <glm/gtc/quaternion.hpp>
@@ -17,7 +20,9 @@ class CCollidable
     /**
      * \brief The entity is created with its group id and the untransformed bounding volume
      */
-    CCollidable(unsigned int groupId, const CAABBox &box);
+    CCollidable(unsigned int groupId, const CAABBox &box, std::uint64_t id = 0,
+                CCollisionSystem *owner = nullptr);
+    std::uint64_t id() const;
 
     /**
      * \brief Returns the group id
@@ -42,10 +47,14 @@ class CCollidable
     float getDamageReceived();
 
     /**
-     * \brief Stores the amount of received damage.
+     * \brief Queues damage and returns actual hull damage after armor, shields and pending hits.
      */
-    void receiveDamage(float damage);
-    void receiveDamage(float damage, glm::vec3 source);
+    float receiveDamage(float damage);
+    float receiveDamage(float damage, glm::vec3 source, DamageKind kind = DamageKind::Direct);
+    // Health controllers publish a snapshot; pending hits are subtracted before crediting damage.
+    void setHealthBudget(float hull, float shield, float armor);
+    float remainingHealthBudget() const;
+    DamageKind fatalDamageKind() const;
     glm::vec3 damageSource() const;
 
     /**
@@ -89,6 +98,10 @@ class CCollidable
     bool deleteRequested() const;
 
   protected:
+    friend class CCollisionSystem;
+    mutable std::uint64_t m_queryStamp = 0;
+    std::uint64_t m_id = 0;
+    CCollisionSystem *m_owner = nullptr;
     glm::vec3 m_translation{0}, m_scale{1};
     glm::quat m_orientation{1, 0, 0, 0};
     CAABBox
@@ -99,6 +112,8 @@ class CCollidable
     unsigned int m_groupId = 0; /**< Collision group id. */
 
     glm::vec3 m_damageSource{0};
+    float m_hullBudget = -1, m_shieldBudget = 0, m_armor = 0;
+    DamageKind m_fatalDamageKind = DamageKind::Direct;
     float m_damageReceived =
         0.f; /**< Accumulated damage that was received since the last call to getDamageReceived. */
     float m_damageDealt =

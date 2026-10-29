@@ -124,7 +124,7 @@ VoiceHandle GameAudio::startEmitter(const std::string &cue, glm::vec3 position)
 
 bool GameAudio::emitterActive(VoiceHandle handle) const
 {
-    return m_system.playing(handle);
+    return handle && m_system.playing(handle);
 }
 
 void GameAudio::moveEmitter(VoiceHandle handle, glm::vec3 position, float gain, float pitch)

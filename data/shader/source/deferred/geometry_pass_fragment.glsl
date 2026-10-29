@@ -1,4 +1,5 @@
 #version 460 core
+#include "emissive_accents.glsl"
 
 in vec2 uv;
 smooth in vec3 vertexWorldSpace;
@@ -58,6 +59,7 @@ void main(void)
 
 	float specular = texture(specular_texture, uv).r;
 	float glow = texture(glow_texture, uv).r;
+    applyEmissiveAccents(color, glow);
 	//float alpha = texture(alpha_texture, uv).r;
 
 	// Write diffuse map with glow

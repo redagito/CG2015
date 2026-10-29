@@ -7,7 +7,7 @@ struct EnemyDefinition
 {
     std::string id, name, mesh, material, engineCue = "enemy_engine";
     glm::vec3 scale{.5f};
-    float health = 100;
+    float health = 100, armor = 0;
     EnemyTuning behavior;
     WeaponTuning weapon;
     EnemyDecoration decoration;

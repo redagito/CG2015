@@ -10,4 +10,5 @@ struct FlightState
     float throttle = .5f, speed = 0, bank = 0, boost = 0;
     bool braking = false, boundaryAssist = false;
     float boundaryWarning = 0;
+    bool boundaryVertical = false, boundaryFloor = false;
 };

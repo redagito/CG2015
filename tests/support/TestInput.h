@@ -5,6 +5,7 @@ class TestInput : public IInputProvider
 {
   public:
     bool enter = false, retry = false;
+    unsigned skillPage = 0;
     bool space = false, fire = false, flightMode = false;
     bool throttleUp = false, throttleDown = false, rollLeft = false, rollRight = false,
          boost = false;

@@ -1,4 +1,22 @@
 {
-	"base" : "data/image/enemy_ship.png",
-	"normal" : "data/image/enemy_ship_normal.png"
+  "base": "data/image/enemy_ship.png",
+  "normal": "data/image/enemy_ship_normal.png",
+  "emissive_accents": {
+    "color": [
+      1,
+      0.02,
+      0.006
+    ],
+    "strength": 2,
+    "hull_strip_offset": 2.8,
+    "hull_strip_width": 0.18,
+    "hull_z_range": [
+      -5.8,
+      3.8
+    ],
+    "engine_z_max": -5.7,
+    "engine_half_width": 5.6,
+    "engine_center_y": -0.15,
+    "engine_half_height": 1.35
+  }
 }

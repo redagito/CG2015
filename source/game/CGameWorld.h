@@ -5,6 +5,7 @@
 #include "GameObjectId.h"
 #include "arena/CEnemyNeighborhood.h"
 #include "combat/TargetSnapshot.h"
+#include <array>
 #include <list>
 #include <memory>
 #include <unordered_map>
@@ -32,8 +33,13 @@ class CGameWorld
     const CGameObject *getObject(GameObjectId id) const;
     std::vector<TargetSnapshot> targets() const;
     void clear();
+    std::size_t objectCount() const;
+    const std::array<double, 3> &stepMilliseconds() const;
+    void profileControllers(bool enabled);
+    const std::unordered_map<const std::type_info *, double> &controllerMilliseconds() const;
     GameObjectId idOf(const CGameObject *object) const;
-    std::vector<TargetSnapshot> nearbyTargets(glm::vec3 position, float radius) const;
+    std::vector<TargetSnapshot> nearbyTargets(glm::vec3 position, float radius,
+                                              std::size_t limit = 0) const;
 
   private:
     // Private nested storage; snapshots never retain pointers into this list.
@@ -43,8 +49,12 @@ class CGameWorld
         std::unique_ptr<CGameObject> object;
     };
     std::unordered_map<GameObjectId, CGameObject *> m_lookup;
+    std::unordered_map<const CGameObject *, GameObjectId> m_reverseLookup;
     mutable CEnemyNeighborhood m_neighborhood;
     mutable bool m_neighborhoodDirty = true;
+    bool m_profileControllers = false;
+    std::unordered_map<const std::type_info *, double> m_controllerTimes;
+    std::array<double, 3> m_stepMilliseconds{};
     bool m_frozen = false;
     GameObjectId m_nextId = 1;
     std::list<Entry> m_objects;

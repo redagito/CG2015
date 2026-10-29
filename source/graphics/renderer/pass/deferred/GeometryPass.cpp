@@ -8,36 +8,35 @@
 
 #include <glm/ext.hpp>
 
-#include "graphics/IScene.h"
-#include "graphics/scene/CSceneQuery.h"
 #include "graphics/ICamera.h"
+#include "graphics/IScene.h"
 #include "graphics/IWindow.h"
+#include "graphics/scene/CSceneQuery.h"
 
-#include "resource/IResourceManager.h"
 #include "graphics/camera/CStaticCamera.h"
+#include "resource/IResourceManager.h"
 
 #include "graphics/IGraphicsResourceManager.h"
 #include "graphics/resource/CMaterial.h"
 #include "graphics/resource/CMesh.h"
-#include "graphics/resource/CTexture.h"
 #include "graphics/resource/CShaderProgram.h"
+#include "graphics/resource/CTexture.h"
 
-#include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/renderer/Draw.h"
+#include "graphics/renderer/core/RendererCoreConfig.h"
 
 #include "graphics/renderer/debug/RendererDebug.h"
 #include <spdlog/spdlog.h>
 
-
-void GeometryPass::render(const IScene& scene, const ICamera& camera,
-                                     const IWindow& window, const IGraphicsResourceManager& manager,
-                                     ISceneQuery& query)
+void GeometryPass::render(const IScene &scene, const ICamera &camera, const IWindow &window,
+                          const IGraphicsResourceManager &manager, ISceneQuery &query)
 {
-    m_frame.hasBlendedObjects=false;
+    m_frame.hasBlendedObjects = false;
     // Set framebuffer
     m_gbuffer.framebuffer.setActive(GL_FRAMEBUFFER);
-    m_gbuffer.framebuffer.resize(window.getWidth(),window.getHeight());
-    glDepthMask(GL_TRUE); glDisable(GL_BLEND);
+    m_gbuffer.framebuffer.resize(window.getWidth(), window.getHeight());
+    glDepthMask(GL_TRUE);
+    glDisable(GL_BLEND);
     // Clear buffer
     // TODO Should be retrieved as scene parameters
     // Diffuse, glow
@@ -51,16 +50,18 @@ void GeometryPass::render(const IScene& scene, const ICamera& camera,
     glClear(GL_DEPTH_BUFFER_BIT);
 
     // Geometry pass, uses gbuffer fbo
-    CShaderProgram* geometryPassShader = manager.getShaderProgram(m_geometryPassShaderId);
-	if (geometryPassShader == nullptr)
-	{
-		SPDLOG_ERROR("Failed to retrieve geometry pass shader.");
-		return;
-	}
-    geometryPassShader->setUniform("normal_mapping_enabled", static_cast<int>(camera.getFeatureInfo().normalMappingActive));
+    CShaderProgram *geometryPassShader = manager.getShaderProgram(m_geometryPassShaderId);
+    if (geometryPassShader == nullptr)
+    {
+        SPDLOG_ERROR("Failed to retrieve geometry pass shader.");
+        return;
+    }
+    geometryPassShader->setUniform("normal_mapping_enabled",
+                                   static_cast<int>(camera.getFeatureInfo().normalMappingActive));
 
     // Depth
-    glEnable(GL_DEPTH_TEST); glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
 
     // Backface culling disabled for debugging
@@ -73,7 +74,6 @@ void GeometryPass::render(const IScene& scene, const ICamera& camera,
     // Reset viewport
     glViewport(0, 0, window.getWidth(), window.getHeight());
 
-
     // Set view and projection matrices
     m_frame.transform.setViewMatrix(camera.getView());
     m_frame.transform.setProjectionMatrix(camera.getProjection());
@@ -83,6 +83,7 @@ void GeometryPass::render(const IScene& scene, const ICamera& camera,
     geometryPassShader->setUniform(projectionMatrixUniformName,
                                    m_frame.transform.getProjectionMatrix());
 
+    m_instances.begin();
     // Traverse visible objects
     while (query.hasNextObject())
     {
@@ -95,7 +96,7 @@ void GeometryPass::render(const IScene& scene, const ICamera& camera,
         glm::vec3 position;
         glm::quat rotation;
         glm::vec3 scale;
-		bool visible;
+        bool visible;
 
         // Retrieve object data
         if (!scene.getObject(id, meshId, materialId, position, rotation, scale, visible))
@@ -106,22 +107,27 @@ void GeometryPass::render(const IScene& scene, const ICamera& camera,
         else
         {
             // Resolve ids
-            CMesh* mesh = manager.getMesh(meshId);
-            CMaterial* material = manager.getMaterial(materialId);
-            if (material && material->settings.alphaMode==AlphaMode::Blend) m_frame.hasBlendedObjects=true;
-            if (material && (material->settings.background || material->settings.alphaMode == AlphaMode::Blend)) continue;
+            CMaterial *material = manager.getMaterial(materialId);
+            if (material && material->settings.alphaMode == AlphaMode::Blend)
+                m_frame.hasBlendedObjects = true;
+            if (material &&
+                (material->settings.background || material->settings.alphaMode == AlphaMode::Blend))
+                continue;
 
             // Set transformations
             m_frame.transform.setPosition(position);
             m_frame.transform.setRotation(rotation);
             m_frame.transform.setScale(scale);
 
-			// Forward draw call
-			drawMaterialMesh(mesh, m_frame.transform.getTranslationMatrix(), m_frame.transform.getRotationMatrix(),
-					m_frame.transform.getScaleMatrix(), material, manager, geometryPassShader);
+            m_instances.add(meshId, materialId,
+                            m_frame.transform.getTranslationMatrix() *
+                                m_frame.transform.getRotationMatrix() *
+                                m_frame.transform.getScaleMatrix(),
+                            scale.x * scale.y * scale.z < 0);
         }
     }
 
+    m_instances.draw(manager, *geometryPassShader);
     // Post draw error check
     std::string error;
     if (hasGLError(error))
@@ -133,7 +139,7 @@ void GeometryPass::render(const IScene& scene, const ICamera& camera,
     m_gbuffer.framebuffer.setInactive(GL_FRAMEBUFFER);
 }
 
-bool GeometryPass::init(IResourceManager& manager)
+bool GeometryPass::init(IResourceManager &manager)
 {
     // Init geometry pass shader
     // TODO Read file name from config?
@@ -144,7 +150,8 @@ bool GeometryPass::init(IResourceManager& manager)
     // Check if ok
     if (m_geometryPassShaderId == invalidResource)
     {
-        SPDLOG_ERROR("Failed to initialize the shader from file {}.", geometryPassShaderFile.c_str());
+        SPDLOG_ERROR("Failed to initialize the shader from file {}.",
+                     geometryPassShaderFile.c_str());
         return false;
     }
 

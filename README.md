@@ -139,4 +139,8 @@ Audio setup, bundled assets and loading behavior are described in [doc/audio.md]
 
 Combat configuration and behavior: [combat and arena](doc/combat-and-arena.md), [combat feedback](doc/combat-effects.md). Enemy types/waves live in `encounters.json`; player hit/shield/camera feedback lives in `effects.json`.
 
-The game now has ten clear-to-advance waves, session skill progression, a result-screen skill tree and retries. The arena is 1,600 × 1,600 units; the UFO arrives on wave 10 with a 30-second final battle. [Progression, controls and wave configuration](doc/progression-and-waves.md).
+The game now has ten clear-to-advance waves, session skill progression, a result-screen skill tree and retries. The arena is 1,600 × 1,600 units; the UFO arrives on wave 10 with a 60-second approach and five seconds of playable grace. [Progression, controls and wave configuration](doc/progression-and-waves.md).
+
+Swarm preset: ten enemies initially, doubling through 5,120 on wave 10. Active gameplay exits if its one-second FPS average falls below 30. See [swarm performance and benchmark](doc/swarm-performance.md).
+
+The skill tree now has 24 skills in four tabs, including multishot, piercing, splash/chain explosions, shields, armor and repairs. Floor/ceiling warnings use a separate 12-unit margin. [Upgrade details and controls](doc/progression-and-waves.md).

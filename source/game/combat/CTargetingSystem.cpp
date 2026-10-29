@@ -26,11 +26,18 @@ void CTargetingSystem::update(const std::vector<TargetSnapshot> &targets, glm::v
     const auto selected = std::find_if(nearby.begin(), nearby.end(),
                                        [&](const auto *t) { return t->id == m_selected; });
     if (selected == nearby.end())
+    {
+        // World snapshots omit dead/deleted enemies. Range loss alone does not imply a kill.
+        if (m_selected && std::none_of(targets.begin(), targets.end(),
+                                       [&](const auto &target) { return target.id == m_selected; }))
+            m_reacquireNearest = true;
         m_selected = noGameObject;
+    }
     if (clear && !m_clearDown)
     {
         m_selected = noGameObject;
         m_initialAcquisition = false;
+        m_reacquireNearest = false;
     }
     else if (tab && !m_tabDown && !nearby.empty())
     {
@@ -39,9 +46,11 @@ void CTargetingSystem::update(const std::vector<TargetSnapshot> &targets, glm::v
                               : std::next(selected);
         m_selected = (*next)->id;
         m_initialAcquisition = false;
+        m_reacquireNearest = false;
     }
     else if ((select && !m_selectDown) || m_initialAcquisition)
     {
+        m_reacquireNearest = false;
         float best = std::cos(glm::radians(m_tuning.acquisitionAngle));
         GameObjectId candidate = noGameObject;
         for (const auto *target : nearby)
@@ -59,6 +68,19 @@ void CTargetingSystem::update(const std::vector<TargetSnapshot> &targets, glm::v
         m_selected = candidate;
         if (candidate)
             m_initialAcquisition = false;
+    }
+    else if (m_reacquireNearest && !nearby.empty())
+    {
+        const auto nearest = std::min_element(nearby.begin(), nearby.end(),
+                                              [&](const auto *a, const auto *b)
+                                              {
+                                                  const auto da = a->position - position,
+                                                             db = b->position - position;
+                                                  return glm::dot(da, da) < glm::dot(db, db);
+                                              });
+        m_selected = (*nearest)->id;
+        m_reacquireNearest = false;
+        m_initialAcquisition = false;
     }
     m_tabDown = tab;
     m_selectDown = select;

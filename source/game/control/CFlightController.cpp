@@ -100,6 +100,8 @@ void CFlightController::update(float seconds)
             targetRate =
                 ArenaBoundary::correctTurn(m_state.orientation, targetRate, boundary, *m_arena);
             m_state.boundaryWarning = boundary.strength;
+            m_state.boundaryVertical = boundary.axis == 1;
+            m_state.boundaryFloor = boundary.inward.y > 0;
             m_state.boundaryAssist = boundary.strength > .65f;
         }
         m_state.angularVelocity +=

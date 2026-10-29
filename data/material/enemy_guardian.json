@@ -1,0 +1,21 @@
+{
+  "base": "data/image/bunker_galvanized.png",
+  "emissive_accents": {
+    "color": [
+      1,
+      0.02,
+      0.006
+    ],
+    "strength": 2,
+    "hull_strip_offset": 2.4,
+    "hull_strip_width": 0.15,
+    "hull_z_range": [
+      -2.7,
+      4.3
+    ],
+    "engine_z_max": -2.1,
+    "engine_half_width": 3.6,
+    "engine_center_y": 0.6,
+    "engine_half_height": 1.4
+  }
+}

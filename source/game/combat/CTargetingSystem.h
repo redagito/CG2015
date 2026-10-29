@@ -15,6 +15,7 @@ class CTargetingSystem
   private:
     TargetingTuning m_tuning;
     GameObjectId m_selected = noGameObject;
+    bool m_reacquireNearest = false;
     bool m_initialAcquisition = true, m_tabDown = false, m_selectDown = false, m_clearDown = false;
     std::optional<TargetingSolution> m_solution;
 };

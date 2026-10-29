@@ -11,11 +11,15 @@ BoundaryResponse ArenaBoundary::evaluate(glm::vec3 position, const ArenaTuning &
     {
         const float clearance = arena.halfExtents[axis] - std::abs(local[axis]);
         result.clearance = std::min(result.clearance, clearance);
-        const float weight = glm::smoothstep(
-            0.f, 1.f,
-            std::clamp((arena.warningMargin - clearance) / arena.warningMargin, 0.f, 1.f));
+        const float margin = axis == 1 ? arena.verticalWarningMargin : arena.warningMargin;
+        const float weight =
+            glm::smoothstep(0.f, 1.f, std::clamp((margin - clearance) / margin, 0.f, 1.f));
         result.inward[axis] = -glm::sign(local[axis]) * weight;
-        result.strength = std::max(result.strength, weight);
+        if (weight > result.strength)
+        {
+            result.strength = weight;
+            result.axis = axis;
+        }
     }
     return result;
 }
@@ -52,6 +56,8 @@ glm::vec3 ArenaBoundary::dampVelocity(glm::vec3 velocity, const BoundaryResponse
 }
 glm::vec3 ArenaBoundary::safePoint(glm::vec3 point, const ArenaTuning &arena)
 {
-    const auto safe = arena.halfExtents - glm::vec3(arena.warningMargin);
+    const auto safe =
+        arena.halfExtents -
+        glm::vec3(arena.warningMargin, arena.verticalWarningMargin, arena.warningMargin);
     return glm::clamp(point, arena.center - safe, arena.center + safe);
 }

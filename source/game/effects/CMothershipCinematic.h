@@ -30,5 +30,6 @@ class CMothershipCinematic
     CCamera m_camera;
     SceneObjectId m_sourceLight, m_impactLight;
     float m_time = 0;
+    float m_effectScale = 1;
     bool m_fired = false, m_destroyed = false;
 };

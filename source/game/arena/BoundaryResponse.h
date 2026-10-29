@@ -4,4 +4,5 @@ struct BoundaryResponse
 {
     glm::vec3 inward{0};
     float strength = 0, clearance = 0;
+    int axis = -1;
 };

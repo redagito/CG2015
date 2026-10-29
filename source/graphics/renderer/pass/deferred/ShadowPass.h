@@ -1,4 +1,5 @@
 #pragma once
+#include "CInstancedDraw.h"
 #include "graphics/renderer/DeferredRenderTargets.h"
 class IResourceManager;
 class IScene;
@@ -31,6 +32,7 @@ class ShadowPass
     static const CameraDirection g_cameraDirections[6];
     bool initShadowMapPass(IResourceManager &manager);
     bool initShadowCubePass(IResourceManager &manager);
+    CInstancedDraw m_instances;
     ShadowTargets &m_shadows;
     ResourceId m_shadowCubePassShaderId = invalidResource;
     ResourceId m_shadowMapPassShaderId = invalidResource;

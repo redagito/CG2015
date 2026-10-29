@@ -16,6 +16,7 @@ bool runCombatGraphicsTests(const CGlfwWindow &window);
 bool runPostProcessTests(const CGlfwWindow &window);
 bool runRenderResourceTests();
 bool runShaderTests(const CGlfwWindow &window);
+bool runEnemyHighlightTests(const CGlfwWindow &window);
 bool runRemainingRenderingTests(const CGlfwWindow &window);
 bool runUiTests();
 bool runLoadingScreenTests(CGlfwWindow &window);
@@ -38,6 +39,8 @@ int main(int argc, char **argv)
         return runPostProcessTests(window) ? 0 : 5;
     if (argc > 1 && std::string_view(argv[1]) == "--resources")
         return runRenderResourceTests() ? 0 : 6;
+    if (argc > 1 && std::string_view(argv[1]) == "--enemy-highlights")
+        return runEnemyHighlightTests(window) ? 0 : 13;
     if (argc > 1 && std::string_view(argv[1]) == "--shaders")
         return runShaderTests(window) ? 0 : 7;
     if (argc > 1 && std::string_view(argv[1]) == "--remaining")

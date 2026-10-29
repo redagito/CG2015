@@ -1,6 +1,8 @@
 #include "graphics/camera/CFirstPersonCamera.h"
 #include "graphics/renderer/CFrameBuffer.h"
 #include "graphics/renderer/Draw.h"
+#include "graphics/renderer/pass/deferred/CInstancedDraw.h"
+#include "graphics/renderer/pass/deferred/MaterialDraw.h"
 #include "graphics/resource/CGraphicsResourceManager.h"
 #include "graphics/system/CGraphicsSystem.h"
 #include "graphics/window/CGlfwWindow.h"
@@ -83,6 +85,69 @@ bool runShaderTests(const CGlfwWindow &window)
                 throw std::runtime_error("Normal transform/degenerate UV handling is incorrect");
         }
 
+        // Compare batched and reference transforms, including mirrored/nonuniform scales.
+        {
+            auto batchColor = texture(GL_RGBA16F), batchNormal = texture(GL_RGBA16F);
+            CFrameBuffer batchTarget;
+            batchTarget.attach(batchColor, GL_COLOR_ATTACHMENT0);
+            batchTarget.attach(batchNormal, GL_COLOR_ATTACHMENT1);
+            batchTarget.setActive(GL_FRAMEBUFFER);
+            const auto meshId = resources->loadMesh("data/mesh/screen_quad.obj");
+            const auto materialId = resources->loadMaterial("data/material/white.json");
+            auto *mesh = graphics.getMesh(meshId);
+            auto *material = graphics.getMaterial(materialId);
+            const glm::vec3 positions[] = {{-.5f, 0, 0}, {.1f, .3f, 0}, {.55f, -.3f, 0}};
+            const glm::vec3 scales[] = {{.2f, .3f, 1}, {.15f, .2f, .8f}, {-.15f, .2f, 1.2f}};
+            geometry->setUniform("view", glm::mat4(1));
+            geometry->setUniform("projection", glm::mat4(1));
+            geometry->setUniform("normal_mapping_enabled", 0);
+            glDisable(GL_BLEND);
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_CULL_FACE);
+            const auto clear = [&]
+            {
+                const float black[] = {0, 0, 0, 0};
+                glClearBufferfv(GL_COLOR, 0, black);
+                glClearBufferfv(GL_COLOR, 1, black);
+            };
+            const auto image = [&](GLenum attachment)
+            {
+                std::vector<float> result(window.getWidth() * window.getHeight() * 4);
+                glReadBuffer(attachment);
+                glReadPixels(0, 0, window.getWidth(), window.getHeight(), GL_RGBA, GL_FLOAT,
+                             result.data());
+                return result;
+            };
+            clear();
+            for (int i = 0; i < 3; ++i)
+                drawMaterialMesh(mesh, glm::translate(glm::mat4(1), positions[i]), glm::mat4(1),
+                                 glm::scale(glm::mat4(1), scales[i]), material, graphics, geometry);
+            const auto referenceColor = image(GL_COLOR_ATTACHMENT0),
+                       referenceNormal = image(GL_COLOR_ATTACHMENT1);
+            clear();
+            CInstancedDraw batch;
+            batch.begin();
+            for (int i = 0; i < 3; ++i)
+                batch.add(meshId, materialId,
+                          glm::translate(glm::mat4(1), positions[i]) *
+                              glm::scale(glm::mat4(1), scales[i]),
+                          scales[i].x < 0);
+            batch.draw(graphics, *geometry);
+            const auto actualColor = image(GL_COLOR_ATTACHMENT0),
+                       actualNormal = image(GL_COLOR_ATTACHMENT1);
+            unsigned covered = 0;
+            for (std::size_t i = 0; i < actualColor.size(); ++i)
+            {
+                if (referenceColor[i] > .1f)
+                    ++covered;
+                if (std::abs(referenceColor[i] - actualColor[i]) > .003f ||
+                    std::abs(referenceNormal[i] - actualNormal[i]) > .003f)
+                    throw std::runtime_error(
+                        "Instanced transforms/materials differ from reference draws");
+            }
+            if (covered < 20)
+                throw std::runtime_error("Instancing reference did not draw visible geometry");
+        }
         auto output = texture(GL_RGBA16F);
         CFrameBuffer screen;
         screen.attach(output, GL_COLOR_ATTACHMENT0);

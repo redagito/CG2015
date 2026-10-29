@@ -17,6 +17,7 @@ void CArenaEnemyController::attach(CGameObject *object)
 {
     m_object = object;
     m_orientation = object->getOrientation();
+    m_separationTimer = std::fmod(m_phase * .6180339887f, 1.f) * .05f;
     object->setVelocity(object->getForward() * m_arena.enemies.speed);
 }
 void CArenaEnemyController::detach()
@@ -100,18 +101,39 @@ void CArenaEnemyController::update(float seconds)
         target +=
             lane * m_arena.enemies.approachSpread *
             glm::smoothstep(m_arena.enemies.breakDistance, m_arena.enemies.attackRange, distance);
-    const auto neighbors = m_world.nearbyTargets(position, m_arena.enemies.separationDistance * 3);
     if (!m_self)
         m_self = m_world.idOf(m_object);
     auto velocity = m_object->getVelocity();
-    const int steps = std::max(1, int(std::ceil(duration * 120)));
+    const int steps = std::max(1, int(std::ceil(duration * 20 - 1e-5f)));
     const float dt = duration / steps;
     glm::vec3 localRate(0);
+    // Stagger 20 Hz local avoidance decisions; full flight and firing still update every frame.
+    m_separationTimer -= duration;
+    if (m_separationTimer <= 0)
+    {
+        auto neighbors =
+            m_world.nearbyTargets(position, m_arena.enemies.separationDistance * 1.5f, 32);
+        if (neighbors.size() > 16)
+        {
+            // Steer against the nearest local threats rather than solving every dense-swarm pair.
+            std::nth_element(neighbors.begin(), neighbors.begin() + 16, neighbors.end(),
+                             [&](const auto &a, const auto &b)
+                             {
+                                 const auto da = a.position - position, db = b.position - position;
+                                 return glm::dot(da, da) < glm::dot(db, db);
+                             });
+            neighbors.resize(16);
+        }
+        m_separation =
+            EnemySeparation::avoidance(m_self, position, velocity, neighbors, m_arena.enemies);
+        m_separationTimer += .05f;
+        if (m_separationTimer < 0)
+            m_separationTimer = 0;
+    }
+    const auto separation = m_separation;
     for (int step = 0; step < steps; ++step)
     {
         const auto forward = m_orientation * glm::vec3(0, 0, 1), delta = target - position;
-        const auto separation =
-            EnemySeparation::avoidance(m_self, position, velocity, neighbors, m_arena.enemies);
         auto desired = glm::dot(delta, delta) > 1e-8f ? glm::normalize(delta) : forward;
         desired += separation * m_arena.enemies.separationStrength;
         if (glm::dot(desired, desired) < 1e-8f)

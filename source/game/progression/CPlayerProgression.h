@@ -1,5 +1,7 @@
 #pragma once
 #include "SkillDefinition.h"
+#include "game/combat/DefenseTuning.h"
+#include "game/combat/PlayerUpgradeTuning.h"
 #include <array>
 #include <cstdint>
 #include <span>
@@ -17,6 +19,8 @@ class CPlayerProgression
     bool unlocked(SkillId skill) const;
     bool canBuy(SkillId skill) const;
     bool buy(SkillId skill);
+    DefenseTuning defenses() const;
+    PlayerUpgradeTuning combatUpgrades() const;
     void apply(FlightTuning &flight, WeaponTuning &weapon) const;
     static std::span<const SkillDefinition> skills();
 

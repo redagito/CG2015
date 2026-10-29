@@ -118,6 +118,28 @@ bool runCombatGraphicsTests(const CGlfwWindow &)
             require(cadenceWorld.addObject(new CGameObject()) == 8,
                     "Weapon cadence changes with frame rate");
         }
+        for (unsigned pellets : {1u, 3u, 11u})
+        {
+            CGameWorld volleyWorld;
+            CCollisionSystem volleyCollisions;
+            volleyCollisions.getNewGroupId();
+            auto enhanced = tuning.weapon;
+            enhanced.volleySize = pellets;
+            enhanced.volleyDamageMultiplier = 1 + .1f * (pellets - 1);
+            enhanced.criticalChance = 1;
+            enhanced.criticalMultiplier = 2;
+            CWeaponController volleys(&input, &volleyWorld, &scene, mesh, material, resources.get(),
+                                      &volleyCollisions, 0, nullptr, enhanced);
+            volleys.attach(&ship);
+            volleys.update(.016f);
+            require(volleyWorld.objectCount() == pellets, "Multishot projectile count is wrong");
+            float totalDamage = 0;
+            for (GameObjectId id = 1; id <= pellets; ++id)
+                totalDamage += volleyWorld.getObject(id)->getCollidable()->getDamage();
+            require(std::abs(totalDamage - enhanced.damage * enhanced.volleyDamageMultiplier * 2) <
+                        .001f,
+                    "Multishot duplicated damage instead of sharing its critical volley budget");
+        }
         const auto load = resources->loadAsync(
             {{AssetKind::EnemyRoster, "data/game/defenders_of_cthedra/encounters.json"}});
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(30);
@@ -164,6 +186,10 @@ bool runCombatGraphicsTests(const CGlfwWindow &)
         spawner.update(0);
         require(spawnWorld.targets().size() == 4 && spawner.pending() == 33,
                 "Active spawn limit or arbitrary wave count was ignored");
+        const auto guardian = spawnWorld.targets().front();
+        require(guardian.name.find("GUARDIAN") != std::string::npos &&
+                    spawnWorld.getObject(guardian.id)->getCollidable()->receiveDamage(25) == 20,
+                "Generic spawner did not apply authored enemy armor");
         for (int batch = 0; batch < 20 && !progress.complete(); ++batch)
         {
             const auto targets = spawnWorld.targets();

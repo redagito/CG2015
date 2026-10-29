@@ -20,6 +20,7 @@ class CCombatEffects
     void damage(const CGameObject &object, float amount, bool lethal, glm::vec3 source);
     void update(float seconds);
     void clear();
+    void burst(glm::vec3 position, float radius);
     const PlayerFeedback &feedback() const;
     float consumeCameraImpulse();
     std::size_t particleCount() const;
@@ -42,6 +43,7 @@ class CCombatEffects
     GameObjectId m_player = 0;
     PlayerFeedback m_feedback;
     float m_cameraImpulse = 0, m_shieldTime = 0;
+    std::size_t m_replacementCursor = 0;
     std::vector<Particle> m_particles;
     std::vector<RenderParticle> m_frame;
     std::mt19937 m_random{0xC7ED2A};

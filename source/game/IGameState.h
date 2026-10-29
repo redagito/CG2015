@@ -19,6 +19,7 @@ class IGameState
   public:
     void setProgression(std::shared_ptr<CPlayerProgression> progression);
     virtual bool reinitializeOnEntry() const;
+    virtual bool activeGameplay() const;
     /**
      * \brief Virtual destructor.
      */

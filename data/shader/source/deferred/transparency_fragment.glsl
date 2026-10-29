@@ -1,5 +1,6 @@
 #version 460 core
 #include "lighting.glsl"
+#include "emissive_accents.glsl"
 in vec2 uv;
 in vec3 vertexWorldSpace,normalVectorWorldSpace;
 layout(location=0) out vec4 color;
@@ -14,7 +15,9 @@ uniform int light_kind=0;
 void main() {
     float alpha=clamp(texture(alpha_texture,uv).r*opacity,0.0,1.0); if(alpha<=0.0) discard;
     vec3 base=texture(diffuse_texture,uv).rgb;
-    if(light_kind==0) {color=vec4(base*(ambient_light+texture(glow_texture,uv).r*4.0),alpha);return;}
+    float glow=texture(glow_texture,uv).r;
+    applyEmissiveAccents(base,glow);
+    if(light_kind==0) {color=vec4(base*(ambient_light+glow*4.0),alpha);return;}
     vec3 N=safeDirection(gl_FrontFacing?normalVectorWorldSpace:-normalVectorWorldSpace);
     if(normal_mapping_enabled) {
         vec3 p1=dFdx(vertexWorldSpace),p2=dFdy(vertexWorldSpace); vec2 t1=dFdx(uv),t2=dFdy(uv);

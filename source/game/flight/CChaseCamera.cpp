@@ -89,7 +89,7 @@ void CChaseCamera::follow(glm::vec3 position, const FlightState &flight, float s
     setView(glm::lookAt(m_eye + eyeKick, m_eye + viewForward * m_tuning.lookAhead + lookKick,
                         normalizedUp));
     // Reticle projection and rendering use this same frame's aspect and FOV.
-    setProjection(glm::perspective(glm::radians(m_fieldOfView), aspect, .5f, 4000.f));
+    setProjection(glm::perspective(glm::radians(m_fieldOfView), aspect, .5f, 12000.f));
 }
 
 void CChaseCamera::addImpact(float strength)

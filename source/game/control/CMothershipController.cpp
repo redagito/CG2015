@@ -40,7 +40,7 @@ void CMothershipController::update(float seconds)
         return;
     m_elapsed =
         std::min(m_elapsed + seconds, double(m_tuning.approachSeconds) + m_tuning.waitSeconds);
-    // Interpolate from the initial position; an arrival step also consumes its wait-time remainder.
+    // Arrival stops the UFO, while its grace clock and the rest of gameplay keep running.
     const float fraction = float(std::min(1.0, m_elapsed / m_tuning.approachSeconds));
     m_object->setPosition(glm::mix(m_start, m_destination, fraction));
     m_object->setVelocity(approachRemaining() > 0

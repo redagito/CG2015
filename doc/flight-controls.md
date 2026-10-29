@@ -52,3 +52,5 @@ The flight regression tests cover neutral flight, steering signs, dead zone, inv
 Shots now inherit the ship's velocity. Combat and arena tuning are bundled beside the flight configuration.
 
 After defeat or victory, click skill nodes to spend points. Tab selects nodes, Enter buys the selected rank, and R or RETRY RUN starts a fresh run. Points and ranks last for the current session. See [progression and waves](progression-and-waves.md).
+
+Skill-tree branches use keys 1-4 or the tab buttons. Floor/ceiling warnings use a separate 12-unit vertical margin and say LOW ALTITUDE or CEILING.

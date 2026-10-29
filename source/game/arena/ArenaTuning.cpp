@@ -24,8 +24,13 @@ ArenaTuning ArenaTuning::load(IResourceManager &resources)
     };
     ArenaTuning result;
     result.center = vector(root["center"]);
+    result.templeScale = number(root, "templeScale");
+    result.mothership.scale = number(root["mothership"], "scale");
+    result.mothership.start = vector(root["mothership"]["start"]);
+    result.mothership.destination = vector(root["mothership"]["destination"]);
     result.halfExtents = vector(root["halfExtents"]);
     result.warningMargin = number(root, "warningMargin");
+    result.verticalWarningMargin = root.get("verticalWarningMargin", 12).asFloat();
     result.returnRate = number(root, "returnRate");
     result.returnResponse = number(root, "returnResponse");
     result.velocityDamping = number(root, "velocityDamping");
@@ -64,10 +69,18 @@ void ArenaTuning::validate() const
         range("center", center[axis], -1000, 1000);
         range("halfExtents", halfExtents[axis], 60, 2000);
     }
+    range("temple scale", templeScale, 1, 100);
+    range("mothership scale", mothership.scale, 1, 1000);
+    for (int axis = 0; axis < 3; ++axis)
+    {
+        range("mothership start", mothership.start[axis], -4000, 4000);
+        range("mothership destination", mothership.destination[axis], -4000, 4000);
+    }
     range("mothership approach seconds", mothership.approachSeconds, .1f, 3600);
     range("mothership wait seconds", mothership.waitSeconds, 0, 3600);
     range("warningMargin", warningMargin, 10,
           std::min(halfExtents.x, std::min(halfExtents.y, halfExtents.z)) * .8f);
+    range("verticalWarningMargin", verticalWarningMargin, 2, halfExtents.y * .8f);
     range("returnRate", returnRate, 90, 240);
     range("returnResponse", returnResponse, 1, 10);
     range("velocityDamping", velocityDamping, 1, 40);

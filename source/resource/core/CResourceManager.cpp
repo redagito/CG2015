@@ -509,9 +509,10 @@ bool CResourceManager::setMaterialSettings(ResourceId id, const SMaterialSetting
 {
     ensureOwner();
     auto it = m_materials.find(id);
-    if (it == m_materials.end() || !std::isfinite(settings.opacity) ||
-        !std::isfinite(settings.alphaCutoff) || settings.opacity < 0.f || settings.opacity > 1.f ||
-        settings.alphaCutoff < 0.f || settings.alphaCutoff > 1.f)
+    if (it == m_materials.end() || !settings.emissiveAccents.valid() ||
+        !std::isfinite(settings.opacity) || !std::isfinite(settings.alphaCutoff) ||
+        settings.opacity < 0.f || settings.opacity > 1.f || settings.alphaCutoff < 0.f ||
+        settings.alphaCutoff > 1.f)
         return false;
     it->second.settings = settings;
     notifyResourceListeners(EResourceType::Material, id, EListenerEvent::Change);

@@ -1,4 +1,5 @@
 #pragma once
+#include "CInstancedDraw.h"
 #include "graphics/renderer/DeferredRenderTargets.h"
 class IResourceManager;
 class IScene;
@@ -9,20 +10,20 @@ class ISceneQuery;
 
 class GeometryPass
 {
-public:
-    GeometryPass(const GeometryPass&) = delete;
-    GeometryPass& operator=(const GeometryPass&) = delete;
-    GeometryPass(GBufferTargets& gbuffer, DeferredFrameState& frame) : m_gbuffer(gbuffer), m_frame(frame) {}
-    void render(
-        const IScene& scene,
-        const ICamera& camera,
-        const IWindow& window,
-        const IGraphicsResourceManager& manager,
-        ISceneQuery& query);
-    bool init(IResourceManager& manager);
-private:
+  public:
+    GeometryPass(const GeometryPass &) = delete;
+    GeometryPass &operator=(const GeometryPass &) = delete;
+    GeometryPass(GBufferTargets &gbuffer, DeferredFrameState &frame)
+        : m_gbuffer(gbuffer), m_frame(frame)
+    {
+    }
+    void render(const IScene &scene, const ICamera &camera, const IWindow &window,
+                const IGraphicsResourceManager &manager, ISceneQuery &query);
+    bool init(IResourceManager &manager);
 
-    GBufferTargets& m_gbuffer;
-    DeferredFrameState& m_frame;
+  private:
+    CInstancedDraw m_instances;
+    GBufferTargets &m_gbuffer;
+    DeferredFrameState &m_frame;
     ResourceId m_geometryPassShaderId = invalidResource;
 };

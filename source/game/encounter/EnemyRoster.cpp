@@ -57,6 +57,9 @@ EnemyRoster EnemyRoster::parse(const Json::Value &root, const ArenaTuning &arena
             throw std::runtime_error("max_active must be positive");
         result.maxActive = std::size_t(root["max_active"].asUInt64());
     }
+    result.spawnSeparationScale = optionalNumber(root, "spawn_separation_scale", 1.4f);
+    if (result.spawnSeparationScale < .25f || result.spawnSeparationScale > 3)
+        throw std::runtime_error("Invalid spawn separation scale");
     std::unordered_map<std::string, std::size_t> ids;
     for (const auto &node : root["enemy_types"])
     {
@@ -78,6 +81,9 @@ EnemyRoster EnemyRoster::parse(const Json::Value &root, const ArenaTuning &arena
             if (type.scale[axis] < .05f || type.scale[axis] > 20)
                 throw std::runtime_error("Enemy scale out of range");
         type.health = optionalNumber(node, "health", arena.enemies.health);
+        type.armor = optionalNumber(node, "armor", 0);
+        if (type.armor < 0 || type.armor > .5f)
+            throw std::runtime_error("Enemy armor out of range");
         if (type.health <= 0 || type.health > 100000)
             throw std::runtime_error("Enemy health out of range");
         if (node.isMember("engine_cue"))

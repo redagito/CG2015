@@ -18,19 +18,21 @@ CMothershipCinematic::CMothershipCinematic(IScene &scene, CGameObject &temple, g
                                            glm::vec3 impact, GameAudio *audio)
     : m_scene(scene), m_temple(temple), m_emitter(emitter), m_impact(impact), m_audio(audio)
 {
+    // Scale the destruction presentation with the temple, not with the fighter models.
+    m_effectScale = std::max(1.f, temple.getScale().y / 3.f);
     auto &features = m_camera.getFeatureInfoForWrite();
     features.lenseFlareActive = features.godRayActive = features.dofActive = false;
-    m_sourceLight = scene.createPointLight(emitter, 80, {.15f, 1, .55f}, 0, false);
-    m_impactLight =
-        scene.createPointLight(impact + glm::vec3(0, 4, 0), 100, {1, .4f, .1f}, 0, false);
+    m_sourceLight = scene.createPointLight(emitter, 80 * m_effectScale, {.15f, 1, .55f}, 0, false);
+    m_impactLight = scene.createPointLight(impact + glm::vec3(0, 4 * m_effectScale, 0),
+                                           100 * m_effectScale, {1, .4f, .1f}, 0, false);
     if (m_audio)
         m_audio->emit({GameAudioEventType::MothershipCharge, emitter});
 }
 CMothershipCinematic::~CMothershipCinematic()
 {
     // Light slots belong to this scene; disable them before the next state takes over.
-    m_scene.setPointLight(m_sourceLight, m_emitter, 80, {.15f, 1, .55f}, 0, false);
-    m_scene.setPointLight(m_impactLight, m_impact, 100, {1, .4f, .1f}, 0, false);
+    m_scene.setPointLight(m_sourceLight, m_emitter, 80 * m_effectScale, {.15f, 1, .55f}, 0, false);
+    m_scene.setPointLight(m_impactLight, m_impact, 100 * m_effectScale, {1, .4f, .1f}, 0, false);
     m_scene.setParticles({});
 }
 void CMothershipCinematic::update(float seconds, glm::vec2 viewport)
@@ -60,15 +62,18 @@ void CMothershipCinematic::updateCamera(glm::vec2 viewport)
     const auto midpoint = (m_emitter + m_impact) * .5f;
     const float orbit = .55f + .16f * (m_time / duration);
     // Pull back in portrait windows to keep the UFO's broad disc and temple in frame.
-    const float distance = 165 * std::max(1.f, 1.25f / aspect);
-    auto eye = midpoint + glm::vec3(std::sin(orbit) * distance, 30, std::cos(orbit) * distance);
+    const float distance =
+        std::max(240 * m_effectScale, glm::distance(m_emitter, m_impact) * 1.2f) *
+        std::max(1.f, 1.25f / aspect);
+    auto eye = midpoint + glm::vec3(std::sin(orbit) * distance, 30 * m_effectScale,
+                                    std::cos(orbit) * distance);
     const float shake = beamActive()  ? .10f
                         : m_destroyed ? .45f * std::exp(-(m_time - destructionTime) * 3)
                                       : 0;
     eye += glm::vec3(std::sin(m_time * 67), std::cos(m_time * 53), 0) * shake;
     m_camera.setPosition(eye);
     m_camera.setView(glm::lookAt(eye, midpoint, glm::vec3(0, 1, 0)));
-    m_camera.setProjection(glm::perspective(glm::radians(50.f), aspect, .5f, 4000.f));
+    m_camera.setProjection(glm::perspective(glm::radians(50.f), aspect, .5f, 12000.f));
     if (m_audio)
     {
         const auto inverse = glm::inverse(m_camera.getView());
@@ -142,13 +147,27 @@ void CMothershipCinematic::publishEffects()
                  3 + age * 4, {.12f, .13f, .14f, .4f}, ParticleKind::Smoke);
         }
     }
-    m_scene.setPointLight(m_sourceLight, m_emitter, 80, {.15f, 1, .55f},
+    m_scene.setPointLight(m_sourceLight, m_emitter, 80 * m_effectScale, {.15f, 1, .55f},
                           m_destroyed ? 0 : charge * 5, false);
     const float impactIntensity = beamActive()  ? 10
                                   : m_destroyed ? 16 * std::exp(-(m_time - destructionTime) * 3)
                                                 : 0;
-    m_scene.setPointLight(m_impactLight, m_impact + glm::vec3(0, 4, 0), 100, {1, .5f, .15f},
-                          impactIntensity, false);
+    m_scene.setPointLight(m_impactLight, m_impact + glm::vec3(0, 4 * m_effectScale, 0),
+                          100 * m_effectScale, {1, .5f, .15f}, impactIntensity, false);
+    // Expand endpoint-local effects while keeping each beam aimed at the real impact point.
+    for (auto &particle : particles)
+    {
+        if (particle.kind != ParticleKind::Beam)
+        {
+            const auto origin = glm::distance(particle.position, m_emitter) <
+                                        glm::distance(particle.position, m_impact)
+                                    ? m_emitter
+                                    : m_impact;
+            particle.position = origin + (particle.position - origin) * m_effectScale;
+            particle.velocity *= m_effectScale;
+        }
+        particle.halfSize *= m_effectScale;
+    }
     m_scene.setParticles(particles);
 }
 UiDocument CMothershipCinematic::overlay(glm::vec2 viewport) const

@@ -113,7 +113,8 @@ int main()
         second->markDeleted();
         world.update(.016f);
         update();
-        require(!targeting.solution(), "Deleted target left a dangling selection");
+        require(targeting.solution() && targeting.solution()->target.id == first,
+                "Deleted target did not switch to the nearest survivor");
         input.targetNext = false;
         input.targetSelect = true;
         update();
@@ -129,6 +130,46 @@ int main()
         third->setTargetName("THREE");
         require(world.addObject(third) > secondId, "Object IDs were reused");
 
+        {
+            TestInput automaticInput;
+            CTargetingSystem automatic(tuning.targeting);
+            std::vector<TargetSnapshot> hostiles = {{10, "AHEAD", {0, 0, 100}, {}},
+                                                    {20, "BEHIND", {0, 0, -5}, {}},
+                                                    {30, "SIDE", {6, 0, 0}, {}}};
+            const auto tick = [&]
+            { automatic.update(hostiles, {0, 0, 0}, {0, 0, 1}, aim, automaticInput); };
+            tick();
+            require(automatic.solution()->target.id == 10, "Initial forward acquisition changed");
+            hostiles.erase(hostiles.begin());
+            tick();
+            require(automatic.solution()->target.id == 20,
+                    "Death retargeting ignored the closest enemy behind the player");
+            hostiles.push_back({40, "CLOSER", {1, 0, 0}, {}});
+            tick();
+            require(automatic.solution()->target.id == 20,
+                    "Living target was stolen by a nearer enemy");
+            hostiles.erase(hostiles.begin());
+            tick();
+            require(automatic.solution()->target.id == 40,
+                    "Death retargeting used spawn order instead of distance");
+            hostiles.clear();
+            tick();
+            require(!automatic.solution(), "No survivors retained a stale target");
+            hostiles = {{70, "NEXT WAVE BEHIND", {0, 0, -10}, {}},
+                        {60, "NEXT WAVE AHEAD", {0, 0, 30}, {}}};
+            tick();
+            require(automatic.solution()->target.id == 70,
+                    "Retargeting did not resume when the next wave spawned");
+            hostiles = {{90, "TIE HIGH", {3, 0, 0}, {}}, {80, "TIE LOW", {-3, 0, 0}, {}}};
+            tick();
+            require(automatic.solution()->target.id == 80,
+                    "Equal-distance retargeting was not stable by ID");
+            automaticInput.targetClear = true;
+            tick();
+            automaticInput.targetClear = false;
+            tick();
+            require(!automatic.solution(), "Manual clear was overridden by death retargeting");
+        }
         CCollisionSystem collisions;
         const auto friendly = collisions.getNewGroupId(), hostile = collisions.getNewGroupId();
         auto *near = collisions.add(box({0, 0, 5}, {.5f, .5f, .5f}), hostile);

@@ -30,18 +30,62 @@ int main()
     {
         std::unique_ptr<IResourceManager> resources(createResourceManager());
         const auto arena = ArenaTuning::load(*resources);
-        require(arena.mothership.approachSeconds == 30 && arena.mothership.waitSeconds == 5,
-                "Bundled mothership deadline is not 30 + 5 seconds");
+        require(arena.mothership.approachSeconds == 60 && arena.mothership.waitSeconds == 5,
+                "Bundled mothership deadline is not 60 + 5 seconds");
+        require(arena.center.y - arena.halfExtents.y == 10 &&
+                    arena.center.y + arena.halfExtents.y == 1010,
+                "Expanded ceiling moved the floor or lost vertical flight room");
+        require(ArenaBoundary::evaluate({0, 500, 0}, arena).strength == 0,
+                "High-altitude flight still triggers the old ceiling");
+        require(arena.templeScale == 24 && arena.mothership.scale == 400 &&
+                    arena.mothership.destination.y == 750,
+                "Landmark scale and approach altitude do not match the enlarged arena");
+        // The lowest platform must be a closed, outward-facing box. Its underside
+        // touches the ground; an inward-facing bottom competes with that ground.
+        const auto templeMesh = resources->loadMesh("data/mesh/piramyde.obj");
+        std::vector<float> vertices, normals, uv;
+        std::vector<unsigned> indices;
+        EPrimitiveType primitive;
+        require(resources->getMesh(templeMesh, vertices, indices, normals, uv, primitive),
+                "Temple geometry could not be loaded");
+        const auto vertex = [&](unsigned index)
+        {
+            return glm::vec3(vertices[index * 3], vertices[index * 3 + 1], vertices[index * 3 + 2]);
+        };
+        const auto normal = [&](unsigned index)
+        { return glm::vec3(normals[index * 3], normals[index * 3 + 1], normals[index * 3 + 2]); };
+        unsigned foundationFaces = 0;
+        const glm::vec3 foundationCenter(0, (-.517224f - .346395f) * .5f, 0);
+        const auto foundationVertex = [](glm::vec3 p)
+        {
+            return std::abs(std::abs(p.x) - 6.973486f) < .0001f &&
+                   std::abs(std::abs(p.z) - 6.973486f) < .0001f && p.y >= -.5173f && p.y <= -.3463f;
+        };
+        for (std::size_t i = 0; i + 2 < indices.size(); i += 3)
+        {
+            const auto a = vertex(indices[i]), b = vertex(indices[i + 1]),
+                       c = vertex(indices[i + 2]);
+            if (!foundationVertex(a) || !foundationVertex(b) || !foundationVertex(c))
+                continue;
+            const auto outward = glm::normalize(glm::cross(b - a, c - a));
+            require(glm::dot(outward, (a + b + c) / 3.f - foundationCenter) > 0,
+                    "Temple foundation has inward-facing triangles that fight the ground");
+            for (unsigned j = 0; j < 3; ++j)
+                require(glm::dot(outward, normal(indices[i + j])) > .99f,
+                        "Temple foundation normals disagree with its outward faces");
+            ++foundationFaces;
+        }
+        require(foundationFaces == 12, "Temple foundation regression did not cover all box faces");
         CGameObject mothership;
         mothership.setPosition({0, 68, 700});
         int deadlines = 0;
         CMothershipController approach({0, 68, 0}, arena.mothership, [&] { ++deadlines; });
         approach.attach(&mothership);
-        approach.update(15);
+        approach.update(30);
         require(std::abs(mothership.getPosition().z - 350) < .001f &&
-                    approach.approachRemaining() == 15 && approach.totalRemaining() == 20,
+                    approach.approachRemaining() == 30 && approach.totalRemaining() == 35,
                 "Mothership movement and countdown disagree at halfway");
-        approach.update(16);
+        approach.update(31);
         require(glm::length(mothership.getPosition() - glm::vec3(0, 68, 0)) < .001f &&
                     glm::length(mothership.getVelocity()) == 0 &&
                     approach.approachRemaining() == 0 && approach.totalRemaining() == 4 &&
@@ -74,6 +118,13 @@ int main()
             rejected = true;
         }
         require(rejected, "Zero mothership approach duration was accepted");
+        require(ArenaBoundary::evaluate({0, 50, 0}, arena).strength == 0,
+                "Normal low-altitude flight triggers an early warning");
+        require(ArenaBoundary::evaluate({0, 20, 0}, arena).axis == 1 &&
+                    ArenaBoundary::evaluate({0, 20, 0}, arena).strength > 0,
+                "Approaching the floor does not trigger an altitude warning");
+        require(ArenaBoundary::evaluate({770, 100, 0}, arena).axis == 0,
+                "Horizontal edge warning was lost");
         require(ArenaBoundary::evaluate(arena.center, arena).strength == 0,
                 "Arena center applies steering assistance");
         for (int axis = 0; axis < 3; ++axis)
@@ -244,6 +295,12 @@ int main()
                                     nullptr, &arena, &status);
         require(hasTimer(timerHud, "MOTHERSHIP ARRIVED / STRIKE IN 00:05"),
                 "HUD did not show the final wait or rounded down too early");
+        status.finalGraceActive = true;
+        timerHud = FlightHud::build(camera, arena.center, flightState, {1280, 720}, nullptr,
+                                    nullptr, &arena, &status);
+        require(hasTimer(timerHud, "FINAL CHANCE / CLEAR REMAINING ENEMIES"),
+                "Grace-period HUD does not tell the player combat can still be won");
+
         EncounterProgress scoring{137, 0};
         for (int i = 0; i < 136; ++i)
             scoring.recordDefeat();

@@ -1,12 +1,12 @@
 {
   "center": [
     0,
-    100,
+    510,
     0
   ],
   "halfExtents": [
     800,
-    90,
+    500,
     800
   ],
   "warningMargin": 45,
@@ -33,7 +33,20 @@
     "approachSpread": 35
   },
   "mothership": {
-    "approachSeconds": 30,
-    "waitSeconds": 5
-  }
+    "approachSeconds": 60,
+    "waitSeconds": 5,
+    "scale": 400,
+    "start": [
+      0,
+      750,
+      1400
+    ],
+    "destination": [
+      0,
+      750,
+      0
+    ]
+  },
+  "verticalWarningMargin": 12,
+  "templeScale": 24
 }

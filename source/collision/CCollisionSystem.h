@@ -2,6 +2,10 @@
 
 #include "CAABBox.h"
 #include "CollisionHit.h"
+#include "CollisionQueryStats.h"
+#include <cstdint>
+#include <span>
+#include <unordered_map>
 #include <vector>
 
 #include <list>
@@ -41,10 +45,24 @@ class CCollisionSystem
     unsigned int getNewGroupId();
 
     void beginStep();
+    void invalidateQueries();
+    const CollisionQueryStats &queryStats() const;
     CollisionHit trace(glm::vec3 start, glm::vec3 end, glm::vec3 halfWidths, unsigned ignoredGroup,
-                       float motionFraction = 1) const;
+                       float motionFraction = 1,
+                       std::span<const std::uint64_t> excluded = {}) const;
 
   private:
+    void buildQueries() const;
+    std::vector<CCollidable *> candidates(glm::vec3 low, glm::vec3 high,
+                                          unsigned ignoredGroup) const;
+    static std::uint64_t cellKey(int x, int y, int z);
+    std::uint64_t m_nextId = 1;
+    mutable CollisionQueryStats m_queryStats;
+    mutable bool m_queriesDirty = true;
+    mutable std::vector<std::unordered_map<std::uint64_t, std::vector<CCollidable *>>> m_groupCells;
+    mutable std::uint64_t m_querySerial = 0;
+    mutable std::vector<CCollidable *> m_largeReceivers;
+
     /**
      * \brief Tests the entity for collision with all other entities not in the group
      */

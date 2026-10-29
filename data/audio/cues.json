@@ -81,8 +81,8 @@
       "gain": 0.7,
       "loop": true,
       "spatial": true,
-      "min_distance": 100,
-      "max_distance": 1000,
+      "min_distance": 350,
+      "max_distance": 2400,
       "max_instances": 1,
       "priority": 80
     },

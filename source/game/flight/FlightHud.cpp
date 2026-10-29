@@ -148,13 +148,15 @@ UiDocument FlightHud::build(const ICamera &camera, glm::vec3 position, const Fli
                  .94f}};
     ui.texts.push_back({targetStatus, {.5f, .065f}, 18, target ? targetColor : cyan, 1, .92f});
     if (flight.boundaryWarning > .05f)
-        ui.texts.push_back(
-            {flight.boundaryAssist ? "RETURN ASSIST / TURNING INTO ARENA" : "BOUNDARY / TURN BACK",
-             {.5f, .15f},
-             20,
-             {1, .6f, .2f, 1},
-             1,
-             .9f});
+        ui.texts.push_back({flight.boundaryVertical ? (flight.boundaryFloor ? "LOW ALTITUDE / CLIMB"
+                                                                            : "CEILING / DESCEND")
+                            : flight.boundaryAssist ? "RETURN ASSIST / TURNING INTO ARENA"
+                                                    : "ARENA EDGE / TURN BACK",
+                            {.5f, .15f},
+                            20,
+                            {1, .6f, .2f, 1},
+                            1,
+                            .9f});
     if (status)
         ui.texts.push_back({std::format("HULL {:.0f}%    HOSTILES DEFEATED {} / {}",
                                         100.f * status->health / std::max(1.f, status->maxHealth),
@@ -193,6 +195,14 @@ UiDocument FlightHud::build(const ICamera &camera, glm::vec3 position, const Fli
              1,
              .94f});
     }
+    if (status && status->maxShield > 0)
+        ui.texts.push_back(
+            {std::format("SHIELD {:.0f} / {:.0f}", status->shield, status->maxShield),
+             {.5f, .79f},
+             18,
+             {.3f, .85f, 1, 1},
+             1,
+             .9f});
     if (feedback)
     {
         if (feedback->damage > .01f)
@@ -226,9 +236,13 @@ UiDocument FlightHud::build(const ICamera &camera, glm::vec3 position, const Fli
                                              {x * 7, y * 7}});
         }
     }
-    if (status && status->finalDeadlineExpired)
-        ui.texts.push_back(
-            {"TIME EXPIRED / TEMPLE STRIKE IMMINENT", {.5f, .26f}, 24, {1, .3f, .15f, 1}, 1, .94f});
+    if (status && status->finalGraceActive)
+        ui.texts.push_back({"FINAL CHANCE / CLEAR REMAINING ENEMIES",
+                            {.5f, .26f},
+                            24,
+                            {1, .3f, .15f, 1},
+                            1,
+                            .94f});
     if (status && status->health <= 0)
         ui.texts.push_back({"SHIP DESTROYED", {.5f, .22f}, 30, {1, .35f, .2f, 1}, 3, .9f});
     else if (status && status->total > 0 && status->defeated >= status->total)

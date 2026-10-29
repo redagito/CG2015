@@ -1,4 +1,5 @@
 #pragma once
+#include "SEmissiveAccents.h"
 
 enum class AlphaMode
 {
@@ -13,4 +14,5 @@ struct SMaterialSettings
     float opacity = 1.f;
     bool srgb = true;
     bool background = false;
+    SEmissiveAccents emissiveAccents;
 };

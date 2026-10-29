@@ -151,26 +151,37 @@ bool runUiTests()
             for (int i = 0; i < 8; ++i)
                 progression.awardKill();
             CSkillTreeScreen tree(progression);
-            glClear(GL_COLOR_BUFFER_BIT);
-            ui.draw(tree.build(glm::vec2(size), {}), size.x, size.y, gpu);
-            glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
-            const float scale = std::min(size.x / 1280.f, size.y / 720.f);
-            for (unsigned node = 0; node < 6; ++node)
+            TestInput treeInput;
+            treeInput.viewport = glm::vec2(size);
+            tree.onEnter(treeInput);
+            for (unsigned page = 1; page <= 4; ++page)
             {
-                const glm::vec2 center((.18f + .32f * (node / 2)) * size.x,
-                                       (1 - (.37f + .23f * (node % 2))) * size.y);
-                unsigned textPixels = 0;
-                for (unsigned y = 0; y < size.y; ++y)
-                    for (unsigned x = 0; x < size.x; ++x)
-                    {
-                        if (std::abs(float(x) - center.x) > 130 * scale ||
-                            std::abs(float(y) - center.y) > 50 * scale)
-                            continue;
-                        const auto p = 4 * (y * size.x + x);
-                        if (pixels[p + 1] > 140 && pixels[p + 2] > 140)
-                            ++textPixels;
-                    }
-                require(textPixels > 3, "Skill node text is clipped or missing after resize");
+                treeInput.skillPage = page;
+                tree.update(treeInput);
+                glClear(GL_COLOR_BUFFER_BIT);
+                ui.draw(tree.build(glm::vec2(size), {}), size.x, size.y, gpu);
+                glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+                const float scale = std::min(size.x / 1280.f, size.y / 720.f);
+                for (unsigned node = 0; node < 6; ++node)
+                {
+                    const glm::vec2 center((.18f + .32f * (node / 2)) * size.x,
+                                           (1 - (.37f + .23f * (node % 2))) * size.y);
+                    unsigned textPixels = 0;
+                    for (unsigned y = 0; y < size.y; ++y)
+                        for (unsigned x = 0; x < size.x; ++x)
+                        {
+                            if (std::abs(float(x) - center.x) > 130 * scale ||
+                                std::abs(float(y) - center.y) > 50 * scale)
+                                continue;
+                            const auto p = 4 * (y * size.x + x);
+                            if (pixels[p + 1] > 140 && pixels[p + 2] > 140)
+                                ++textPixels;
+                        }
+                    if (textPixels <= 3)
+                        std::fprintf(stderr, "Tree %ux%u page %u node %u count %u\n", size.x,
+                                     size.y, page, node, textPixels);
+                    require(textPixels > 3, "Skill node text is clipped or missing after resize");
+                }
             }
             CFrameBuffer::setDefaultActive();
         }

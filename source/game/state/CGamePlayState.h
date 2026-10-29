@@ -2,6 +2,7 @@
 
 #include "AGameState.h"
 #include "game/arena/ArenaTuning.h"
+#include "game/combat/CPlayerCombatUpgrades.h"
 #include "game/combat/CTargetingSystem.h"
 #include "game/combat/CombatTuning.h"
 #include "game/control/CAudioEmitterController.h"
@@ -40,6 +41,7 @@ class CGamePlayState : public AGameState
     bool init(IGraphicsSystem *graphicsSystem, IInputProvider *inputProvider,
               IResourceManager *resourceManager);
     bool reinitializeOnEntry() const override;
+    bool activeGameplay() const override;
     GameObjectId playerId() const;
     std::size_t waveNumber() const;
     const WeaponTuning &playerWeapon() const;
@@ -67,8 +69,9 @@ class CGamePlayState : public AGameState
     ArenaTuning m_arena;
     CombatEffectsTuning m_effectsTuning;
     std::unique_ptr<CCombatEffects> m_effects;
+    std::unique_ptr<CPlayerCombatUpgrades> m_combatUpgrades;
     std::unique_ptr<CMothershipCinematic> m_cinematic;
-    bool m_mothershipDeadline = false, m_finalWaveStarted = false, m_finalWait = false;
+    bool m_mothershipDeadline = false, m_finalWaveStarted = false;
     std::shared_ptr<CAudioEmitterController> m_ufoAudio;
     CGameObject *m_temple = nullptr;
     glm::vec3 m_templeImpact{0}, m_mothershipEmitterOffset{0};

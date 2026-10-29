@@ -12,3 +12,8 @@ bool IGameState::reinitializeOnEntry() const
 {
     return false;
 }
+
+bool IGameState::activeGameplay() const
+{
+    return false;
+}

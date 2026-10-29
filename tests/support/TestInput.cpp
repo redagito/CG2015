@@ -8,7 +8,8 @@ void TestInput::removeInputListener(IInputListener *)
 }
 bool TestInput::isKeyPressed(int key)
 {
-    return (key == GLFW_KEY_ENTER && enter) || (key == GLFW_KEY_R && retry) ||
+    return (skillPage > 0 && key == GLFW_KEY_1 + int(skillPage) - 1) ||
+           (key == GLFW_KEY_ENTER && enter) || (key == GLFW_KEY_R && retry) ||
            (key == GLFW_KEY_SPACE && space) || (key == GLFW_KEY_W && throttleUp) ||
            (key == GLFW_KEY_S && throttleDown) || (key == GLFW_KEY_A && rollLeft) ||
            (key == GLFW_KEY_D && rollRight) || (key == GLFW_KEY_LEFT_SHIFT && boost) ||

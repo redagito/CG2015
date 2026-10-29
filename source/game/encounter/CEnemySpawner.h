@@ -1,7 +1,9 @@
 #pragma once
 #include "EnemyRoster.h"
 #include "collision/CAABBox.h"
+#include "collision/DamageKind.h"
 #include "game/GameObjectId.h"
+#include "game/arena/CEnemyNeighborhood.h"
 #include "resource/ResourceConfig.h"
 #include <functional>
 class CGameWorld;
@@ -17,7 +19,8 @@ class CEnemySpawner
                   IScene &scene, IResourceManager &resources, CCollisionSystem &collisions,
                   GameObjectId player, unsigned group, ResourceId projectileMesh,
                   ResourceId projectileMaterial, GameAudio *audio, std::function<void()> onDefeat,
-                  CCombatEffects *effects = nullptr);
+                  CCombatEffects *effects = nullptr,
+                  std::function<void(glm::vec3, DamageKind)> onDestroyed = {});
     void update(float seconds);
     void setWave(std::size_t wave);
     std::size_t pending() const;
@@ -31,6 +34,7 @@ class CEnemySpawner
     };
     bool positionFor(const EnemySpawn &spawn, glm::vec3 &position) const;
     void spawn(const EnemySpawn &request, glm::vec3 position);
+    CEnemyNeighborhood m_spawnNeighborhood;
     CCombatEffects *m_effects;
     EnemyRoster m_roster;
     ArenaTuning m_arena;
@@ -43,6 +47,7 @@ class CEnemySpawner
     IResourceManager &m_resources;
     GameAudio *m_audio;
     std::function<void()> m_onDefeat;
+    std::function<void(glm::vec3, DamageKind)> m_onDestroyed;
     std::vector<PreparedType> m_prepared;
     std::size_t m_next = 0;
     std::size_t m_wave = static_cast<std::size_t>(-1);

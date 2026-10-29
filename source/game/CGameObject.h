@@ -3,6 +3,8 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <typeinfo>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -89,7 +91,7 @@ class CGameObject
      *
      * Updates the object with time in seconds.
      */
-    void update(float dtime);
+    void update(float dtime, std::unordered_map<const std::type_info *, double> *timings = nullptr);
 
     /**
      * \brief Marks this object for deletion.

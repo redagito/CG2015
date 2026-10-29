@@ -25,13 +25,23 @@ void CAudioEmitterController::detach()
     m_object = nullptr;
 }
 
-void CAudioEmitterController::update(float)
+void CAudioEmitterController::update(float seconds)
 {
     if (!m_audio || !m_object || !m_active)
         return;
     const auto position = m_object->getPosition();
-    if (!m_audio->emitterActive(m_voice))
+    if (!m_voice || !m_audio->emitterActive(m_voice))
+    {
+        m_voiceRetry -= seconds;
+        if (m_voiceRetry > 0)
+            return;
         m_voice = m_audio->startEmitter(m_cue, position);
+        if (!m_voice)
+        {
+            m_voiceRetry = .25f;
+            return;
+        }
+    }
 
     m_audio->moveEmitter(m_voice, position);
 }

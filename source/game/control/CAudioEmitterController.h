@@ -23,5 +23,6 @@ class CAudioEmitterController : public IController
     CGameObject *m_object = nullptr;
     std::string m_cue;
     VoiceHandle m_voice = 0;
+    float m_voiceRetry = 0;
     bool m_active = true;
 };

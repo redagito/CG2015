@@ -1,6 +1,10 @@
 #pragma once
 #include "game/IController.h"
+#include "game/combat/ProjectileModifiers.h"
+#include <cstdint>
 #include <glm/glm.hpp>
+#include <vector>
+class CPlayerCombatUpgrades;
 class CCollisionSystem;
 class CCombatEffects;
 class CProjectileController : public IController
@@ -8,7 +12,9 @@ class CProjectileController : public IController
   public:
     CProjectileController(glm::vec3 velocity, float lifetime, CCollisionSystem &collisions,
                           unsigned group, CCombatEffects *effects = nullptr,
-                          bool playerShot = false, glm::vec3 color = glm::vec3(.25f, .85f, 2));
+                          bool playerShot = false, glm::vec3 color = glm::vec3(.25f, .85f, 2),
+                          const ProjectileModifiers &modifiers = {},
+                          CPlayerCombatUpgrades *upgrades = nullptr);
     void attach(CGameObject *object) override;
     void detach() override;
     void update(float seconds) override;
@@ -16,6 +22,9 @@ class CProjectileController : public IController
     void receiveMessage(Message message) override;
 
   private:
+    ProjectileModifiers m_modifiers;
+    CPlayerCombatUpgrades *m_upgrades;
+    std::vector<std::uint64_t> m_hitTargets;
     CCombatEffects *m_effects;
     bool m_playerShot;
     glm::vec3 m_color;

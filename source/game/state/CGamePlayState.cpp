@@ -50,9 +50,9 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     m_spawner.reset();
     getGameWorld().clear();
     m_effects.reset();
+    m_combatUpgrades.reset();
     m_mothershipDeadline = false;
     m_finalWaveStarted = false;
-    m_finalWait = false;
     if (!m_progression)
         m_progression = std::make_shared<CPlayerProgression>();
     m_collisionSystem = std::make_unique<CCollisionSystem>();
@@ -93,9 +93,12 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
 
     m_flight = std::make_shared<CFlightController>(*inputProvider, m_flightTuning, &m_arena);
     m_player->addController(m_flight);
-    m_playerHealth =
-        std::make_shared<CHealthController>(m_arena.enemies.playerHealth, m_audio, m_effects.get());
+    m_playerHealth = std::make_shared<CHealthController>(
+        m_arena.enemies.playerHealth * m_progression->defenses().hullMultiplier, m_audio,
+        m_effects.get(), m_progression->defenses());
     m_player->addController(m_playerHealth);
+    m_combatUpgrades = std::make_unique<CPlayerCombatUpgrades>(
+        getGameWorld(), *m_playerHealth, m_effects.get(), m_progression->combatUpgrades());
 
     // Load bullet
     ResourceId bulletMesh = m_resourceManager->loadMesh("data/mesh/bullet.obj");
@@ -113,9 +116,12 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     m_projectileMaterial = bulletMaterial;
     m_weapon = std::make_shared<CWeaponController>(
         m_inputProvider, &getGameWorld(), m_scene, bulletMesh, bulletMaterial, m_resourceManager,
-        m_collisionSystem.get(), m_playerGroup, m_audio, m_combatTuning.weapon, m_effects.get());
+        m_collisionSystem.get(), m_playerGroup, m_audio, m_combatTuning.weapon, m_effects.get(),
+        m_combatUpgrades.get());
     m_player->addController(m_weapon);
-    m_player->setPosition(m_arena.center + glm::vec3(0, -30, -130));
+    // Keep the launch altitude relative to the floor when the ceiling changes.
+    m_player->setPosition(glm::vec3(m_arena.center.x, m_arena.center.y - m_arena.halfExtents.y + 60,
+                                    m_arena.center.z - 230));
     m_player->setRotation(glm::vec3(0.f));
     m_player->setScale(glm::vec3(0.5f));
     m_player->addController(
@@ -157,18 +163,15 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
 
     // Create mothership
     m_mothership = new CGameObject();
-    m_mothership->setPosition(glm::vec3(0.f, 68.f, 700.f));
+    m_mothership->setPosition(m_arena.mothership.start);
     m_mothership->setRotation(glm::vec3(0.f));
-    m_mothership->setScale(glm::vec3(60.f));
+    m_mothership->setScale(glm::vec3(m_arena.mothership.scale));
     m_mothershipApproach = std::make_shared<CMothershipController>(
-        glm::vec3(0.f, 68.f, 0.f), m_arena.mothership,
+        m_arena.mothership.destination, m_arena.mothership,
         [this]
         {
             if (m_resultTimer < 0 && !m_player->isDead() && !m_progress.complete())
-            {
                 m_mothershipDeadline = true;
-                getGameWorld().freezeSimulation();
-            }
         });
     m_mothership->addController(m_mothershipApproach);
     m_mothershipApproach->setActive(false);
@@ -202,8 +205,8 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     }
     // Create scene object
     CSceneObjectProxy *motherSceneObject = new CSceneObjectProxy(
-        m_scene, m_scene->createObject(motherShip, motherShipMaterial, glm::vec3(0.f, 68.f, 700.f),
-                                       glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(60.f)));
+        m_scene, m_scene->createObject(motherShip, motherShipMaterial, m_mothership->getPosition(),
+                                       m_mothership->getOrientation(), m_mothership->getScale()));
     m_mothership->setSceneObject(motherSceneObject);
     m_mothership->setVisible(false);
 
@@ -212,9 +215,10 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
 
     // Create pyramide
     m_temple = new CGameObject();
-    m_temple->setPosition(glm::vec3(0.f, 2.f, 0.f));
+    // Ground the authored mesh at y=0, including its small below-origin base.
+    m_temple->setPosition(glm::vec3(m_arena.center.x, 0, m_arena.center.z));
     m_temple->setRotation(glm::vec3(0.f, -90.f, 0.f));
-    m_temple->setScale(glm::vec3(3.f));
+    m_temple->setScale(glm::vec3(m_arena.templeScale));
 
     // Get model resources
     ResourceId pyramide = m_resourceManager->loadMesh("data/mesh/piramyde.obj");
@@ -230,6 +234,11 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     m_resourceManager->getMesh(pyramide, cinematicVertices, cinematicIndices, cinematicNormals,
                                cinematicUvs, cinematicPrimitive);
     const auto templeBounds = CAABBox::create(cinematicVertices);
+    m_temple->setPosition(
+        m_temple->getPosition() -
+        glm::vec3(0,
+                  (templeBounds.getMid().y - templeBounds.getHalfWidths().y) * m_arena.templeScale,
+                  0));
     m_templeImpact = m_temple->getPosition() +
                      glm::vec3(0,
                                (templeBounds.getMid().y + templeBounds.getHalfWidths().y) *
@@ -243,8 +252,8 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
     // Create scene object
     // glm::vec3(0.f, -90.f, 0.f)
     CSceneObjectProxy *pyramideSceneObject = new CSceneObjectProxy(
-        m_scene, m_scene->createObject(pyramide, pyramideMaterial, glm::vec3(0.f, 2.f, 0.f),
-                                       glm::quat(0.f, 0.f, 0.f, 0.f), glm::vec3(3.f)));
+        m_scene, m_scene->createObject(pyramide, pyramideMaterial, m_temple->getPosition(),
+                                       m_temple->getOrientation(), m_temple->getScale()));
     m_temple->setSceneObject(pyramideSceneObject);
 
     // Add player
@@ -262,7 +271,8 @@ bool CGamePlayState::init(IGraphicsSystem *graphicsSystem, IInputProvider *input
             m_waves->recordDefeat();
             m_progression->awardKill();
         },
-        m_effects.get());
+        m_effects.get(),
+        [this](glm::vec3 position, DamageKind kind) { m_combatUpgrades->onKill(position, kind); });
     m_spawner->setWave(0);
     m_spawner->update(0);
     if (m_waves->finalWave())
@@ -285,19 +295,6 @@ bool CGamePlayState::update(float dtime)
 {
     if (m_cinematic)
         return updateMothershipCinematic(dtime);
-    if (m_finalWait)
-    {
-        // Combat has ended. Advance only the UFO's final wait, never the frozen world.
-        m_mothershipApproach->update(dtime);
-        if (m_mothershipDeadline)
-        {
-            beginMothershipCinematic();
-            return updateMothershipCinematic(0);
-        }
-        updateFlightPresentation(0);
-        return true;
-    }
-
     if (m_resultTimer < 0)
     {
         if (m_waves->advance())
@@ -324,17 +321,16 @@ bool CGamePlayState::update(float dtime)
     const bool running = AGameState::update(dtime);
     if (m_mothershipDeadline)
     {
-        beginMothershipCinematic();
-        return updateMothershipCinematic(0);
+        // Resolve damage queued before expiry before deciding whether the strike is still needed.
+        if (m_progress.complete() || m_player->isDead())
+            m_mothershipDeadline = false;
+        else
+        {
+            beginMothershipCinematic();
+            return updateMothershipCinematic(0);
+        }
     }
-    if (m_finalWaveStarted && m_mothershipApproach->approachRemaining() <= 0 &&
-        !m_progress.complete() && !m_player->isDead() && m_resultTimer < 0)
-    {
-        m_finalWait = true;
-        freezeCombat();
-        updateFlightPresentation(0);
-        return true;
-    }
+    m_combatUpgrades->update(dtime);
     m_effects->update(dtime);
     m_camera->addImpact(m_effects->consumeCameraImpulse());
     if ((m_player->isDead() || m_progress.complete()) && m_resultTimer < 0)
@@ -398,7 +394,7 @@ void CGamePlayState::updateFlightPresentation(float seconds)
                         aim, *m_inputProvider);
     const auto &solution = m_targeting->solution();
     const CombatStatus status{m_playerHealth->health(),
-                              m_arena.enemies.playerHealth,
+                              m_playerHealth->maxHealth(),
                               m_progress.defeated,
                               m_progress.total,
                               m_finalWaveStarted ? m_mothershipApproach->approachRemaining() : -1,
@@ -407,7 +403,11 @@ void CGamePlayState::updateFlightPresentation(float seconds)
                               m_waves->waveCount(),
                               m_waves->remaining(),
                               m_progression->points(),
-                              m_finalWait};
+                              m_finalWaveStarted &&
+                                  m_mothershipApproach->approachRemaining() <= 0 &&
+                                  m_mothershipApproach->totalRemaining() > 0 && m_resultTimer < 0,
+                              m_playerHealth->shield(),
+                              m_playerHealth->maxShield()};
     m_graphicsSystem->setUiOverlay(FlightHud::build(
         *m_camera, m_player->getPosition(), m_flight->state(), viewport, &aim,
         solution ? &*solution : nullptr, &m_arena, &status, &m_effects->feedback()));
@@ -463,4 +463,9 @@ void CGamePlayState::startFinalWave()
     m_mothership->setVisible(true);
     m_mothershipApproach->setActive(true);
     m_ufoAudio->setActive(true);
+}
+
+bool CGamePlayState::activeGameplay() const
+{
+    return m_resultTimer < 0 && !m_cinematic && !getGameWorld().simulationFrozen();
 }

@@ -28,6 +28,8 @@ class CArenaEnemyController : public IController
     CGameObject *m_object = nullptr;
     glm::quat m_orientation{1, 0, 0, 0};
     glm::vec3 m_escape{0};
+    glm::vec3 m_separation{0};
+    float m_separationTimer = 0;
     float m_phase, m_elapsed = 0, m_breakTimer = 0, m_reaction = .6f;
     EnemyMode m_mode = EnemyMode::Pursuit;
     bool m_active = true, m_firing = false;

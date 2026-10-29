@@ -92,6 +92,30 @@ int main()
                     "Cinematic did not fade to black");
         }
         require(scene.particles().empty(), "Cinematic particles leaked after exit");
+        // The enlarged disc, temple base, apex and laser must fit at every supported aspect.
+        temple.setScale(glm::vec3(24));
+        const glm::vec3 emitter(0, 650.0236f, 0), impact(0, 122.9552f, 0);
+        {
+            CMothershipCinematic cinematic(scene, temple, emitter, impact, nullptr);
+            for (glm::vec2 viewport :
+                 {glm::vec2(1280, 720), glm::vec2(360, 800), glm::vec2(2560, 720)})
+            {
+                cinematic.update(1.25f, viewport);
+                for (glm::vec3 point :
+                     {emitter, impact, glm::vec3(0), glm::vec3(392, 750, 0),
+                      glm::vec3(-392, 750, 0), glm::vec3(392, 909, 392), glm::vec3(-392, 909, -392),
+                      glm::vec3(392, 909, -392), glm::vec3(-392, 909, 392), glm::vec3(0, 909, 0),
+                      glm::vec3(167, 0, 167)})
+                {
+                    const auto clip = cinematic.camera().getProjection() *
+                                      cinematic.camera().getView() * glm::vec4(point, 1);
+                    require(clip.w > 0 && std::abs(clip.x / clip.w) < .95f &&
+                                std::abs(clip.y / clip.w) < .84f && std::abs(clip.z / clip.w) < 1,
+                            "Scaled cinematic cropped the mothership or temple");
+                }
+            }
+        }
+
         std::cout << "Mothership cinematic: simulation freeze, charge/beam/destruction timing, "
                      "endpoint alignment, camera framing and cleanup passed.\n";
         return 0;

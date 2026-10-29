@@ -82,6 +82,7 @@ void ShadowPass::renderDirectional(const IScene &scene, const ICamera &camera,
     shadowMapPassShader->setUniform(viewMatrixUniformName, transformer.getViewMatrix());
     shadowMapPassShader->setUniform(projectionMatrixUniformName, transformer.getProjectionMatrix());
 
+    m_instances.begin();
     // Traverse visible objects
     while (query.hasNextObject())
     {
@@ -105,7 +106,6 @@ void ShadowPass::renderDirectional(const IScene &scene, const ICamera &camera,
         else
         {
             // Resolve ids
-            CMesh *mesh = manager.getMesh(meshId);
             CMaterial *material = manager.getMaterial(materialId);
             if (material &&
                 (material->settings.background || material->settings.alphaMode == AlphaMode::Blend))
@@ -116,13 +116,14 @@ void ShadowPass::renderDirectional(const IScene &scene, const ICamera &camera,
             transformer.setRotation(rotation);
             transformer.setScale(scale);
 
-            // Forward draw call
-            drawMaterialMesh(mesh, transformer.getTranslationMatrix(),
-                             transformer.getRotationMatrix(), transformer.getScaleMatrix(),
-                             material, manager, shadowMapPassShader);
+            m_instances.add(meshId, materialId,
+                            transformer.getTranslationMatrix() * transformer.getRotationMatrix() *
+                                transformer.getScaleMatrix(),
+                            scale.x * scale.y * scale.z < 0);
         }
     }
 
+    m_instances.draw(manager, *shadowMapPassShader);
     // Post draw error check
     std::string error;
     if (hasGLError(error))
@@ -191,6 +192,7 @@ void ShadowPass::renderPoint(const IScene &scene, const ICamera &camera, const I
         CStaticCamera faceCamera(view, camera.getProjection(), camera.getPosition());
         scene.getVisibleObjects(faceCamera, query);
 
+        m_instances.begin();
         // Traverse visible objects
         while (query.hasNextObject())
         {
@@ -214,7 +216,6 @@ void ShadowPass::renderPoint(const IScene &scene, const ICamera &camera, const I
             else
             {
                 // Resolve ids
-                CMesh *mesh = manager.getMesh(meshId);
                 CMaterial *material = manager.getMaterial(materialId);
                 if (material && (material->settings.background ||
                                  material->settings.alphaMode == AlphaMode::Blend))
@@ -227,12 +228,13 @@ void ShadowPass::renderPoint(const IScene &scene, const ICamera &camera, const I
                 transformer.setRotation(rotation);
                 transformer.setScale(scale);
 
-                // Forward draw call
-                drawMaterialMesh(mesh, transformer.getTranslationMatrix(),
-                                 transformer.getRotationMatrix(), transformer.getScaleMatrix(),
-                                 material, manager, shadowCubePassShader);
+                m_instances.add(meshId, materialId,
+                                transformer.getTranslationMatrix() *
+                                    transformer.getRotationMatrix() * transformer.getScaleMatrix(),
+                                scale.x * scale.y * scale.z < 0);
             }
         }
+        m_instances.draw(manager, *shadowCubePassShader);
     }
 
     // Post draw error check

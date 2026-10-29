@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game/IController.h"
+#include "game/combat/DefenseTuning.h"
 class GameAudio;
 class CCombatEffects;
 
@@ -14,13 +15,18 @@ class CHealthController : public IController
     /**
      * \brief Sets health.
      */
-    CHealthController(float health, GameAudio *audio = nullptr, CCombatEffects *effects = nullptr);
+    CHealthController(float health, GameAudio *audio = nullptr, CCombatEffects *effects = nullptr,
+                      const DefenseTuning &defenses = {});
 
     /**
      * \brief Destructor for cleanup.
      */
     ~CHealthController();
     float health() const;
+    float maxHealth() const;
+    float shield() const;
+    float maxShield() const;
+    void heal(float amount);
 
     /**
      * \brief On attach to object.
@@ -45,9 +51,12 @@ class CHealthController : public IController
     void receiveMessage(Message msg);
 
   private:
+    void syncDamageBudget();
     CCombatEffects *m_effects = nullptr;
     GameAudio *m_audio = nullptr;
     CGameObject *m_object = nullptr; /**< Controlled game object. */
-    float m_health;                  /**< Health value. */
-    bool m_active;                   /**< Cative flag. */
+    DefenseTuning m_defenses;
+    float m_maxHealth = 0, m_shield = 0, m_sinceDamage = 0;
+    float m_health; /**< Health value. */
+    bool m_active;  /**< Cative flag. */
 };

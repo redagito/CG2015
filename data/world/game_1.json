@@ -14,9 +14,9 @@
         0
       ],
       "scale": [
-        2500,
-        2500,
-        2500
+        5000,
+        5000,
+        5000
       ]
     },
     {
@@ -43,7 +43,7 @@
       "material": "data/material/sand.json",
       "position": [
         -700,
-        0,
+        24,
         -700
       ],
       "rotation": [
@@ -52,9 +52,9 @@
         0
       ],
       "scale": [
-        4,
-        2,
-        4
+        12,
+        24,
+        12
       ]
     },
     {
@@ -62,7 +62,7 @@
       "material": "data/material/sand.json",
       "position": [
         700,
-        0,
+        24,
         -700
       ],
       "rotation": [
@@ -71,9 +71,9 @@
         0
       ],
       "scale": [
-        4,
-        2,
-        4
+        12,
+        24,
+        12
       ]
     },
     {
@@ -81,7 +81,7 @@
       "material": "data/material/sand.json",
       "position": [
         -700,
-        0,
+        24,
         700
       ],
       "rotation": [
@@ -90,9 +90,9 @@
         0
       ],
       "scale": [
-        4,
-        2,
-        4
+        12,
+        24,
+        12
       ]
     },
     {
@@ -100,7 +100,7 @@
       "material": "data/material/sand.json",
       "position": [
         700,
-        0,
+        24,
         700
       ],
       "rotation": [
@@ -109,9 +109,9 @@
         0
       ],
       "scale": [
-        4,
-        2,
-        4
+        12,
+        24,
+        12
       ]
     },
     {

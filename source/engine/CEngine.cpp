@@ -1,6 +1,8 @@
 #include "CEngine.h"
+#include "CFrameRateGuard.h"
 #include "audio/GameAudio.h"
 #include "audio/IAudioSystem.h"
+#include <stdexcept>
 
 #include <chrono>
 #include <string>
@@ -261,10 +263,12 @@ void CEngine::run(unsigned int frameLimit)
     if (m_visible && m_gameSystem->activeStateName() == "demo")
         m_window->toggleMouseCapture();
     unsigned int frameCount = 0;
+    CFrameRateGuard frameRateGuard(30);
 
     do
     {
         double startTime = glfwGetTime();
+        const bool gameplayAtStart = m_gameSystem->activeGameplay();
 
         // Cooldown calculations
         f1Cooldown -= timeDiff;
@@ -368,6 +372,14 @@ void CEngine::run(unsigned int frameLimit)
 
         // Frame time
         timeDiff = glfwGetTime() - startTime;
+        const bool measured = gameplayAtStart && m_gameSystem->activeGameplay() &&
+                              !glfwGetWindowAttrib(m_window->getGlfwHandle(), GLFW_ICONIFIED);
+        if (!frameRateGuard.record(timeDiff, measured))
+        {
+            SPDLOG_CRITICAL("Gameplay FPS {:.2f} below required 30 FPS over one second; exiting.",
+                            frameRateGuard.lastFps());
+            throw std::runtime_error("Gameplay performance below 30 FPS");
+        }
 
         ++frameCount;
     } while ((frameLimit == 0 || frameCount < frameLimit) &&

@@ -7,62 +7,30 @@
 
 #include <glm/ext.hpp>
 
-#include "graphics/IScene.h"
-#include "graphics/scene/CSceneQuery.h"
 #include "graphics/ICamera.h"
+#include "graphics/IScene.h"
 #include "graphics/IWindow.h"
+#include "graphics/scene/CSceneQuery.h"
 
-#include "resource/IResourceManager.h"
 #include "graphics/camera/CStaticCamera.h"
+#include "resource/IResourceManager.h"
 
 #include "graphics/IGraphicsResourceManager.h"
 #include "graphics/resource/CMaterial.h"
 #include "graphics/resource/CMesh.h"
-#include "graphics/resource/CTexture.h"
 #include "graphics/resource/CShaderProgram.h"
+#include "graphics/resource/CTexture.h"
 
-#include "graphics/renderer/core/RendererCoreConfig.h"
 #include "graphics/renderer/Draw.h"
+#include "graphics/renderer/core/RendererCoreConfig.h"
 
 #include "graphics/renderer/debug/RendererDebug.h"
 #include <spdlog/spdlog.h>
 
-
-void drawMaterialMesh(CMesh* mesh, const glm::mat4& translation, const glm::mat4& rotation,
-	const glm::mat4& scale, CMaterial* material, const IGraphicsResourceManager& manager, CShaderProgram* shader)
+void bindMaterial(CMaterial *material, const IGraphicsResourceManager &manager,
+                  CShaderProgram *shader)
 {
-	// Shared binding path for geometry, shadow, background and translucent draws.
-    std::string error;
-    if (hasGLError(error))
-    {
-        SPDLOG_ERROR("GL Error: {}", error.c_str());
-    }
-
     shader->setActive();
-
-    if (hasGLError(error))
-    {
-        SPDLOG_ERROR("GL Error: {}", error.c_str());
-    }
-
-    if (hasGLError(error))
-    {
-        SPDLOG_ERROR("GL Error: {}", error.c_str());
-    }
-
-    if (!mesh) { SPDLOG_ERROR("Cannot render a missing mesh."); return; }
-
-    // Transformation matrices
-    //shader->setUniform(translationMatrixUniformName, translation);
-    shader->setUniform(rotationMatrixUniformName, rotation);
-    //shader->setUniform(scaleMatrixUniformName, scale);
-    shader->setUniform(modelMatrixUniformName, translation * rotation * scale);
-
-    if (hasGLError(error))
-    {
-        SPDLOG_ERROR("GL Error: {}", error.c_str());
-    }
-
     // Send material textures to shader
     if (material && material->hasDiffuse())
     {
@@ -119,24 +87,32 @@ void drawMaterialMesh(CMesh* mesh, const glm::mat4& translation, const glm::mat4
     }
     shader->setUniform(alphaTextureUniformName, alphaTextureUnit);
     const auto settings = material ? material->settings : SMaterialSettings{};
-    shader->setUniform("alpha_mode",static_cast<int>(settings.alphaMode));
-    shader->setUniform("alpha_cutoff",settings.alphaCutoff);
-    shader->setUniform("opacity",settings.opacity);
-    glFrontFace(scale[0][0]*scale[1][1]*scale[2][2]<0.f?GL_CW:GL_CCW);
-
-    if (hasGLError(error))
+    shader->setUniform("alpha_mode", static_cast<int>(settings.alphaMode));
+    shader->setUniform("alpha_cutoff", settings.alphaCutoff);
+    shader->setUniform("opacity", settings.opacity);
+    const auto &accents = settings.emissiveAccents;
+    shader->setUniform("accent_color_strength", glm::vec4(accents.color, accents.strength));
+    shader->setUniform("accent_hull_strips",
+                       glm::vec4(accents.hullStripOffset, accents.hullStripWidth,
+                                 accents.hullZRange.x, accents.hullZRange.y));
+    shader->setUniform("accent_engines",
+                       glm::vec4(accents.engineZMax, accents.engineHalfWidth, accents.engineCenterY,
+                                 accents.engineHalfHeight));
+}
+void drawMaterialMesh(CMesh *mesh, const glm::mat4 &translation, const glm::mat4 &rotation,
+                      const glm::mat4 &scale, CMaterial *material,
+                      const IGraphicsResourceManager &manager, CShaderProgram *shader)
+{
+    if (!mesh)
     {
-        SPDLOG_ERROR("GL Error: {}", error.c_str());
+        SPDLOG_ERROR("Cannot render a missing mesh.");
+        return;
     }
-
-    // Draw mesh
-    // TODO Consider custom shader bindings for meshes
+    bindMaterial(material, manager, shader);
+    shader->setUniform("instanced", 0);
+    shader->setUniform(rotationMatrixUniformName, rotation);
+    shader->setUniform(modelMatrixUniformName, translation * rotation * scale);
+    glFrontFace(scale[0][0] * scale[1][1] * scale[2][2] < 0 ? GL_CW : GL_CCW);
     ::draw(*mesh);
     glFrontFace(GL_CCW);
-
-    if (hasGLError(error))
-    {
-        SPDLOG_ERROR("GL Error: {}", error.c_str());
-    }
-    // TODO Cleanup?
 }

@@ -1,9 +1,13 @@
 #include "CCollidable.h"
+#include "CCollisionSystem.h"
+#include <algorithm>
+#include <cmath>
 #include <glm/gtc/matrix_transform.hpp>
 
-CCollidable::CCollidable(unsigned int group, const CAABBox &box)
-    : m_groupId(group), m_damageDealt(0.f), m_damageReceived(0.f), m_box(box),
-      m_boxTransformed(box), m_deleteMe(false), m_collidable(true)
+CCollidable::CCollidable(unsigned int group, const CAABBox &box, std::uint64_t id,
+                         CCollisionSystem *owner)
+    : m_id(id), m_owner(owner), m_groupId(group), m_damageDealt(0.f), m_damageReceived(0.f),
+      m_box(box), m_boxTransformed(box), m_deleteMe(false), m_collidable(true)
 {
     m_previousBox = m_boxTransformed;
     return;
@@ -29,17 +33,43 @@ unsigned int CCollidable::getGroupId() const
 }
 
 // Add damage to the internal counter
-void CCollidable::receiveDamage(float damage)
+float CCollidable::receiveDamage(float damage)
 {
-    receiveDamage(damage, m_boxTransformed.getMid() + glm::vec3(0, 0, -1));
+    return receiveDamage(damage, m_boxTransformed.getMid() + glm::vec3(0, 0, -1));
 }
-void CCollidable::receiveDamage(float damage, glm::vec3 source)
+float CCollidable::receiveDamage(float damage, glm::vec3 source, DamageKind kind)
 {
-    if (damage <= 0)
-        return;
+    if (!std::isfinite(damage) || damage <= 0)
+        return 0;
+    const float before = remainingHealthBudget();
     m_damageReceived += damage;
     m_damageSource = source;
+    const float after = remainingHealthBudget();
+    // Later pellets cannot claim overkill damage or replace the original lethal hit's origin.
+    if (before > 0 && after <= 0)
+        m_fatalDamageKind = kind;
+    return before - after;
 }
+void CCollidable::setHealthBudget(float hull, float shield, float armor)
+{
+    m_hullBudget = std::max(0.f, hull);
+    m_shieldBudget = std::max(0.f, shield);
+    m_armor = std::clamp(armor, 0.f, .8f);
+    if (hull > 0 && m_damageReceived == 0)
+        m_fatalDamageKind = DamageKind::Direct;
+}
+float CCollidable::remainingHealthBudget() const
+{
+    if (m_hullBudget < 0)
+        return 0; // Receivers without health never grant lifesteal.
+    return std::max(0.f, m_hullBudget -
+                             std::max(0.f, m_damageReceived * (1 - m_armor) - m_shieldBudget));
+}
+DamageKind CCollidable::fatalDamageKind() const
+{
+    return m_fatalDamageKind;
+}
+
 glm::vec3 CCollidable::damageSource() const
 {
     return m_damageSource;
@@ -66,6 +96,8 @@ void CCollidable::setTranslation(const glm::vec3 &translation)
 }
 void CCollidable::setTransform(glm::vec3 translation, glm::quat orientation, glm::vec3 scale)
 {
+    if (m_owner && m_collidable)
+        m_owner->invalidateQueries();
     m_translation = translation;
     m_orientation = orientation;
     m_scale = scale;
@@ -81,6 +113,8 @@ void CCollidable::setTransform(glm::vec3 translation, glm::quat orientation, glm
 // Sets collidable state
 void CCollidable::setCollidable(bool state)
 {
+    if (m_owner)
+        m_owner->invalidateQueries();
     m_collidable = state;
 }
 
@@ -107,4 +141,9 @@ void CCollidable::capturePreviousBounds()
 const CAABBox &CCollidable::previousBounds() const
 {
     return m_previousBox;
+}
+
+std::uint64_t CCollidable::id() const
+{
+    return m_id;
 }

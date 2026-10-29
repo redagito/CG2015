@@ -99,7 +99,8 @@ bool runLoadingScreenTests(CGlfwWindow &window)
         input.enter = true;
         require(game.update(0.016f), "Gameplay initialization failed after loading");
         require(game.activeStateName() == "game", "Title Enter did not enter gameplay");
-        require(input.flightMode, "Gameplay did not acquire flight input");
+        require(input.flightMode && game.activeGameplay(),
+                "Gameplay did not acquire input or enable FPS monitoring");
         input.viewport = glm::vec2(window.getWidth(), window.getHeight());
         input.pointer = glm::vec2(.1f, -.03f);
         input.fire = true;
@@ -133,8 +134,8 @@ bool runLoadingScreenTests(CGlfwWindow &window)
                 "Player destruction did not start visible feedback and release flight input");
         for (int frame = 0; frame < 120 && game.activeStateName() == "game"; ++frame)
             require(game.update(.016f), "Defeat feedback transition failed");
-        require(game.activeStateName() == "lose",
-                "Player destruction did not finish the defeat transition");
+        require(game.activeStateName() == "lose" && !game.activeGameplay(),
+                "Defeat did not finish the transition or disable FPS monitoring");
         graphics.draw(window);
         input.fire = false;
         input.enter = false;
@@ -174,10 +175,28 @@ bool runLoadingScreenTests(CGlfwWindow &window)
             require(siege.waveNumber() == 10 && !siege.getGameWorld().simulationFrozen(),
                     "Nine cleared waves did not unlock the UFO battle");
             input.fire = true;
-            require(siege.update(30) && siege.getGameWorld().simulationFrozen() &&
-                        !input.flightMode,
-                    "Thirty-second final battle did not stop combat");
-            require(siege.update(5) && siege.getGameWorld().simulationFrozen() && !input.flightMode,
+            require(siege.update(60) && !siege.getGameWorld().simulationFrozen() &&
+                        input.flightMode && siege.activeGameplay(),
+                    "UFO arrival froze combat instead of starting playable grace");
+            const auto gracePlayer =
+                siege.getGameWorld().getObject(siege.playerId())->getPosition();
+            const auto graceTargets = siege.getGameWorld().targets();
+            require(
+                siege.update(.25f) && input.flightMode && siege.activeGameplay() &&
+                    !siege.getGameWorld().simulationFrozen() &&
+                    glm::distance(siege.getGameWorld().getObject(siege.playerId())->getPosition(),
+                                  gracePlayer) > 0,
+                "Player movement or FPS monitoring stopped during grace");
+            require(std::any_of(graceTargets.begin(), graceTargets.end(),
+                                [&](const auto &target)
+                                {
+                                    const auto *enemy = siege.getGameWorld().getObject(target.id);
+                                    return enemy &&
+                                           glm::distance(enemy->getPosition(), target.position) > 0;
+                                }),
+                    "Enemies stopped fighting during the UFO hover");
+            require(siege.update(5) && siege.getGameWorld().simulationFrozen() &&
+                        !input.flightMode && !siege.activeGameplay(),
                     "Mothership deadline skipped cinematic or failed to freeze combat");
             const auto frozenTargets = siege.getGameWorld().targets();
             const auto frozenPlayer = siege.getGameWorld().getObject(1)->getPosition();
@@ -202,17 +221,39 @@ bool runLoadingScreenTests(CGlfwWindow &window)
             require(siege.init(&graphics, &input, resources.get()), "Fresh campaign reset failed");
             siege.onEnter();
             input.fire = false;
-            bool running = true;
-            for (int frame = 0; frame < 1800 && running; ++frame)
+            for (int frame = 0; frame < 1500 && siege.waveNumber() < 10; ++frame)
             {
                 for (const auto &target : siege.getGameWorld().targets())
                     siege.getGameWorld().getObject(target.id)->getCollidable()->receiveDamage(
                         10000);
-                running = siege.update(.25f);
+                require(siege.update(.25f), "Retry ended before reaching the final wave");
             }
+            require(siege.waveNumber() == 10 && siege.update(60) && siege.activeGameplay() &&
+                        !siege.getGameWorld().simulationFrozen(),
+                    "Grace-period victory fixture did not reach the UFO hover");
+            const auto lastEnemy = siege.getGameWorld().targets().front().id;
+            // Entry already consumed 0.25s, so eighteen steps leave the clock at 64.75s.
+            for (int frame = 0; frame < 18; ++frame)
+            {
+                for (const auto &target : siege.getGameWorld().targets())
+                    if (target.id != lastEnemy)
+                        siege.getGameWorld().getObject(target.id)->getCollidable()->receiveDamage(
+                            10000);
+                require(siege.update(.25f) && siege.activeGameplay(),
+                        "Grace ended early while the UFO should still be hovering");
+            }
+            require(siege.getGameWorld().targets().size() == 1,
+                    "Last-frame victory fixture still has queued or surviving extra enemies");
+            siege.getGameWorld().getObject(lastEnemy)->getCollidable()->receiveDamage(10000);
+            require(siege.update(.25f) && siege.getNextState() == "win" &&
+                        !siege.getGameWorld().simulationFrozen(),
+                    "Expiry discarded a lethal hit queued during the final grace frame");
+            bool running = true;
+            for (int frame = 0; frame < 20 && running; ++frame)
+                running = siege.update(.25f);
             require(!running && siege.waveNumber() == 10 && siege.getNextState() == "win" &&
                         !siege.getGameWorld().simulationFrozen(),
-                    "Clearing final enemies before the UFO deadline did not win");
+                    "Clearing the final enemies during grace failed to cancel the temple strike");
             siege.onExit();
         }
         std::printf("Loading screen rendered %u frames, then title and gameplay initialized from "

@@ -1,4 +1,5 @@
 #include <cassert>
+#include <chrono>
 
 #include "CGameObject.h"
 #include "IController.h"
@@ -74,16 +75,27 @@ const glm::vec3 &CGameObject::getForward() const
     return m_forward;
 }
 
-void CGameObject::update(float dtime)
+void CGameObject::update(float dtime, std::unordered_map<const std::type_info *, double> *timings)
 {
     // Update object controllers
     for (auto &controller : m_controllers)
     {
         if (m_deleteRequested)
             break;
-        controller->update(dtime);
+        if (timings)
+        {
+            const auto start = std::chrono::steady_clock::now();
+            controller->update(dtime);
+            (*timings)[&typeid(*controller)] +=
+                std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start)
+                    .count();
+        }
+        else
+            controller->update(dtime);
     }
 
+    const auto syncStart =
+        timings ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
     // Update attached objects if tranformation of the game object has changed
     if (m_transformationChanged)
     {
@@ -102,6 +114,10 @@ void CGameObject::update(float dtime)
             m_collidable->setTransform(getPosition(), getOrientation(), getScale());
         }
     }
+    if (timings)
+        (*timings)[&typeid(CGameObject)] +=
+            std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - syncStart)
+                .count();
 }
 
 void CGameObject::markDeleted()

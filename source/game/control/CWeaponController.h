@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 #include "collision/CAABBox.h"
 #include "game/CGameWorld.h"
@@ -19,6 +20,7 @@ class CCombatEffects;
 /**
  * \brief Controls weapons, creates projectiles.
  */
+class CPlayerCombatUpgrades;
 class CWeaponController : public IController
 {
   public:
@@ -26,7 +28,7 @@ class CWeaponController : public IController
                       ResourceId mesh, ResourceId material, IResourceManager *resourceManager,
                       CCollisionSystem *collisionSystem, int collisionGroup,
                       GameAudio *audio = nullptr, const WeaponTuning &tuning = WeaponTuning{},
-                      CCombatEffects *effects = nullptr);
+                      CCombatEffects *effects = nullptr, CPlayerCombatUpgrades *upgrades = nullptr);
     ~CWeaponController();
     WeaponAim aim() const;
     void setTrigger(bool firing);
@@ -39,6 +41,8 @@ class CWeaponController : public IController
 
   private:
     void fire();
+    CPlayerCombatUpgrades *m_upgrades;
+    std::uint32_t m_randomState = 0xC7ED123u;
     CCombatEffects *m_effects;
     WeaponTuning m_tuning;
     CAABBox m_projectileBounds;
